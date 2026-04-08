@@ -1,0 +1,99 @@
+import { NavLink } from "react-router";
+import {
+    NavigationMenu,
+    NavigationMenuContent,
+    NavigationMenuItem,
+    NavigationMenuLink,
+    NavigationMenuList,
+    NavigationMenuTrigger,
+    navigationMenuTriggerStyle,
+} from "@/components/ui/navigation-menu"
+import { Input } from "./Input";
+import { Heart, ShoppingBag, User } from "lucide-react";
+
+const items = [
+    {
+        title: "Alert Dialog",
+        href: "/docs/primitives/alert-dialog",
+        description:
+            "A modal dialog that interrupts the user with important content and expects a response.",
+    },
+    {
+        title: "Hover Card",
+        href: "/docs/primitives/hover-card",
+        description:
+            "For sighted users to preview content available behind a link.",
+    },
+    {
+        title: "Progress",
+        href: "/docs/primitives/progress",
+        description:
+            "Displays an indicator showing the completion progress of a task, typically displayed as a progress bar.",
+    },
+    {
+        title: "Scroll-area",
+        href: "/docs/primitives/scroll-area",
+        description: "Visually or semantically separates content.",
+    },
+    {
+        title: "Tabs",
+        href: "/docs/primitives/tabs",
+        description:
+            "A set of layered sections of content—known as tab panels—that are displayed one at a time.",
+    },
+    {
+        title: "Tooltip",
+        href: "/docs/primitives/tooltip",
+        description:
+            "A popup that displays information related to an element when the element receives keyboard focus or the mouse hovers over it.",
+    },
+]
+export const Navbar = () => {
+    return (
+        <div className={"m-3 flex justify-between"}>
+            <NavigationMenu>
+                <NavigationMenuList>
+                    <NavigationMenuItem>
+                        <NavigationMenuTrigger>Inicio</NavigationMenuTrigger>
+                        <NavigationMenuContent>
+                            <ul className="w-96">
+                                <NavLink to="/docs" className={"flex flex-col"}>
+                                    <p>Inicio</p>
+                                    <p>JAJAJAJAJA</p>
+                                </NavLink>
+                            </ul>
+                        </NavigationMenuContent>
+                    </NavigationMenuItem>
+                    <NavigationMenuItem className="hidden md:flex">
+                        <NavigationMenuTrigger>Components</NavigationMenuTrigger>
+                        <NavigationMenuContent>
+                            <ul className="grid w-100 gap-2 md:w-125 md:grid-cols-2 lg:w-150">
+                                {items.map((item) => (
+                                    <NavLink to={item.href} className={"flex flex-col"}>
+                                        <p>{item.title}</p>
+                                        <p>{item.description}</p>
+                                    </NavLink>
+                                ))}
+                            </ul>
+                        </NavigationMenuContent>
+                    </NavigationMenuItem>
+                    <NavigationMenuItem>
+                        <NavigationMenuLink>
+                            <NavLink to="/docs">Docs</NavLink>
+                        </NavigationMenuLink>
+                    </NavigationMenuItem>
+                </NavigationMenuList>
+            </NavigationMenu>
+            <div>
+                <h2>OVERSTRYDE</h2>
+            </div>
+            <div className="flex gap-2">
+                <Input></Input>
+                <Heart />
+                <User />
+                <ShoppingBag />
+            </div>
+        </div>
+
+    )
+}
