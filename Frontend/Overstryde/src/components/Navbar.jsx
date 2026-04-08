@@ -54,10 +54,10 @@ export const Navbar = () => {
             <NavigationMenu>
                 <NavigationMenuList>
                     <NavigationMenuItem>
-                        <NavigationMenuTrigger>Inicio</NavigationMenuTrigger>
+                        <NavigationMenuTrigger className={"text-base"}>Inicio</NavigationMenuTrigger>
                         <NavigationMenuContent>
                             <ul className="w-96">
-                                <NavLink to="/docs" className={"flex flex-col"}>
+                                <NavLink to="/docs" className={"flex flex-col hover:bg-muted"}>
                                     <p>Inicio</p>
                                     <p>JAJAJAJAJA</p>
                                 </NavLink>
@@ -65,11 +65,11 @@ export const Navbar = () => {
                         </NavigationMenuContent>
                     </NavigationMenuItem>
                     <NavigationMenuItem className="hidden md:flex">
-                        <NavigationMenuTrigger>Components</NavigationMenuTrigger>
+                        <NavigationMenuTrigger className={"text-base"}>Components</NavigationMenuTrigger>
                         <NavigationMenuContent>
                             <ul className="grid w-100 gap-2 md:w-125 md:grid-cols-2 lg:w-150">
                                 {items.map((item) => (
-                                    <NavLink to={item.href} className={"flex flex-col"}>
+                                    <NavLink to={item.href} className={"flex flex-col hover:bg-muted"}>
                                         <p>{item.title}</p>
                                         <p>{item.description}</p>
                                     </NavLink>
@@ -79,7 +79,7 @@ export const Navbar = () => {
                     </NavigationMenuItem>
                     <NavigationMenuItem>
                         <NavigationMenuLink>
-                            <NavLink to="/docs">Docs</NavLink>
+                            <NavLink to="/docs" className={"text-base"}>Docs</NavLink>
                         </NavigationMenuLink>
                     </NavigationMenuItem>
                 </NavigationMenuList>
@@ -87,11 +87,11 @@ export const Navbar = () => {
             <div>
                 <h2>OVERSTRYDE</h2>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 align-middle">
                 <Input></Input>
-                <Heart />
-                <User />
-                <ShoppingBag />
+                <Heart size={35} className="transition-transform duration-300 hover:-translate-y-1"/>
+                <User size={35} className="transition-transform duration-300 hover:-translate-y-1"/>
+                <ShoppingBag size={35} className="transition-transform duration-300 hover:-translate-y-1" />
             </div>
         </div>
 
