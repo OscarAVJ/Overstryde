@@ -10,21 +10,24 @@ import {
     DrawerTrigger,
 } from "@/components/ui/drawer"
 import { Button } from '../ui/button'
-export const CustomDrawer = ({ direction, icon, header, content }) => {
+export const CustomDrawer = ({ direction, icon, header, content, footer }) => {
     return (
         <Drawer direction={direction}>
             <DrawerTrigger asChild className={"bg-transparent"}>
                 <Button className={"h-12"}>{icon}</Button>
             </DrawerTrigger>
-            <DrawerContent>
-                <div className="mx-auto w-full max-w-sm">
-                    <DrawerHeader className={"flex flex-row"}>
+            <DrawerContent className={"px-2"}>
+                <div className="mx-auto w-full max-w-sm h-[80%] flex flex-col">
+                    <DrawerHeader className="flex flex-row">
                         {header}
                     </DrawerHeader>
-                    <DrawerHeader>
+                    <div className="flex-1 overflow-y-auto">
                         {content}
-                    </DrawerHeader>
+                    </div>
                 </div>
+                <DrawerFooter className={"h-[20%]"}>
+                    {footer}
+                </DrawerFooter>
             </DrawerContent>
         </Drawer>)
 }

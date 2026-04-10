@@ -17,6 +17,7 @@ import { NavLink } from 'react-router-dom'
 import { CustomDrawer } from '../common/CustomDrawer'
 import { ShoppingCart } from '../shoppingCart/ShoppingCart'
 import { CustomDrawerHeader } from '../common/CustomDrawerHeader'
+import { CustomDrawerFooter } from '../shoppingCart/ShoppingDrawerFooter'
 
 
 export const NavbarMovil = () => {
@@ -34,10 +35,10 @@ export const NavbarMovil = () => {
                     <User size={20} className="transition-transform duration-300 hover:-translate-y-1" />
                 </NavLink>
                 <CustomDrawer direction={"right"} icon={<ShoppingBag size={25} className="transition-transform duration-300 hover:-translate-y-1 text-black" />} header={<CustomDrawerHeader title={"Carrito de compras"} description={"Todas las prendas que tu escojas estarán aca"} icon={<DrawerClose>
-                    <Button className={"bg-transparent"}><X size={25} /></Button>
+                    <X size={25} />
                 </DrawerClose>
                 } />} content={<ShoppingCart />
-                } />
+                } footer={<CustomDrawerFooter className={"shadow-md"}/>}/>
             </div>
         </div>
     )
