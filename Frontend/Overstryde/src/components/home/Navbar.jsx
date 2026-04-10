@@ -8,7 +8,7 @@ import {
     NavigationMenuTrigger,
     navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu"
-import { Input } from "./Input";
+import { Input } from "../common/Input";
 import { Heart, ShoppingBag, User } from "lucide-react";
 
 const items = [

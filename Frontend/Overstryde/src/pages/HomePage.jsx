@@ -7,8 +7,8 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel"
 import { Button } from "@/components/ui/button"
-import { GenderSeparator } from "@/components/GenderSeparator"
-import { ProductCard } from "@/components/ProductCard"
+import { GenderSeparator } from "@/components/home/GenderSeparator"
+import { ProductCard } from "@/components/products/ProductCard"
 import { products } from "@/data/productsData.js"
 import { NavLink } from "react-router-dom"
 const genders = {

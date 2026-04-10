@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { IconRounded } from './IconRounded'
+import { IconRounded } from '../common/IconRounded'
 import { Heart } from 'lucide-react'
 
 const colors = ["bg-black", "bg-yellow-400", "bg-pink-400", "bg-red-400"]
