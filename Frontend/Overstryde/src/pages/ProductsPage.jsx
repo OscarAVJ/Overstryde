@@ -1,4 +1,4 @@
-import { ProductCard } from '@/components/ProductCard'
+import { ProductCard } from '@/components/products/ProductCard'
 import { useSearchParams } from "react-router-dom";
 import React from 'react'
 import { products } from '@/data/productsData';
