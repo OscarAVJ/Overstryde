@@ -50,8 +50,8 @@ const items = [
 ]
 export const Navbar = () => {
     return (
-        <nav className="sticky items-center top-0 z-50 w-full h-13 bg-white shadow-2xs">
-            <div className={" m-3 flex justify-between"}>
+        <nav className="hidden md:block fixed items-center top-0 z-50 w-full h-13 bg-white shadow-2xs">
+            <div className={"m-3 flex justify-between"}>
                 <NavigationMenu>
                     <NavigationMenuList>
                         <NavigationMenuItem>
@@ -86,13 +86,19 @@ export const Navbar = () => {
                     </NavigationMenuList>
                 </NavigationMenu>
                 <div>
-                    <h2>OVERSTRYDE</h2>
+                    <h2 className="text-lg">OVERSTRYDE</h2>
                 </div>
                 <div className="flex gap-2 align-middle">
                     <Input></Input>
-                    <Heart size={35} className="transition-transform duration-300 hover:-translate-y-1" />
-                    <User size={35} className="transition-transform duration-300 hover:-translate-y-1" />
-                    <ShoppingBag size={35} className="transition-transform duration-300 hover:-translate-y-1" />
+                    <NavLink>
+                        <Heart size={25} className="transition-transform duration-300 hover:-translate-y-1" />
+                    </NavLink>
+                    <NavLink to={"/register"} className={""}>
+                        <User size={25} className="transition-transform duration-300 hover:-translate-y-1" />
+                    </NavLink>
+                    <NavLink>
+                        <ShoppingBag size={25} className="transition-transform duration-300 hover:-translate-y-1" />
+                    </NavLink>
                 </div>
             </div>
 

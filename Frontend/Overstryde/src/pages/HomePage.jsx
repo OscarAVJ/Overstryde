@@ -8,7 +8,13 @@ import {
 } from "@/components/ui/carousel"
 import { Button } from "@/components/ui/button"
 import { GenderSeparator } from "@/components/GenderSeparator"
-
+import { ProductCard } from "@/components/ProductCard"
+import { products } from "@/data/productsData.js"
+import { NavLink } from "react-router-dom"
+const genders = {
+  "women": "https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=1600&q=80",
+  "men": "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+}
 const slides = [
   {
     id: 1,
@@ -31,9 +37,13 @@ const slides = [
 ]
 
 export const HomePage = () => {
+
+  const menData = products.filter((item) => item.category === "Hombres")
+  const womenData = products.filter((item) => item.category === "Mujeres")
+
   return (
     <section className="bg-gray-100 w-full px-4 md:px-6 py-10">
-      <Carousel className="w-full">
+      <Carousel className="w-full mt-5">
         <CarouselContent>
           {slides.map((slide) => (
             <CarouselItem key={slide.id}>
@@ -52,7 +62,7 @@ export const HomePage = () => {
                     <p className="text-sm md:text-base text-white/90 ">
                       {slide.description}
                     </p>
-                    <Button size="lg" >Ver más</Button>
+                    <p className="text-yellow-400 underline" >Ver más</p>
                   </div>
                 </div>
               </div>
@@ -63,8 +73,35 @@ export const HomePage = () => {
         <CarouselNext className="right-6" />
       </Carousel>
       <div className="flex flex-col md:flex-row pt-3 gap-2">
-          <GenderSeparator />
-          <GenderSeparator />
+        <GenderSeparator image={genders.men} text={"Para el"} subText={"Ropa masculina"} path={"/men"} />
+        <GenderSeparator image={genders.women} text={"Para ella"} subText={"Ropa femenina"} path={"/men"} />
+      </div>
+      <div>
+      </div>
+      <div className="mt-2 w-full">
+        <h2 className="uppercase text-yellow-500 font-extrabold">Hombres</h2>
+        <p className="font-semibold">Ultimos ingresos</p>
+        <div className="grid grid-cols-2 gap-2  md:grid-cols-4  mt-2">
+          {menData.map((item, index) => <ProductCard key={item.id} product={item} />)}
+        </div>
+        <div className="flex justify-center items-center mt-2">
+          <NavLink to={`/products?category=${encodeURIComponent("Hombres")}`}>
+            <Button>Explorar más</Button>
+          </NavLink>
+        </div>
+      </div>
+      <div className="mt-2">
+        <h2 className="uppercase text-yellow-500 font-extrabold">Mujeres</h2>
+        <p className="font-semibold">Ultimos ingresos</p>
+        <div className="grid grid-cols-2 gap-2 md:gap-2  md:grid-cols-4  mt-2">
+          {womenData.map((item, index) => <ProductCard key={item.id} product={item} />)}
+        </div>
+        <div className="flex justify-center items-center mt-2">
+          {/* ///Aca le pasamos los parametros a la ruta, diciendo que queremos los productos en donde la categoria sea = Mujeres y eso esta dentro de la funcion encode.... para que no salga el texto plano */}
+          <NavLink to={`/products?category=${encodeURIComponent("Mujeres")}`}>
+            <Button>Explorar más</Button>
+          </NavLink>
+        </div>
       </div>
     </section>
   )
