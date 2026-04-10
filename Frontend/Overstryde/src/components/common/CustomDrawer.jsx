@@ -17,7 +17,7 @@ export const CustomDrawer = ({ direction, icon, header, content, footer }) => {
                 <Button className={"h-12"}>{icon}</Button>
             </DrawerTrigger>
             <DrawerContent className={"px-2"}>
-                <div className="mx-auto w-full max-w-sm h-[80%] flex flex-col">
+                <div className="mx-auto w-full max-w-sm h-[80%] md:h-[70%] flex flex-col">
                     <DrawerHeader className="flex flex-row">
                         {header}
                     </DrawerHeader>
@@ -25,7 +25,7 @@ export const CustomDrawer = ({ direction, icon, header, content, footer }) => {
                         {content}
                     </div>
                 </div>
-                <DrawerFooter className={"h-[20%]"}>
+                <DrawerFooter className={"h-[20%] mb-auto"}>
                     {footer}
                 </DrawerFooter>
             </DrawerContent>

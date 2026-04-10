@@ -4,7 +4,7 @@ import { NavLink } from 'react-router-dom'
 
 export const CustomDrawerHeader = ({title, description, icon}) => {
     return (
-        <div className='flex'>
+        <div className='flex justify-between w-full'>
             <div>
                 <DrawerTitle>{title}</DrawerTitle>
                 <DrawerDescription>
