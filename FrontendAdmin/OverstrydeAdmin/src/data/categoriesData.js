@@ -1,0 +1,66 @@
+export const categories = [
+  {
+    id: 1,
+    name: "Hombres",
+    type: "Principal",
+    products: 12,
+    status: "Activo",
+    children: [
+      { id: 2, name: "Camisetas", type: "Subcategoría", products: 4 },
+      { id: 3, name: "Pantalones", type: "Subcategoría", products: 3 },
+      { id: 4, name: "Shorts", type: "Subcategoría", products: 3 },
+      { id: 5, name: "Hoodies", type: "Subcategoría", products: 2 },
+    ],
+  },
+  {
+    id: 6,
+    name: "Mujeres",
+    type: "Principal",
+    products: 14,
+    status: "Activo",
+    children: [
+      { id: 7, name: "Leggins", type: "Subcategoría", products: 5 },
+      { id: 8, name: "Tops deportivos", type: "Subcategoría", products: 3 },
+      { id: 9, name: "Shorts", type: "Subcategoría", products: 3 },
+      { id: 10, name: "Camisetas", type: "Subcategoría", products: 3 },
+    ],
+  },
+  {
+    id: 11,
+    name: "Accesorios",
+    type: "Principal",
+    products: 10,
+    status: "Activo",
+    children: [
+      { id: 12, name: "Guantes de gimnasio", type: "Subcategoría", products: 2 },
+      { id: 13, name: "Botellas", type: "Subcategoría", products: 3 },
+      { id: 14, name: "Toallas", type: "Subcategoría", products: 2 },
+      { id: 15, name: "Bandas elásticas", type: "Subcategoría", products: 3 },
+    ],
+  },
+  {
+    id: 16,
+    name: "Equipamiento",
+    type: "Principal",
+    products: 8,
+    status: "Activo",
+    children: [
+      { id: 17, name: "Mancuernas", type: "Subcategoría", products: 2 },
+      { id: 18, name: "Kettlebells", type: "Subcategoría", products: 2 },
+      { id: 19, name: "Colchonetas", type: "Subcategoría", products: 2 },
+      { id: 20, name: "Cuerdas", type: "Subcategoría", products: 2 },
+    ],
+  },
+  {
+    id: 21,
+    name: "Suplementos",
+    type: "Principal",
+    products: 6,
+    status: "Activo",
+    children: [
+      { id: 22, name: "Proteína", type: "Subcategoría", products: 2 },
+      { id: 23, name: "Creatina", type: "Subcategoría", products: 2 },
+      { id: 24, name: "Pre-entreno", type: "Subcategoría", products: 2 },
+    ],
+  },
+];
