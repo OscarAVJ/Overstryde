@@ -93,7 +93,7 @@ export const Navbar = () => {
                 <div>
                     <h2 className="text-lg">OVERSTRYDE</h2>
                 </div>
-                <div className="flex gap-2 align-middle">
+                <div className="flex gap-2 items-center">
                     <Input></Input>
                     <NavLink>
                         <Heart size={25} className="transition-transform duration-300 hover:-translate-y-1" />
@@ -101,7 +101,7 @@ export const Navbar = () => {
                     <NavLink to={"/register"} className={""}>
                         <User size={25} className="transition-transform duration-300 hover:-translate-y-1" />
                     </NavLink>
-                    <CustomDrawer direction={"right"} icon={<ShoppingBag size={25} className="transition-transform duration-300 hover:-translate-y-1 text-black" />} header={<CustomDrawerHeader  title={"Carrito de compras"} description={"Todas las prendas que tu escojas estarán aca"} icon={<DrawerClose>
+                    <CustomDrawer direction={"right"} icon={<ShoppingBag size={30} className="transition-transform duration-300 hover:-translate-y-1 text-black" />} header={<CustomDrawerHeader  title={"Carrito de compras"} description={"Todas las prendas que tu escojas estarán aca"} icon={<DrawerClose>
                         <X size={25} />
                     </DrawerClose>
                     } />} content={<ShoppingCart />
