@@ -40,6 +40,7 @@ export const HomePage = () => {
 
   const menData = products.filter((item) => item.category === "Hombres")
   const womenData = products.filter((item) => item.category === "Mujeres")
+  const accesoriesData = products.filter((item) => item.category === "Accesorios")
 
   return (
     <section className="bg-gray-100 w-full px-4 md:px-6 py-10">
@@ -99,6 +100,18 @@ export const HomePage = () => {
         <div className="flex justify-center items-center mt-2">
           {/* ///Aca le pasamos los parametros a la ruta, diciendo que queremos los productos en donde la categoria sea = Mujeres y eso esta dentro de la funcion encode.... para que no salga el texto plano */}
           <NavLink to={`/products?category=${encodeURIComponent("Mujeres")}`}>
+            <Button>Explorar más</Button>
+          </NavLink>
+        </div>
+      </div>
+      <div className="mt-2">
+        <h2 className="uppercase text-yellow-500 font-extrabold">Accesorios</h2>
+        <p className="font-semibold">Ultimos ingresos</p>
+        <div className="grid grid-cols-2 gap-2 md:gap-2  md:grid-cols-4  mt-2">
+          {accesoriesData.map((item, index) => <ProductCard key={item.id} product={item} />)}
+        </div>
+        <div className="flex justify-center items-center mt-2">
+          <NavLink to={`/products?category=${encodeURIComponent("Accesorios")}`}>
             <Button>Explorar más</Button>
           </NavLink>
         </div>

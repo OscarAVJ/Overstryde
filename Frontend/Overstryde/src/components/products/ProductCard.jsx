@@ -8,8 +8,8 @@ export const ProductCard = ({product}) => {
 
     return (
         <>
-            <div className=' h-96 md:h-125 w-full  md:w-64 flex flex-col'>
-                <div className="relative gap-2 w-full h-96 md:w-64">
+            <div className=' h-112 md:h-125 w-full  md:w-full flex flex-col'>
+                <div className="relative gap-2 w-full h-112 md:w-auto">
                     <img src={product.image} alt="" className="absolute inset-0 h-full w-full object-cover rounded-lg" />
                     <div className='absolute right-3 top-2 hover:-translate-y-0.5 duration-150' onClick={() => setFav(!isFav)}>
                         <IconRounded icon={isFav ? <svg fill="#DC143C" width="25" height="30" viewBox="0 0 256 256" id="Flat" xmlns="http://www.w3.org/2000/svg">

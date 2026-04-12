@@ -54,5 +54,33 @@ export const products = [
     price: 42,
     image: "https://images.unsplash.com/photo-1550345332-09e3ac987658?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTV8fGd5bXxlbnwwfHwwfHx8MA%3D%3D",
     category: "Mujeres"
+  },
+  {
+    id: 9,
+    name: "Gorra deportiva OVERSTRYD",
+    price: 25,
+    image: "https://images.unsplash.com/photo-1521369909029-2afed882baee?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Y2FwfGVufDB8fDB8fHww",
+    category: "Accesorios"
+  },
+  {
+    id: 10,
+    name: "Mochila training pack",
+    price: 55,
+    image: "https://images.unsplash.com/photo-1692506530242-c12d6c3ae2e2?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8N3x8Z3ltJTIwYmFnfGVufDB8fDB8fHww",
+    category: "Accesorios"
+  },
+  {
+    id: 11,
+    name: "Shaker bottle pro",
+    price: 18,
+    image: "https://images.unsplash.com/photo-1593188543121-6441d07ad2e5?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8U2hha2VyfGVufDB8fDB8fHww",
+    category: "Accesorios"
+  },
+  {
+    id: 12,
+    name: "Guantes de gimnasio",
+    price: 22,
+    image: "https://plus.unsplash.com/premium_photo-1675803775276-a68803e15e6e?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8R3VhbnRlcyUyMGRlJTIwZ3ltfGVufDB8fDB8fHww",
+    category: "Accesorios"
   }
 ];
