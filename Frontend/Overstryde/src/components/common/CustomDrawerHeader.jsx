@@ -1,0 +1,18 @@
+import React from 'react'
+import { DrawerDescription, DrawerTitle } from '../ui/drawer'
+import { NavLink } from 'react-router-dom'
+
+export const CustomDrawerHeader = ({title, description, icon}) => {
+    return (
+        <div className='flex justify-between w-full'>
+            <div>
+                <DrawerTitle>{title}</DrawerTitle>
+                <DrawerDescription>
+                    {description}
+                </DrawerDescription>
+            </div>
+            <NavLink>
+                {icon}
+            </NavLink>
+        </div>)
+}
