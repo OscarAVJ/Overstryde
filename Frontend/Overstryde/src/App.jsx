@@ -8,6 +8,7 @@ import { MainLayout } from './layouts/MainLayout'
 import { AuthLayout } from './layouts/AuthLayout'
 import { ProductsPage } from './pages/ProductsPage'
 import { SingleProductView } from './pages/SingleProductView'
+import { CheckoutPayment } from './pages/CheckoutPayment'
 
 function App() {
   return (
@@ -18,7 +19,7 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path={"/products"} element={<ProductsPage />} />
             <Route path={"/singleProduct"} element={<SingleProductView />} />
-            <Route path={"/checkoutPayment"} element={<SingleProductView />} />
+            <Route path={"/checkoutPayment"} element={<CheckoutPayment />} />
           </Route>
           <Route element={<AuthLayout />}>
             <Route path='/register' element={<RegisterPage />} />

@@ -10,7 +10,7 @@ const productsMovile = Array(4).fill(products[0]);
 export const SingleProductView = ({ principalColor }) => {
   const [selectedColor, setSelectedColor] = useState(principalColor);
   return (
-    <div className='flex flex-col justify-center md:flex-row px-4 md:px-[10%] pt-15 md:py-14 w-full gap-3'>
+    <div className='flex flex-col justify-center px-4 mx-auto pt-15 md:flex-row md:max-w-6xl w-full gap-3'>
       <div className='flex-col items-center gap-2 hidden sm:flex'>
         <img src="https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8Z3ltfGVufDB8fDB8fHww" alt="" className='w-85 h-120 rounded-lg' />
         <div className='grid grid-cols-4 gap-2'>
@@ -18,7 +18,7 @@ export const SingleProductView = ({ principalColor }) => {
         </div>
       </div>
       <div className='sm:hidden'>
-        <ProductCarouselMovile products={productsMovile}/>
+        <ProductCarouselMovile products={productsMovile} />
       </div>
       <div className='flex flex-col gap-2 w-auto md:w-140'>
         <h1 className='uppercase'>006-Camisa de compresión OVERSTRYDE</h1>
