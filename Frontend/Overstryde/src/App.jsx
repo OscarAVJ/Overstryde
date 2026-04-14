@@ -18,6 +18,7 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path={"/products"} element={<ProductsPage />} />
             <Route path={"/singleProduct"} element={<SingleProductView />} />
+            <Route path={"/checkoutPayment"} element={<SingleProductView />} />
           </Route>
           <Route element={<AuthLayout />}>
             <Route path='/register' element={<RegisterPage />} />
