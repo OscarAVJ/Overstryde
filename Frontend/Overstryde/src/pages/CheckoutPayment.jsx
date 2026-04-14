@@ -218,7 +218,6 @@ export const CheckoutPayment = () => {
                             </div>
                         </div>
                     </div>
-
                     <Accordion
                         type="single"
                         collapsible
@@ -246,8 +245,7 @@ export const CheckoutPayment = () => {
             </div>
             <div>
                 <div className="bg-gray-50 rounded-sm p-3 flex-col gap-2 hidden pt-15 md:flex">
-                    <div className='h-100 overflow-auto'>
-                        <ShoppingCartProduct isShoppingCart={false} />
+                    <div className='h-auto max-h-160 overflow-auto'>
                         <ShoppingCartProduct isShoppingCart={false} />
                         <ShoppingCartProduct isShoppingCart={false} />
                         <ShoppingCartProduct isShoppingCart={false} />
