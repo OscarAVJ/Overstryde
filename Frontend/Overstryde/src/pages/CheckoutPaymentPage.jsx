@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button'
 import { ShoppingCartProduct } from '@/components/shoppingCart/ShoppingCartProduct'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 
-export const CheckoutPayment = () => {
+export const CheckoutPaymentPage = () => {
     return (
         <div className=' mx-auto pt-15 grid md:grid-cols-2 md:max-w-6xl p-2 md:p-0 gap-3'>
             <div>
