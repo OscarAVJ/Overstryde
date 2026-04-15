@@ -1,32 +1,15 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Plus, FolderOpen, Search, Pencil, Trash2 } from 'lucide-react'
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card2"
-import {
-  Field,
-  FieldDescription,
-  FieldLabel,
-} from "@/components/ui/field"
+import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card2"
+import { Field, FieldDescription, FieldLabel, FieldGroup } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from "@/components/ui/table2";
 import { Separator } from "@/components/ui/separator"
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import {Label} from "@/components/ui/label"
 
 const Products = () => {
 
@@ -52,6 +35,20 @@ const Products = () => {
       price: 49.99,
       stock: 0,
     },
+    {
+      name: "Mancuernas 10kg",
+      sku: "DUM004",
+      category: "Accesorios > Mancuernas",
+      price: 49.99,
+      stock: 0,
+    },
+    {
+      name: "Guantes",
+      sku: "DUM003",
+      category: "Accesorios > Guantes",
+      price: 49.99,
+      stock: 0,
+    },
   ];
 
   function getStatus(stock) {
@@ -70,10 +67,33 @@ const Products = () => {
           <p className='text-muted-foreground text-center sm:text-left'>Administra los productos y categorías de la tienda</p>
         </div>
         <div className='flex flex-row gap-1.5 items-center justify-center sm:justify-end'>
-          <Button className="h-12">
-            <Plus />
-            Nuevo producto
-          </Button>
+          <Dialog>
+            <form>
+              <DialogTrigger asChild>
+                <Button className="h-12">
+                  <Plus />
+                  Nuevo producto
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="">
+                <DialogHeader>
+                  <DialogTitle>Agregar nuevo producto</DialogTitle>
+                  <DialogDescription>Complete todos los datos del nuevo producto</DialogDescription>
+                </DialogHeader>
+                <FieldGroup>
+                  <Field>
+                    <FieldLabel htmlFor="name-1">Name</FieldLabel>
+                    <Input id="name-1" name="name" defaultValue="Pedro Duarte" />
+                  </Field>
+                  <Field>
+                    <FieldLabel htmlFor="username-1">Username</FieldLabel>
+                    <Input id="username-1" name="username" defaultValue="@peduarte" />
+                  </Field>
+                </FieldGroup>
+              </DialogContent>
+            </form>
+          </Dialog>
+
           <Button className="h-12 bg-mist-800 text-white !categoriesBtn">
             <FolderOpen />
             Ver categorías
@@ -185,6 +205,21 @@ const Products = () => {
                 );
               })}
             </TableBody>
+            <TableFooter className="h-14">
+              <TableRow>
+                <TableCell colSpan={3} className="text-gray-500">
+                  Mostrando 1 - 3 productos de 24
+                </TableCell>
+                <TableCell colSpan={3}>
+                  <div className='flex justify-end gap-1'>
+                    <Button className="bg-white shadow">Anterior</Button>
+                    <Button className="bg-white shadow">1</Button>
+                    <Button className="bg-white shadow">2</Button>
+                    <Button className="bg-white shadow">Siguiente</Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            </TableFooter>
           </Table>
         </div>
 
