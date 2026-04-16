@@ -9,7 +9,8 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from "@/components/ui/table2";
 import { Separator } from "@/components/ui/separator"
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import {Label} from "@/components/ui/label"
+import { Label } from "@/components/ui/label"
+import { Textarea } from '@/components/ui/textarea'
 
 const Products = () => {
 
@@ -60,7 +61,7 @@ const Products = () => {
 
 
   return (
-    <div className=' bg-gray-100 space-y-6 min-h-screen p-6 rounded-lg'>
+    <div className='space-y-6 min-h-screen p-6 rounded-lg'>
       <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
         <div className='flex flex-col gap-1.5 font-inter justify-center sm:justify-start'>
           <p className='leading-none text-2xl font-bold text-center sm:text-left'>Gestionar productos</p>
@@ -75,21 +76,70 @@ const Products = () => {
                   Nuevo producto
                 </Button>
               </DialogTrigger>
-              <DialogContent className="">
+              <DialogContent className="sm:max-w-4xl">
                 <DialogHeader>
-                  <DialogTitle>Agregar nuevo producto</DialogTitle>
+                  <DialogTitle className="text-2xl font-bold">Agregar nuevo producto</DialogTitle>
                   <DialogDescription>Complete todos los datos del nuevo producto</DialogDescription>
                 </DialogHeader>
-                <FieldGroup>
-                  <Field>
-                    <FieldLabel htmlFor="name-1">Name</FieldLabel>
-                    <Input id="name-1" name="name" defaultValue="Pedro Duarte" />
-                  </Field>
-                  <Field>
-                    <FieldLabel htmlFor="username-1">Username</FieldLabel>
-                    <Input id="username-1" name="username" defaultValue="@peduarte" />
-                  </Field>
-                </FieldGroup>
+                <Separator></Separator>
+                <div className='grid grid-cols-1 sm:grid-cols-3 gap-6 p-2'>
+                  <div className='sm:col-span-2'>
+                    <FieldGroup>
+                      <Field>
+                        <FieldLabel htmlFor="productName">Nombre del producto<span className='text-red-500'>*</span></FieldLabel>
+                        <Input id="productName" name="name" placeholder="Introduzca nombre del producto..." />
+                      </Field>
+                      <Field>
+                        <FieldLabel htmlFor="productCategory">Categoría</FieldLabel>
+                        <Select>
+                          <SelectTrigger id="productCategory" defaultValue="">
+                            <SelectValue placeholder="Elegir categoría" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectGroup>
+                              <SelectItem value="1">Categoría 1</SelectItem>
+                              <SelectItem value="2">Categoría 2</SelectItem>
+                              <SelectItem value="3">Categoría 3</SelectItem>
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+                      </Field>
+                      <Field>
+                        <FieldLabel htmlFor="productDesc">Descripción</FieldLabel>
+                        <Textarea id="productDesc" placeholder="Descripción del producto..."></Textarea>
+                      </Field>
+                      <div className='flex flex-row gap-2'>
+                        <Field>
+                          <FieldLabel htmlFor="productPrice">Precio</FieldLabel>
+                          <Input id="productPrice" type="number"></Input>
+                        </Field>
+                        <Field>
+                          <FieldLabel htmlFor="productStock">Stock</FieldLabel>
+                          <Input id="productStock" type="number"></Input>
+                        </Field>
+                      </div>
+                    </FieldGroup>
+                  </div>
+
+                  <div className="flex items-center justify-center h-full">
+                    <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-64 bg-neutral-secondary-medium border border-dashed border-default-strong rounded-base cursor-pointer hover:bg-neutral-tertiary-medium">
+                      <div className="flex flex-col items-center justify-center text-body pt-5 pb-6">
+                        <svg className="w-8 h-8 mb-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h3a3 3 0 0 0 0-6h-.025a5.56 5.56 0 0 0 .025-.5A5.5 5.5 0 0 0 7.207 9.021C7.137 9.017 7.071 9 7 9a4 4 0 1 0 0 8h2.167M12 19v-9m0 0-2 2m2-2 2 2" /></svg>
+                        <p className="mb-2 text-sm"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                        <p className="text-xs">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
+                      </div>
+                      <input id="dropzone-file" type="file" className="hidden" />
+                    </label>
+                  </div>
+                </div>
+                
+                <DialogFooter>
+                  <DialogClose asChild> 
+                    <Button variant='outline'>Cancelar</Button>
+                  </DialogClose>
+                  <Button>Guardar</Button>
+                </DialogFooter>
+
               </DialogContent>
             </form>
           </Dialog>
@@ -148,7 +198,7 @@ const Products = () => {
         </Card>
       </div>
 
-      <div className="p-6 bg-white rounded-2xl shadow">
+      <div className="p-6 bg-white rounded-2xl shadow border-1">
         <div className='w-full overflow-x-auto scrollbar-thin'>
           <Table className="min-w-[850px]">
             <TableHeader >
