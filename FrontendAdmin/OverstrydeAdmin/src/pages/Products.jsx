@@ -76,7 +76,7 @@ const Products = () => {
                   Nuevo producto
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-4xl">
+              <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle className="text-2xl font-bold">Agregar nuevo producto</DialogTitle>
                   <DialogDescription>Complete todos los datos del nuevo producto</DialogDescription>
