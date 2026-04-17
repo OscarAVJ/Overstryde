@@ -15,11 +15,13 @@ import { ProfilePage } from './pages/ProfilePage'
 import { TermsOfServicePage } from './pages/TermsOfServicePage'
 import { AboutPage } from './pages/AboutPage'
 import { ContactPage } from './pages/ContactPage'
+import { ScrollToTop } from './components/common/ScrollToTop'
 
 function App() {
   return (
     <>
       <Router>
+        <ScrollToTop />
         <Routes>
           <Route element={<MainLayout />}>
             <Route path="/" element={<HomePage />} />
