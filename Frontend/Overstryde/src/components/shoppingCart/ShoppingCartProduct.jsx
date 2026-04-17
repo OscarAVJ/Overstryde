@@ -7,8 +7,8 @@ import { Trash } from 'lucide-react'
 export const ShoppingCartProduct = ({isShoppingCart}) => {
   return (
     <div className='flex flex-col gap-y-2'>
-      <div className={`flex w-full ${isShoppingCart ? 'h-35' : 'h-30'} gap-x-2`}>
-        <img src="https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8Z3ltfGVufDB8fDB8fHww" alt="" className='object-cover w-[40%] rounded-lg' />
+      <div className={`flex w-full ${isShoppingCart ? 'h-35' : 'h-27 w-40'} gap-x-2`}>
+        <img src="https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8Z3ltfGVufDB8fDB8fHww" alt="" className='object-cover w-30 rounded-lg' />
         <div className='flex flex-col w-[60%]'>
           <div className='flex justify-between'>
             <h1 className='font-bold text-lg'>Camisa de compresión</h1>
@@ -27,7 +27,7 @@ export const ShoppingCartProduct = ({isShoppingCart}) => {
           </div>
         </div>
       </div>
-      <Separator />
+      <Separator className={""}/>
     </div>
 
 
