@@ -127,7 +127,7 @@ export function AppSidebar() {
 
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <div className=" sidebarFooter flex flex-row items-center justify-between sm:justify-start p-3 rounded-xl ring-2 ring-gray-700 gap-3 mx-1 group-data-[collapsible=icon]:hidden hover:!bg-gray-800 transition-colors duration-200">
+                        <div className=" sidebarFooter flex flex-row items-center justify-between lg:justify-start p-3 rounded-xl ring-2 ring-gray-700 gap-3 mx-1 group-data-[collapsible=icon]:hidden hover:!bg-gray-800 transition-colors duration-200">
                             <img src="https://thumbs.dreamstime.com/b/foto-de-perfil-un-hombre-cauc%C3%A1sico-sonriente-los-a%C3%B1os-con-gafas-del-joven-y-feliz-en-espect%C3%A1culos-muestra-confianza-liderazgo-196716547.jpg" alt="" className="h-10 w-10 object-cover rounded-full" />
                             <div className="flex flex-col m-0">
                                 <p className="font-bold text-xs">Max Jiménez</p>
