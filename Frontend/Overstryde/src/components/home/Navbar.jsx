@@ -21,13 +21,13 @@ import { navigationData } from "@/data/navData";
 export const Navbar = () => {
     return (
         <nav className="hidden md:block fixed items-center top-0 z-50 w-full h-13 bg-white shadow-2xs">
-            <div className={"m-3 flex justify-between"}>
+            <div className={"m-1 flex justify-between"}>
                 <NavigationMenu>
                     <NavigationMenuList>
                         <NavigationMenuItem>
                             <NavigationMenuTrigger className={"text-base"}>{navigationData[0].category}</NavigationMenuTrigger>
                             <NavigationMenuContent className="p-6">
-                                <div className="grid gap-2 md:w-full md:grid-cols-6  lg:w-150">
+                                <div className="grid gap-2 md:w-full md:grid-cols-4 lg:w-150">
                                     {navigationData[0].items.map(item => <CustomNavigationMenuContent items={item.links} category={item.title} />
                                     )}
                                 </div>
@@ -36,7 +36,7 @@ export const Navbar = () => {
                         <NavigationMenuItem className="hidden md:flex">
                             <NavigationMenuTrigger className={"text-base"}>{navigationData[1].category}</NavigationMenuTrigger>
                             <NavigationMenuContent className="p-6">
-                                <div className="grid gap-2 md:w-full md:grid-cols-6  lg:w-150">
+                                <div className="grid gap-2 md:w-full md:grid-cols-4  lg:w-150">
                                     {navigationData[1].items.map(item => <CustomNavigationMenuContent items={item.links} category={item.title} />
                                     )}
                                 </div>
@@ -45,7 +45,7 @@ export const Navbar = () => {
                         <NavigationMenuItem className="hidden md:flex">
                             <NavigationMenuTrigger className={"text-base"}>{navigationData[2].category}</NavigationMenuTrigger>
                             <NavigationMenuContent className="p-6">
-                                <div className="grid gap-2 md:w-full md:grid-cols-6  lg:w-150">
+                                <div className="grid gap-2 md:w-full md:grid-cols-4  lg:w-150">
                                     {navigationData[2].items.map(item => <CustomNavigationMenuContent items={item.links} category={item.title} />
                                     )}
                                 </div>
