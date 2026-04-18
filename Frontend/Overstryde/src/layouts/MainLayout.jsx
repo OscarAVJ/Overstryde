@@ -9,7 +9,7 @@ export const MainLayout = () => {
         <>
             <Navbar />
             <NavbarMovil/>
-            <main>
+            <main className='bg-gray-100'>
                 <Outlet />
             </main>
             <Footer />

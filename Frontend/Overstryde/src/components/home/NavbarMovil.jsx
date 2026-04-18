@@ -31,7 +31,7 @@ export const NavbarMovil = () => {
                 <h2>OVERSTRYDE</h2>
             </div>
             <div className="flex gap-2 align-middle py-3.5">
-                <NavLink to={"/register"} className={""}>
+                <NavLink to={"/profile"} className={""}>
                     <User size={20} className="transition-transform duration-300 hover:-translate-y-1" />
                 </NavLink>
                 <CustomDrawer  direction={"right"} icon={<ShoppingBag size={20} className="transition-transform duration-300 hover:-translate-y-1 text-black" />} header={<CustomDrawerHeader title={"Carrito de compras"} description={"Todas las prendas que tu escojas estarán aca"} icon={<DrawerClose>

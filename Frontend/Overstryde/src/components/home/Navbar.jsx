@@ -62,7 +62,7 @@ export const Navbar = () => {
                     <NavLink>
                         <Heart size={25} className="transition-transform duration-300 hover:-translate-y-1" />
                     </NavLink>
-                    <NavLink to={"/register"} className={""}>
+                    <NavLink to={"/profile"} className={""}>
                         <User size={25} className="transition-transform duration-300 hover:-translate-y-1" />
                     </NavLink>
                     <CustomDrawer direction={"right"} icon={<ShoppingBag size={30} className="transition-transform duration-300 hover:-translate-y-1 text-black" />} header={<CustomDrawerHeader title={"Carrito de compras"} description={"Todas las prendas que tu escojas estarán aca"} icon={<DrawerClose>
