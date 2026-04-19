@@ -27,11 +27,11 @@ export const NavbarMovil = () => {
             <CustomDrawer direction={"left"} icon={<Menu />} header={<CustomDrawerHeader title={"Explora OVERSTRYD"} description={"Encuentra ropa deportiva diseñada para rendimiento y estilo"} icon={<Heart size={25} className="transition-transform duration-300 hover:-translate-y-1" />
             } />} content={<NavTabs />
             } />
-            <div>
+            <NavLink to={"/"}>
                 <h2>OVERSTRYDE</h2>
-            </div>
+            </NavLink>
             <div className="flex gap-2 align-middle py-3.5">
-                <NavLink to={"/register"} className={""}>
+                <NavLink to={"/profile"} className={""}>
                     <User size={20} className="transition-transform duration-300 hover:-translate-y-1" />
                 </NavLink>
                 <CustomDrawer  direction={"right"} icon={<ShoppingBag size={20} className="transition-transform duration-300 hover:-translate-y-1 text-black" />} header={<CustomDrawerHeader title={"Carrito de compras"} description={"Todas las prendas que tu escojas estarán aca"} icon={<DrawerClose>

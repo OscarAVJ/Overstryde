@@ -244,7 +244,7 @@ export const CheckoutPaymentPage = () => {
                 </form>
             </div>
             <div>
-                <div className="bg-gray-50 rounded-sm p-3 flex-col gap-2 hidden pt-15 md:flex">
+                <div className="bg-gray-100 shadow-sm rounded-sm p-3 flex-col gap-2 hidden pt-15 md:flex">
                     <div className='h-auto max-h-160 overflow-auto'>
                         <ShoppingCartProduct isShoppingCart={false} />
                         <ShoppingCartProduct isShoppingCart={false} />

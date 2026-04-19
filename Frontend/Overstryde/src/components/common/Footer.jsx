@@ -56,7 +56,7 @@ export const Footer = () => {
                         <NavLink className={"hover:underline"}>
                             Devoluciones
                         </NavLink>
-                        <NavLink className={"hover:underline"}>
+                        <NavLink to={"/contact"} className={"hover:underline"}>
                             Contactanos
                         </NavLink>
                         <NavLink className={"hover:underline"}>
