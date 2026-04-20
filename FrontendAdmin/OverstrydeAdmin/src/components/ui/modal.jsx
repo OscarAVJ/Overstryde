@@ -1,149 +1,169 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+
 import { Plus, Trash2 } from "lucide-react";
 
-const NewCategoryModal = ({ open, onOpenChange }) => {
-  const [categoryName, setCategoryName] = useState("");
-  const [type, setType] = useState("");
-  const [description, setDescription] = useState("");
+const CategoryModal = ({
+  open,
+  onOpenChange,
+  onSave,
+  initialData,
+  mode,
+}) => {
+  const isView = mode === "view";
 
-  const [subcategories, setSubcategories] = useState([
-    { name: "", code: "" },
-  ]);
+  const [form, setForm] = useState({
+    name: "",
+    type: "",
+    description: "",
+    children: [],
+  });
 
   useEffect(() => {
-    if (!open) {
-      setCategoryName("");
-      setType("");
-      setDescription("");
-      setSubcategories([{ name: "", code: "" }]);
+    if (open) {
+      if (initialData) {
+        setForm({
+          ...initialData,
+          description: initialData.description || "",
+          children: initialData.children || [],
+        });
+      } else {
+        setForm({
+          name: "",
+          type: "",
+          description: "",
+          children: [],
+        });
+      }
     }
-  }, [open]);
+  }, [open, initialData]);
 
-  const addSubcategory = () => {
-    setSubcategories([...subcategories, { name: "", code: "" }]);
+  const addSub = () => {
+    setForm({
+      ...form,
+      children: [...form.children, { name: "", products: 0 }],
+    });
   };
 
-  const removeSubcategory = (index) => {
-    setSubcategories(subcategories.filter((_, i) => i !== index));
+  const removeSub = (index) => {
+    setForm({
+      ...form,
+      children: form.children.filter((_, i) => i !== index),
+    });
   };
 
-  const handleChange = (index, field, value) => {
-    const updated = [...subcategories];
-    updated[index][field] = value;
-    setSubcategories(updated);
+  const updateSub = (index, value) => {
+    const updated = [...form.children];
+    updated[index].name = value;
+    setForm({ ...form, children: updated });
   };
-
-  const handleSave = () => {
-    const data = {
-      categoryName,
-      type,
-      description,
-      subcategories,
-    };
-
-    console.log("Guardar:", data);
-    onOpenChange(false);
-  };
-
-  if (!open) return null;
 
   return (
-    <div
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-      onClick={() => onOpenChange(false)} 
-    >
-      <div
-        className="bg-white rounded-lg p-6 w-full max-w-3xl"
-        onClick={(e) => e.stopPropagation()} 
-      >
-        <div className="mb-4">
-          <h2 className="text-lg font-bold">Agregar Nueva Categoría</h2>
-          <p className="text-sm text-gray-500">
-            Crea una nueva categoría para organizar tus productos
-          </p>
-        </div>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
 
-        <div className="space-y-6">
+        <DialogHeader>
+          <DialogTitle>
+            {mode === "create" && "Nueva Categoría"}
+            {mode === "edit" && "Editar Categoría"}
+            {mode === "view" && "Detalle"}
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-4">
 
           <div className="grid grid-cols-2 gap-4">
             <Input
-              placeholder="Nombre de la categoría"
-              value={categoryName}
-              onChange={(e) => setCategoryName(e.target.value)}
+              placeholder="Nombre"
+              value={form.name}
+              disabled={isView}
+              onChange={(e) =>
+                setForm({ ...form, name: e.target.value })
+              }
             />
 
             <select
-              className="border rounded-md px-3 py-2 text-sm"
-              value={type}
-              onChange={(e) => setType(e.target.value)}
+              className="border rounded-md px-3 py-2"
+              value={form.type}
+              disabled={isView}
+              onChange={(e) =>
+                setForm({ ...form, type: e.target.value })
+              }
             >
-              <option value="">Seleccionar tipo</option>
               <option value="Principal">Principal</option>
               <option value="Subcategoría">Subcategoría</option>
-              <option value="Variante">Variante</option>
             </select>
           </div>
 
           <Textarea
             placeholder="Descripción..."
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            value={form.description}
+            disabled={isView}
+            onChange={(e) =>
+              setForm({ ...form, description: e.target.value })
+            }
           />
 
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
+          <div>
+            <div className="flex justify-between mb-2">
               <h3 className="font-semibold">Subcategorías</h3>
 
-              <Button onClick={addSubcategory} className="bg-yellow-400 text-white">
-                <Plus size={14} /> Agregar
-              </Button>
+              {!isView && (
+                <Button onClick={addSub} className="bg-yellow-400 text-white">
+                  <Plus size={14} /> Agregar
+                </Button>
+              )}
             </div>
 
-            {subcategories.map((sub, index) => (
-              <div key={index} className="grid grid-cols-2 gap-4 items-center">
+            {form.children.map((sub, i) => (
+              <div key={i} className="flex gap-2 mb-2">
                 <Input
-                  placeholder="Nombre"
                   value={sub.name}
-                  onChange={(e) =>
-                    handleChange(index, "name", e.target.value)
-                  }
+                  disabled={isView}
+                  onChange={(e) => updateSub(i, e.target.value)}
                 />
 
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Código"
-                    value={sub.code}
-                    onChange={(e) =>
-                      handleChange(index, "code", e.target.value)
-                    }
-                  />
-
+                {!isView && (
                   <Trash2
                     className="text-red-500 cursor-pointer"
-                    onClick={() => removeSubcategory(index)}
+                    onClick={() => removeSub(i)}
                   />
-                </div>
+                )}
               </div>
             ))}
           </div>
 
-          <div className="flex justify-end gap-3">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Cancelar
-            </Button>
+        </div>
 
-            <Button onClick={handleSave} className="bg-yellow-400 text-white">
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            {isView ? "Cerrar" : "Cancelar"}
+          </Button>
+
+          {!isView && (
+            <Button
+              onClick={() => onSave(form)}
+              className="bg-yellow-400 text-white"
+            >
               Guardar
             </Button>
-          </div>
+          )}
+        </DialogFooter>
 
-        </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
-export default NewCategoryModal;
+export default CategoryModal;
