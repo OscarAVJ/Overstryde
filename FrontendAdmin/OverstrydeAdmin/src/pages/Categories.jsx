@@ -1,14 +1,11 @@
 import React, { useState } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
-
-import { categories } from "@/data/categoriesData";
+import { useNavigate } from "react-router-dom";
+import { categories as initialData } from "@/data/categoriesData";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-
-import NewCategoryModal from "@/components/ui/modal";
 
 import {
   Table,
@@ -22,31 +19,34 @@ import {
 import {
   Plus,
   Folder,
-  FileText,
+  Layers,
+  Box,
   Pencil,
   Trash2,
   Eye,
   Search,
 } from "lucide-react";
 
+import CategoryModal from "@/components/ui/modal";
+
 const Categories = () => {
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
+  const [data, setData] = useState(initialData);
   const [search, setSearch] = useState("");
 
   const [openModal, setOpenModal] = useState(false);
+  const [mode, setMode] = useState("create");
+  const [selected, setSelected] = useState(null);
 
-  const filter = searchParams.get("type") || "Todas";
+  const totalPrincipales = data.length;
 
-  const totalPrincipales = categories.length;
-
-  const totalSubcategorias = categories.reduce(
+  const totalSubcategorias = data.reduce(
     (acc, cat) => acc + (cat.children?.length || 0),
     0
   );
 
-  const totalProductos = categories.reduce(
+  const totalProductos = data.reduce(
     (acc, cat) =>
       acc +
       cat.products +
@@ -54,54 +54,95 @@ const Categories = () => {
     0
   );
 
-  let filteredData = categories.filter((cat) =>
+  const filteredData = data.filter((cat) =>
     cat.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  if (filter !== "Todas") {
-    filteredData = filteredData.filter((cat) => cat.type === filter);
-  }
-
   const handleDelete = (id) => {
-    console.log("Eliminar categoría:", id);
+    if (!confirm("¿Eliminar categoría?")) return;
+
+    setData((prev) =>
+      prev
+        .map((cat) => ({
+          ...cat,
+          children: cat.children?.filter((sub) => sub.id !== id),
+        }))
+        .filter((cat) => cat.id !== id)
+    );
+  };
+
+  const handleSave = (newData) => {
+    if (newData.id) {
+      setData((prev) =>
+        prev.map((c) => (c.id === newData.id ? newData : c))
+      );
+    } else {
+      setData((prev) => [
+        ...prev,
+        {
+          ...newData,
+          id: Date.now(),
+          products: 0,
+          status: "Activo",
+        },
+      ]);
+    }
+    setOpenModal(false);
+  };
+
+  const handleEdit = (item) => {
+    setSelected(item);
+    setMode("edit");
+    setOpenModal(true);
+  };
+
+  const handleView = (item) => {
+    setSelected(item);
+    setMode("view");
+    setOpenModal(true);
   };
 
   const getTypeBadge = (type) => {
     if (type === "Principal")
-      return <Badge className="bg-blue-100 text-blue-600">{type}</Badge>;
+      return <Badge className="bg-blue-100 text-blue-600 text-xs">{type}</Badge>;
 
     if (type === "Subcategoría")
-      return <Badge className="bg-gray-100 text-gray-600">{type}</Badge>;
+      return <Badge className="bg-gray-100 text-gray-600 text-xs">{type}</Badge>;
 
     if (type === "Variante")
-      return <Badge className="bg-yellow-100 text-yellow-700">{type}</Badge>;
+      return <Badge className="bg-yellow-100 text-yellow-700 text-xs">{type}</Badge>;
   };
 
   return (
-    <div className="p-6 space-y-6 bg-gray-100 min-h-screen">
+    <div className="p-6 space-y-6 min-h-screen">
 
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold">Gestión de Categorías</h1>
           <p className="text-sm text-gray-500">
-            Administra las categorías y subcategorías de productos
+            Administra las categorías y subcategorías
           </p>
         </div>
 
         <Button
-          onClick={() => setOpenModal(true)}
-          className="bg-yellow-400 hover:bg-yellow-500 text-white flex gap-2"
+          onClick={() => {
+            setMode("create");
+            setSelected(null);
+            setOpenModal(true);
+          }}
+          className="bg-yellow-400 text-white flex gap-2"
         >
-          <Plus size={16} />
+          <Plus size={14} />
           Nueva Categoría
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="rounded-xl">
-          <CardContent className="flex items-center gap-4">
-            <div className="p-3 bg-blue-100 rounded-lg">
-              <Folder className="text-blue-500" size={20} />
+      <div className="grid md:grid-cols-3 gap-4">
+
+        <Card>
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="bg-blue-100 p-2 rounded-lg">
+              <Folder className="text-blue-600" size={16} />
             </div>
             <div>
               <p className="text-sm text-gray-500">Categorías Principales</p>
@@ -110,10 +151,10 @@ const Categories = () => {
           </CardContent>
         </Card>
 
-        <Card className="rounded-xl">
-          <CardContent className="flex items-center gap-4">
-            <div className="p-3 bg-green-100 rounded-lg">
-              <Folder className="text-green-500" size={20} />
+        <Card>
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="bg-green-100 p-2 rounded-lg">
+              <Layers className="text-green-600" size={16} />
             </div>
             <div>
               <p className="text-sm text-gray-500">Subcategorías</p>
@@ -122,10 +163,10 @@ const Categories = () => {
           </CardContent>
         </Card>
 
-        <Card className="rounded-xl">
-          <CardContent className="flex items-center gap-4">
-            <div className="p-3 bg-purple-100 rounded-lg">
-              <Folder className="text-purple-500" size={20} />
+        <Card>
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="bg-purple-100 p-2 rounded-lg">
+              <Box className="text-purple-600" size={16} />
             </div>
             <div>
               <p className="text-sm text-gray-500">Productos Totales</p>
@@ -133,37 +174,20 @@ const Categories = () => {
             </div>
           </CardContent>
         </Card>
-      </div>
 
-      <Card className="rounded-xl">
+      </div>
+      <Card>
         <CardContent className="p-0">
 
-          <div className="flex justify-between items-center p-4 border-b">
-            <h2 className="font-semibold">Todas las Categorías</h2>
-
-            <div className="flex gap-2 items-center">
-              <div className="relative">
-                <Search className="absolute left-3 top-2.5 text-gray-400" size={16} />
-                <Input
-                  placeholder="Buscar categorías..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-8 w-64"
-                />
-              </div>
-
-              <select
-                className="border rounded-md px-3 py-2 text-sm"
-                value={filter}
-                onChange={(e) =>
-                  navigate(`/categories?type=${e.target.value}`)
-                }
-              >
-                <option value="Todas">Todas</option>
-                <option value="Principal">Principal</option>
-                <option value="Subcategoría">Subcategoría</option>
-                <option value="Variante">Variante</option>
-              </select>
+          <div className="p-4 border-b">
+            <div className="relative">
+              <Search className="absolute left-3 top-2.5 text-gray-400" size={14} />
+              <Input
+                placeholder="Buscar categorías..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-8"
+              />
             </div>
           </div>
 
@@ -181,9 +205,10 @@ const Categories = () => {
             <TableBody>
               {filteredData.map((cat) => (
                 <React.Fragment key={cat.id}>
+
                   <TableRow>
-                    <TableCell className="flex items-center gap-2">
-                      <Folder className="text-blue-500" size={16} />
+                    <TableCell className="flex gap-2 items-center">
+                      <Folder size={14} className="text-blue-500" />
                       {cat.name}
                     </TableCell>
 
@@ -191,29 +216,69 @@ const Categories = () => {
                     <TableCell>{cat.products}</TableCell>
 
                     <TableCell>
-                      <Badge className="bg-green-100 text-green-600">
-                        Activo
+                      <Badge className="bg-green-100 text-green-600 text-xs">
+                        {cat.status}
                       </Badge>
                     </TableCell>
 
-                    <TableCell className="flex gap-3">
+                    <TableCell className="flex gap-2">
                       <Pencil
-                        size={16}
+                        size={14}
                         className="text-blue-500 cursor-pointer"
-                        onClick={() => navigate(`/categories/edit/${cat.id}`)}
+                        onClick={() => handleEdit(cat)}
                       />
+
                       <Trash2
-                        size={16}
+                        size={14}
                         className="text-red-500 cursor-pointer"
                         onClick={() => handleDelete(cat.id)}
                       />
+
                       <Eye
-                        size={16}
+                        size={14}
                         className="text-gray-500 cursor-pointer"
-                        onClick={() => navigate(`/categories/view/${cat.id}`)}
+                        onClick={() => handleView(cat)}
                       />
                     </TableCell>
                   </TableRow>
+
+                  {cat.children?.map((sub) => (
+                    <TableRow key={sub.id}>
+                      <TableCell className="pl-10 text-gray-600">
+                         {sub.name}
+                      </TableCell>
+
+                      <TableCell>{getTypeBadge(sub.type)}</TableCell>
+                      <TableCell>{sub.products}</TableCell>
+
+                      <TableCell>
+                        <Badge className="bg-green-100 text-green-600 text-xs">
+                          {sub.status}
+                        </Badge>
+                      </TableCell>
+
+                      <TableCell className="flex gap-2">
+                        <Pencil
+                          size={14}
+                          className="text-blue-500 cursor-pointer"
+                          onClick={() => handleEdit(sub)}
+                        />
+
+                        <Trash2
+                          size={14}
+                          className="text-red-500 cursor-pointer"
+                          onClick={() => handleDelete(sub.id)}
+                        />
+
+                        <Eye
+                          size={14}
+                          className="text-gray-500 cursor-pointer"
+                          onClick={() => handleView(sub)}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+
                 </React.Fragment>
               ))}
             </TableBody>
@@ -222,9 +287,12 @@ const Categories = () => {
         </CardContent>
       </Card>
 
-      <NewCategoryModal
+      <CategoryModal
         open={openModal}
         onOpenChange={setOpenModal}
+        onSave={handleSave}
+        initialData={selected}
+        mode={mode}
       />
 
     </div>
