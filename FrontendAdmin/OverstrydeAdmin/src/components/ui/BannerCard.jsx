@@ -12,76 +12,80 @@ export function BannerCard({ banner, onEdit, onDelete }) {
   const [active, setActive] = useState(banner.active)
 
   return (
-    <Card className="flex items-center gap-4 p-4 hover:shadow-md transition">
+    <Card className="!flex !flex-row items-center justify-between gap-6 p-4 hover:shadow-md transition">
 
-      <div className="relative w-40 h-28 shrink-0">
-        
-        <img
-          src={banner.image}
-          alt={banner.title}
-          className="absolute inset-0 w-full h-full object-cover rounded-md"
-        />
+      <div className="flex items-center gap-4 flex-1">
 
-        <div className="absolute inset-0 bg-black/5 rounded-md"></div>
-      </div>
-
-      <CardContent className="flex-1 space-y-2 p-0">
-        
-        <h3 className="text-lg font-semibold">
-          {banner.title}
-        </h3>
-
-        <p className="text-sm text-muted-foreground line-clamp-2">
-          {banner.description}
-        </p>
-
-        <div className="flex gap-2 flex-wrap">
-          {banner.tags?.length > 0 ? (
-            banner.tags.map((tag, i) => (
-              <Badge key={i} variant="secondary">
-                {tag}
-              </Badge>
-            ))
-          ) : (
-            <span className="text-xs text-muted-foreground">
-              Sin etiquetas
-            </span>
-          )}
+        <div className="relative w-44 h-28 shrink-0">
+          <img
+            src={banner.image}
+            alt={banner.title}
+            className="absolute inset-0 w-full h-full object-cover rounded-md"
+          />
+          <div className="absolute inset-0 bg-black/5 rounded-md"></div>
         </div>
 
-      </CardContent>
+        <CardContent className="space-y-2 p-0">
 
-      <div className="flex flex-col items-center gap-2 min-w-[80px]">
-        
-        <Badge variant={active ? "secondary" : "outline"}>
-          {active ? "Activo" : "Inactivo"}
-        </Badge>
+          <h3 className="text-lg font-semibold">
+            {banner.title}
+          </h3>
 
-        <Switch
-          checked={active}
-          onCheckedChange={setActive}
-        />
+          <p className="text-sm text-muted-foreground line-clamp-2 max-w-xl">
+            {banner.description}
+          </p>
+
+          <div className="flex gap-2 flex-wrap">
+            {banner.tags?.length > 0 ? (
+              banner.tags.map((tag, i) => (
+                <Badge key={i} variant="secondary" className="text-xs">
+                  {tag}
+                </Badge>
+              ))
+            ) : (
+              <span className="text-xs text-muted-foreground">
+                Sin etiquetas
+              </span>
+            )}
+          </div>
+
+        </CardContent>
+
       </div>
 
-      <Separator orientation="vertical" className="h-16" />
+      <div className="flex items-center gap-6">
 
-      <div className="flex flex-col gap-2 pr-2">
-        
-        <Button
-          size="icon"
-          variant="ghost"
-          onClick={() => onEdit?.(banner)}
-        >
-          <Pencil className="size-4" />
-        </Button>
+        <div className="flex items-center gap-2">
+          <Badge className="bg-cyan-100 text-cyan-700">
+            {active ? "Activo" : "Inactivo"}
+          </Badge>
 
-        <Button
-          size="icon"
-          variant="ghost"
-          onClick={() => onDelete?.(banner.id)}
-        >
-          <Trash2 className="size-4 text-red-500" />
-        </Button>
+          <Switch
+            checked={active}
+            onCheckedChange={setActive}
+            className="data-[state=checked]:bg-yellow-400"
+          />
+        </div>
+
+        <Separator orientation="vertical" className="h-16" />
+
+        <div className="flex flex-col gap-3">
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={() => onEdit?.(banner)}
+          >
+            <Pencil className="size-4" />
+          </Button>
+
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={() => onDelete?.(banner.id)}
+          >
+            <Trash2 className="size-4 text-red-500" />
+          </Button>
+        </div>
 
       </div>
 
