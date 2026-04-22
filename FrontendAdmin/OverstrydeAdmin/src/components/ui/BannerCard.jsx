@@ -9,14 +9,14 @@ import { Pencil, Trash2 } from "lucide-react"
 
 export function BannerCard({ banner, onEdit, onDelete }) {
 
-  const [active, setActive] = useState(banner.active)
+  const [active, setActive] = useState(banner?.active ?? false)
 
   return (
-    <Card className="!flex !flex-row items-center justify-between gap-6 p-4 hover:shadow-md transition">
+    <Card className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 p-4 hover:shadow-md transition">
 
-      <div className="flex items-center gap-4 flex-1">
+      <div className="flex flex-col sm:flex-row gap-4 flex-1">
 
-        <div className="relative w-44 h-28 shrink-0">
+        <div className="relative w-full sm:w-40 md:w-44 h-40 sm:h-28 shrink-0">
           <img
             src={banner.image}
             alt={banner.title}
@@ -27,11 +27,11 @@ export function BannerCard({ banner, onEdit, onDelete }) {
 
         <CardContent className="space-y-2 p-0">
 
-          <h3 className="text-lg font-semibold">
+          <h3 className="text-base md:text-lg font-semibold">
             {banner.title}
           </h3>
 
-          <p className="text-sm text-muted-foreground line-clamp-2 max-w-xl">
+          <p className="text-xs md:text-sm text-muted-foreground line-clamp-2">
             {banner.description}
           </p>
 
@@ -53,10 +53,10 @@ export function BannerCard({ banner, onEdit, onDelete }) {
 
       </div>
 
-      <div className="flex items-center gap-6">
+      <div className="flex flex-row md:flex-row items-center justify-between md:justify-end gap-4 md:gap-6">
 
         <div className="flex items-center gap-2">
-          <Badge className="bg-cyan-100 text-cyan-700">
+          <Badge className="bg-cyan-100 text-cyan-700 text-xs md:text-sm">
             {active ? "Activo" : "Inactivo"}
           </Badge>
 
@@ -67,9 +67,12 @@ export function BannerCard({ banner, onEdit, onDelete }) {
           />
         </div>
 
-        <Separator orientation="vertical" className="h-16" />
+        <Separator
+          orientation="vertical"
+          className="hidden md:block h-12"
+        />
 
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-row md:flex-col gap-2 md:gap-3">
           <Button
             size="icon"
             variant="ghost"
