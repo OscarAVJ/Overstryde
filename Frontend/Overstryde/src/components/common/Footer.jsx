@@ -36,7 +36,7 @@ export const Footer = () => {
                         <h3 className="uppercase font-extrabold ">
                             Explora
                         </h3>
-                        <NavLink className={"hover:underline"}>
+                        <NavLink to={"/aboutUs"} className={"hover:underline"}>
                             Nuestra historia
                         </NavLink>
                         <NavLink className={"hover:underline"}>
@@ -59,7 +59,7 @@ export const Footer = () => {
                         <NavLink to={"/contact"} className={"hover:underline"}>
                             Contactanos
                         </NavLink>
-                        <NavLink className={"hover:underline"}>
+                        <NavLink to={"/termsOfService"} className={"hover:underline"}>
                             Terminos y condiciones
                         </NavLink>
                     </div>

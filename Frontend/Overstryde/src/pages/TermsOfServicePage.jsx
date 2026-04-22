@@ -2,6 +2,8 @@ import React from 'react'
 
 export const TermsOfServicePage = () => {
   return (
-    <div>TermsOfServicePage</div>
+    <div className='py-14 mx-4'>
+        Terminos
+    </div>
   )
 }
