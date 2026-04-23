@@ -31,7 +31,7 @@ export function AppSidebar() {
     return (
         <Sidebar collapsible="icon" className="border-r data-[collapsible=icon]:flex data-[collapsible=icon]:justify-center">
             <SidebarHeader className=" flex flex-row items-center">
-                <img src="/overstryde-isotipo-negro.jpeg" alt="" className="h-10 w-10 ml-1 group-data-[collapsible=icon]:ml-0 " />
+                <img src="/overstryde-isotipo-blanco.png" alt="" className="h-10 w-10 ml-1 group-data-[collapsible=icon]:ml-0 " />
                 <span className="p-6 text-xl font-semibold sidebarTitle group-data-[collapsible=icon]:hidden m-0 justify-start !font-inter">
                     OVERSTRYD
                 </span>
@@ -140,7 +140,9 @@ export function AppSidebar() {
                         <DropdownMenuGroup>
                             <DropdownMenuItem>
                                 <LogOut />
-                                Cerrar sesión
+                                <Link to="/auth/login">
+                                    Cerrar sesión
+                                </Link>
                             </DropdownMenuItem>
                         </DropdownMenuGroup>
                     </DropdownMenuContent>
