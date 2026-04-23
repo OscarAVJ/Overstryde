@@ -45,10 +45,10 @@ export function AppSidebar() {
                                 <SidebarMenuButton
                                     asChild
                                     isActive={location.pathname === "/"}
-                                    className="h-12 data-[active=true]:text-yellow-400 "
+                                    className="h-12 data-[active=true]:text-yellow-400 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center "
                                 >
                                     <Link to={"/"}>
-                                        <LayoutDashboard className="mr-2 !w-6 !h-6 shrink-0"></LayoutDashboard>
+                                        <LayoutDashboard className=" !w-6 !h-6 "></LayoutDashboard>
                                         <span className="group-data-[collapsible=icon]:hidden font-inter">
                                             Dashboard
                                         </span>
@@ -60,10 +60,10 @@ export function AppSidebar() {
                                 <SidebarMenuButton
                                     asChild
                                     isActive={location.pathname === "/orders"}
-                                    className="h-12 data-[active=true]:text-yellow-400"
+                                    className="h-12 data-[active=true]:text-yellow-400 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center"
                                 >
                                     <Link to={"/orders"} >
-                                        <ClipboardList className="mr-2 !w-6 !h-6" />
+                                        <ClipboardList className=" !w-6 !h-6" />
                                         <span className="group-data-[collapsible=icon]:hidden font-inter">
                                             Órdenes
                                         </span>
@@ -75,10 +75,10 @@ export function AppSidebar() {
                                 <SidebarMenuButton
                                     asChild
                                     isActive={location.pathname === "/products"}
-                                    className="h-12 data-[active=true]:text-yellow-400"
+                                    className="h-12 data-[active=true]:text-yellow-400 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center"
                                 >
                                     <Link to={"/products"}>
-                                        <PackageSearch className="mr-2 !w-6 !h-6" />
+                                        <PackageSearch className=" !w-6 !h-6" />
                                         <span className="group-data-[collapsible=icon]:hidden font-inter">
                                             Productos
                                         </span>
@@ -90,10 +90,10 @@ export function AppSidebar() {
                                 <SidebarMenuButton
                                     asChild
                                     isActive={location.pathname === "/categories"}
-                                    className="h-12 data-[active=true]:text-yellow-400"
+                                    className="h-12 data-[active=true]:text-yellow-400 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center"
                                 >
                                     <Link to={"/categories"}>
-                                        <FolderOpen className="mr-2 !w-6 !h-6" />
+                                        <FolderOpen className=" !w-6 !h-6" />
                                         <span className="group-data-[collapsible=icon]:hidden font-inter">
                                             Categorías
                                         </span>
@@ -105,10 +105,10 @@ export function AppSidebar() {
                                 <SidebarMenuButton
                                     asChild
                                     isActive={location.pathname === "/banners"}
-                                    className="h-12 data-[active=true]:text-yellow-400"
+                                    className="h-12 data-[active=true]:text-yellow-400 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center"
                                 >
                                     <Link to={"/banners"}>
-                                        <Image className="mr-2 !w-6 !h-6 group-data-[collapsible=icon]:mr-0" />
+                                        <Image className="\ !w-6 !h-6 group-data-[collapsible=icon]:mr-0" />
                                         <span className="group-data-[collapsible=icon]:hidden font-inter">
                                             Banners
                                         </span>
