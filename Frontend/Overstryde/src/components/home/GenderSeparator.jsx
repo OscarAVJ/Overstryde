@@ -1,6 +1,7 @@
 import React from 'react'
 import { Button } from '../ui/button'
-
+import {Link} from "react-router-dom"
+ 
 export const GenderSeparator = ({image, text,subText, path}) => {
     return (
         <div className="relative h-70 w-full overflow-hidden rounded-2xl">
@@ -18,7 +19,9 @@ export const GenderSeparator = ({image, text,subText, path}) => {
                     <p className="text-sm md:text-base text-yellow-300 ">
                         {subText}
                     </p>
-                    <Button size="lg" className={" cursor-pointer bg-transparent border-gray-400 hover:-translate-y-0.5 border-3 text-white"}>Explorar más</Button>
+                    <Button asChild size="lg" className={" cursor-pointer bg-transparent border-gray-400 hover:-translate-y-0.5 border-3 text-white"}>
+                        <Link to={path}>Explorar más</Link>
+                    </Button>
                 </div>
             </div>
 
