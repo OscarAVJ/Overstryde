@@ -74,8 +74,8 @@ export const HomePage = () => {
         <CarouselNext className="right-6" />
       </Carousel>
       <div className="flex flex-col md:flex-row pt-3 gap-2">
-        <GenderSeparator image={genders.men} text={"Para el"} subText={"Ropa masculina"} path={"/men"} />
-        <GenderSeparator image={genders.women} text={"Para ella"} subText={"Ropa femenina"} path={"/men"} />
+        <GenderSeparator image={genders.men} text={"Para el"} subText={"Ropa masculina"} path={`/products?category=${encodeURIComponent("Hombres")}`} />
+        <GenderSeparator image={genders.women} text={"Para ella"} subText={"Ropa femenina"} path={`/products?category=${encodeURIComponent("Mujeres")}`} />
       </div>
       <div>
       </div>

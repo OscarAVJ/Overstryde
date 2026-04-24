@@ -81,10 +81,12 @@ export const LogInPage = () => {
 
             <div className="text-right">
               <button
+                
                 type="button"
                 className="text-sm text-yellow-500 font-medium hover:underline"
               >
-                ¿Olvidaste tu contraseña?
+                <NavLink to="/recoverAccount">¿Olvidaste tu contraseña?</NavLink>
+                
               </button>
             </div>
 
