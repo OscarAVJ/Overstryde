@@ -220,10 +220,12 @@ const Orders = () => {
                   </div>
                 </CardContent>
                 <CardFooter>
+                  {/*
                   <Button className="w-full font-bold">
                     <Eye />
                     Ver
                   </Button>
+                  */}
                 </CardFooter>
               </Card>
             )

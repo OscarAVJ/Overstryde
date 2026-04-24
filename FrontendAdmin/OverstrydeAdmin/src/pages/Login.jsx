@@ -11,7 +11,8 @@ const Login = () => {
             <div className='grid grid-cols-1 sm:grid-cols-2'>
                 <div className='flex justify-center items-center'>
                     <div className='hidden sm:block'>
-                        {/*<img src="/overstryde-isotipo-blanco.jpeg" alt="" className='h-10 w-40' />*/}
+                        <img src="/overstryde-blanco.png" alt="" className='lg:h-40 lg:w-150' />
+                        
                     </div>
                 </div>
                 <div className=' backdrop-blur-sm w-full sm:min-h-screen text-white'>
