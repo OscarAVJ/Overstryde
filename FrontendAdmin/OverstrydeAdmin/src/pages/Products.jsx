@@ -11,10 +11,13 @@ import { Separator } from "@/components/ui/separator"
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Textarea } from '@/components/ui/textarea'
+import useProducts from '@/hooks/useProducts'
 
 const Products = () => {
 
-  const products = [
+  const {products} = useProducts();
+
+  {/*const products = [
     {
       name: "Camiseta Deportiva",
       sku: "TSH001",
@@ -50,7 +53,7 @@ const Products = () => {
       price: 49.99,
       stock: 0,
     },
-  ];
+  ];*/}
 
   function getStatus(stock) {
     if (stock === 0) return { label: "Sin stock", variant: "destructive" };
@@ -214,30 +217,30 @@ const Products = () => {
 
             <TableBody>
               {products.map((product, index) => {
-                const status = getStatus(product.stock);
+                const status = getStatus(product.variants[0].stock);
 
                 return (
                   <TableRow key={index}>
                     <TableCell>
                       <div className='flex flex-row gap-4 items-center'>
                         <div>
-                          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRAJV9_rVLHwEzDUX9qb_rtro45QEioa1w25or8foB71YkaPZx5DpoExwBMt1ps_xho7puazbZEvR2Doa6JKlpkBTM&s&ec=121630504" alt="" className='h-13 w-13' />
+                          <img src={product.images[0].path} alt="" className='h-13 w-13' />
                         </div>
                         <div className="flex flex-col">
                           <span className="font-medium">{product.name}</span>
                           <span className="text-sm text-muted-foreground">
-                            SKU: {product.sku}
+                            Tipo: {product.product_type}
                           </span>
                         </div>
                       </div>
 
                     </TableCell>
 
-                    <TableCell>{product.category}</TableCell>
+                    <TableCell>{product.categories[0]}</TableCell>
 
                     <TableCell>${product.price.toFixed(2)}</TableCell>
 
-                    <TableCell>{product.stock} unidades</TableCell>
+                    <TableCell>{product.variants[0].stock} unidades</TableCell>
 
                     <TableCell>
                       <Badge variant={status.variant}>{status.label}</Badge>
