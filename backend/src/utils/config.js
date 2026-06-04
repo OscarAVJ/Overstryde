@@ -10,7 +10,7 @@ export const config = {
   },
   JWT:{
     secret: process.env.JWT_SECRET
-  },
+  },    
   email:{
     emailUser: process.env.USER_EMAIL,
     emailPass: process.env.USER_EMAIL_PASS
