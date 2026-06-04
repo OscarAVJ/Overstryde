@@ -20,7 +20,7 @@ import { navigationData } from "@/data/navData";
 
 export const Navbar = () => {
     return (
-        <nav className="hidden md:block fixed items-center top-0 z-50 w-full h-13 bg-white shadow-2xs">
+        <nav className="hidden md:block sticky items-center top-0 z-50 w-full h-13 bg-white shadow-2xs">
             <div className={"m-1 flex justify-between"}>
                 <NavigationMenu>
                     <NavigationMenuList>
