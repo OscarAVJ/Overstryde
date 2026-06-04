@@ -16,7 +16,7 @@ controller.getFavorites = async (req, res) => {
 //GET BY CUSTOMER ID
 controller.getByCustomerId = async (req, res) => {
     try {
-        const customerExists = favoritesModel.findOne({ customerId: req.params.id });
+        const customerExists = await favoritesModel.findOne({ customerId: req.params.id });
         if (!customerExists) {
             return res.status(404).json({ info: "The list of favorites from this customer wasn't found" })
         }

@@ -8,12 +8,16 @@ const favoritesModel = new Schema({
     },
     products:[
         {
+            _id: false,
             productId:{
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "products"
             }
-        },
+        }
     ]
+}, {
+    timestamps: true,
+    strict: false
 })
 
 export default model("favorites", favoritesModel);
