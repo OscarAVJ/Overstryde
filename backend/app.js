@@ -4,6 +4,7 @@ import cors from "cors"
 import productRouter from "./src/modules/products/product.route.js"
 import reviewsRoute from "./src/modules/productReviews/productReviews.route.js"
 import limiter from "./src/middlewares/rateLimit.js"
+import favoritesRoute from "./src/modules/favorites/favorites.route.js"
 const app = express()
 app.use(limiter)
 
@@ -16,5 +17,6 @@ app.use(cookieParser())
 
 app.use("/api/products", productRouter)
 app.use("/api/productReviews", reviewsRoute)
+app.use("/api/favorites", favoritesRoute)
 
 export default app
