@@ -1,6 +1,7 @@
 import cookieParser from "cookie-parser"
 import express from "express"
 import cors from "cors"
+import productRouter from "./src/modules/products/product.route.js"
 import reviewsRoute from "./src/modules/productReviews/productReviews.route.js"
 import limiter from "./src/middlewares/rateLimit.js"
 const app = express()
@@ -13,6 +14,7 @@ app.use(cors({
 app.use(express.json())
 app.use(cookieParser())
 
+app.use("/api/products", productRouter)
 app.use("/api/productReviews", reviewsRoute)
 
 export default app
