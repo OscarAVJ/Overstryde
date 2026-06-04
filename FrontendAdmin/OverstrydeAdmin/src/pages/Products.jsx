@@ -214,11 +214,17 @@ const Products = () => {
                             <FieldLabel htmlFor="productDesc">Descripción</FieldLabel>
                             <Textarea id="productDesc" placeholder="Descripción del producto..."></Textarea>
                           </Field>
+                          <Field>
+                            <FieldLabel htmlFor="productPrice">Precio</FieldLabel>
+                            <Input id="productPrice" type="number" placeholder="$0.00"></Input>
+                          </Field>
                           <div className='flex flex-row gap-2'>
-                            <Field>
-                              <FieldLabel htmlFor="productPrice">Precio</FieldLabel>
-                              <Input id="productPrice" type="number" placeholder="$0.00"></Input>
-                            </Field>
+                            <FieldLabel>Variantes</FieldLabel>
+                            <Button className="bg-gray-300 text-black h-6 text-sm"><PlusIcon className='h-4 w-4' />Añadir variante</Button>
+
+                          </div>
+                          <div className='flex flex-row gap-2'>
+
                             <Field>
                               <FieldLabel htmlFor="productStock">Stock</FieldLabel>
                               <Input id="productStock" type="number" placeholder="0"></Input>
