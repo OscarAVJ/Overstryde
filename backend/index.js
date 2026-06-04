@@ -1,5 +1,5 @@
 import app from "./app.js";
-import { config } from "./src/config.js";
+import { config } from "./src/utils/config.js";
 import "./database.js"
 
 function main (){

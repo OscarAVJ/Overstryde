@@ -1,6 +1,7 @@
 import cookieParser from "cookie-parser"
 import express from "express"
 import cors from "cors"
+import productRouter from "./src/modules/products/product.route.js"
 const app = express()
 
 app.use(cors({
@@ -10,4 +11,5 @@ app.use(cors({
 app.use(express.json())
 app.use(cookieParser())
 
+app.use("/api/products", productRouter)
 export default app
