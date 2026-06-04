@@ -3,6 +3,8 @@ import express from "express"
 import cors from "cors"
 import productRouter from "./src/modules/products/product.route.js"
 import reviewsRoute from "./src/modules/productReviews/productReviews.route.js"
+import cartRouter from "./src/modules/cart/cart.route.js"
+import ordersRouter from "./src/modules/orders/orders.route.js"
 import limiter from "./src/middlewares/rateLimit.js"
 const app = express()
 app.use(limiter)
@@ -16,5 +18,7 @@ app.use(cookieParser())
 
 app.use("/api/products", productRouter)
 app.use("/api/productReviews", reviewsRoute)
+app.use("/api/cart", cartRouter)
+app.use("/api/orders", ordersRouter)
 
 export default app

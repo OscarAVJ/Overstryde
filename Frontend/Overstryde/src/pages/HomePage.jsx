@@ -43,7 +43,7 @@ export const HomePage = () => {
   const accesoriesData = products.filter((item) => item.category === "Accesorios")
 
   return (
-    <section className="bg-gray-100 w-full px-4 md:px-6 py-10">
+    <section className="bg-gray-100 w-full px-4 py-2">
       <Carousel className="w-full mt-5">
         <CarouselContent>
           {slides.map((slide) => (
