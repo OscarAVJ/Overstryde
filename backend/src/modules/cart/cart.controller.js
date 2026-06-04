@@ -1,6 +1,7 @@
 import { isValidObjectId } from "mongoose";
 import cartModel from "./models/cart.model.js";
 import productsModel from "../products/models/products.model.js";
+import ordersModel from "../orders/models/orders.model.js";
 
 const cartController = {};
 
@@ -35,12 +36,29 @@ cartController.getCartById = async (req, res) => {
   }
 };
 
+cartController.getCartsByCustomerId = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({ message: "Invalid cart id" });
+    }
+
+    const cart = await cartModel
+      .find({customerId: id})
+      .populate("products.productId", "name price images");
+    if (!cart) {
+      return res.status(404).json({ message: "Cart not found" });
+    }
+
+    return res.status(200).json(cart);
+  } catch (error) {
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 cartController.insertCart = async (req, res) => {
   try {
     const { customerId, products, status } = req.body;
-    if (!isValidObjectId(customerId)) {
-      return res.status(400).json({ message: "Invalid customer id" });
-    }
 
     if (!Array.isArray(products) || products.length === 0) {
       return res
@@ -52,10 +70,6 @@ cartController.insertCart = async (req, res) => {
     const newProducts = [];
 
     for (const element of products) {
-      if (!isValidObjectId(element.productId)) {
-        return res.status(400).json({ message: "Invalid product id" });
-      }
-
       const quantity = Number(element.quantity);
       if (!Number.isInteger(quantity) || quantity < 1) {
         return res
@@ -91,6 +105,7 @@ cartController.insertCart = async (req, res) => {
       cart: savedCart,
     });
   } catch (error) {
+    console.error(error)
     return res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -174,7 +189,6 @@ cartController.deleteCart = async (req, res) => {
     if (!deletedCart) {
       return res.status(404).json({ message: "Cart not found" });
     }
-
     return res.status(200).json({ message: "Cart deleted successfully" });
   } catch (error) {
     return res.status(500).json({ message: "Internal server error" });

@@ -14,4 +14,8 @@ cartRouter
   .put(cartController.updateCart)
   .delete(cartController.deleteCart);
 
+cartRouter
+  .route("/customer/:id")
+  .get(cartController.getCartsByCustomerId)
+
 export default cartRouter;
