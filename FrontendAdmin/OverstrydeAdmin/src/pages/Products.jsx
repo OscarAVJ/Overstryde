@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Plus, FolderOpen, Search, Pencil, Trash2, PlusIcon, Dot, X } from 'lucide-react'
+import { Plus, FolderOpen, Search, Pencil, Trash2, PlusIcon, Dot, X, ChevronDownIcon } from 'lucide-react'
 import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card2"
 import { Field, FieldDescription, FieldLabel, FieldGroup } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
@@ -14,14 +14,31 @@ import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Command, CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
-import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "@/components/ui/item"
+import { Item, ItemActions, ItemContent, ItemDescription, ItemGroup, ItemMedia, ItemTitle } from "@/components/ui/item"
 import useProducts from '@/hooks/useProducts'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { format } from "date-fns"
+import { Calendar } from '@/components/ui/calendar'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { es } from 'date-fns/locale'
+
 
 const Products = () => {
 
+  //HOOK PERSONALIZADO DE PRODUCTOS
   const { products } = useProducts();
+
+  //DIALOG PARA ESCOGER SUBCATEGORIAS
   const [openCategories, setOpenCategories] = useState(false)
+
+  //ARRAY PARA EL MOMENTO DE INSERTAR UN PRODUCTO (categorías escogidas)
   const [selectedCategories, setSelectedCategories] = useState([])
+
+  //DIALOG DE EDITAR O AÑADIR VARIANTE DE ROPA
+  const [openVariantEdit, setOpenVariantEdit] = useState(false)
+
+  //FECHA VENCIMIENTO ALIMENTOS
+  const [dueDate, setDueDate] = useState(new Date());
 
   const selected = [
     {
@@ -87,6 +104,7 @@ const Products = () => {
                 <Tabs>
                   <TabsList>
                     <TabsTrigger value="general">Producto general</TabsTrigger>
+                    <TabsTrigger value="food">Producto alimenticio</TabsTrigger>
                     <TabsTrigger value="clothes">Ropa</TabsTrigger>
                   </TabsList>
 
@@ -220,11 +238,108 @@ const Products = () => {
                           </Field>
                           <div className='flex flex-row gap-2'>
                             <FieldLabel>Variantes</FieldLabel>
-                            <Button className="bg-gray-300 text-black h-6 text-sm"><PlusIcon className='h-4 w-4' />Añadir variante</Button>
-
+                            <Dialog open={openVariantEdit} onOpenChange={setOpenVariantEdit}>
+                              <form>
+                                <DialogTrigger asChild>
+                                  <Button className="bg-gray-300 text-black h-6 text-sm"><PlusIcon className='h-4 w-4' />Añadir variante</Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                  <DialogHeader>
+                                    <DialogTitle className="hidden">
+                                      Variante de producto
+                                    </DialogTitle>
+                                    <DialogDescription>
+                                      Añadir una variante de la prenda.
+                                    </DialogDescription>
+                                  </DialogHeader>
+                                  <FieldGroup>
+                                    <div className='flex flex-row gap-2'>
+                                      <Field>
+                                        <FieldLabel htmlFor="variantColorText">Color</FieldLabel>
+                                        <Input id="variantColorText" type="text" placeholder="'Rojo'"></Input>
+                                      </Field>
+                                      <Field>
+                                        <FieldLabel htmlFor="variantColorHex">Definir color</FieldLabel>
+                                        <Input id="variantColorHex" type="color" placeholder="0"></Input>
+                                      </Field>
+                                    </div>
+                                    <div className='flex flex-row gap-2'>
+                                      <Field>
+                                        <FieldLabel htmlFor="variantSize">Talla</FieldLabel>
+                                        <Input id="variantSize" type="text" placeholder="'M'"></Input>
+                                      </Field>
+                                      <Field>
+                                        <FieldLabel htmlFor="variantStock">Stock</FieldLabel>
+                                        <Input id="variantStock" type="number" placeholder="0"></Input>
+                                      </Field>
+                                    </div>
+                                  </FieldGroup>
+                                </DialogContent>
+                              </form>
+                            </Dialog>
                           </div>
-                          <div className='flex flex-row gap-2'>
+                          <ScrollArea className="w-full h-35 rounded-sm border p-3">
+                            <div className='flex flex-col gap-4'>
+                              <ItemGroup className="gap-1">
+                                <Item variant='outline' role="listitem">
+                                  <ItemMedia variant='image'>
+                                    <div className='h-6 w-6 bg-red-500'></div>
+                                  </ItemMedia>
+                                  <ItemContent>
+                                    <ItemTitle>Color "Rojo"</ItemTitle>
+                                    <ItemDescription>Stock: 10 | Talla: L</ItemDescription>
+                                  </ItemContent>
+                                  <ItemActions>
+                                    <button onClick={() => setOpenVariantEdit(true)}>
+                                      <Pencil className="size-4 cursor-pointer" />
+                                    </button>
+                                    <button>
+                                      <X className="size-4 cursor-pointer" />
+                                    </button>
+                                  </ItemActions>
+                                </Item>
 
+                                <Item variant='outline' role="listitem">
+                                  <ItemMedia variant='image'>
+                                    <div className='h-6 w-6 bg-gray-500'></div>
+                                  </ItemMedia>
+                                  <ItemContent>
+                                    <ItemTitle>Color "Gris"</ItemTitle>
+                                    <ItemDescription>Stock: 10 | Talla: L</ItemDescription>
+                                  </ItemContent>
+                                  <ItemActions>
+                                    <button onClick={() => setOpenVariantEdit(true)}>
+                                      <Pencil className="size-4 cursor-pointer" />
+                                    </button>
+                                    <button>
+                                      <X className="size-4 cursor-pointer" />
+                                    </button>
+                                  </ItemActions>
+                                </Item>
+
+                                <Item variant='outline' role="listitem">
+                                  <ItemMedia variant='image'>
+                                    <div className='h-6 w-6 bg-black'></div>
+                                  </ItemMedia>
+                                  <ItemContent>
+                                    <ItemTitle>Color "Negro"</ItemTitle>
+                                    <ItemDescription>Stock: 10 | Talla: L</ItemDescription>
+                                  </ItemContent>
+                                  <ItemActions>
+                                    <button onClick={() => setOpenVariantEdit(true)}>
+                                      <Pencil className="size-4 cursor-pointer" />
+                                    </button>
+                                    <button>
+                                      <X className="size-4 cursor-pointer" />
+                                    </button>
+                                  </ItemActions>
+                                </Item>
+
+                              </ItemGroup>
+
+                            </div>
+                          </ScrollArea>
+                          <div className='flex flex-row gap-2'>
                             <Field>
                               <FieldLabel htmlFor="productStock">Stock</FieldLabel>
                               <Input id="productStock" type="number" placeholder="0"></Input>
@@ -245,6 +360,105 @@ const Products = () => {
                       </div>
                     </div>
                   </TabsContent>
+
+                  {/*TAB PARA PRODUCTOS ALIMENTICIOS */}
+                  <TabsContent value="food">
+                    <div className='grid grid-cols-1 sm:grid-cols-3 gap-6 p-2'>
+                      <div className='sm:col-span-2'>
+                        <FieldGroup>
+                          <Field>
+                            <FieldLabel htmlFor="productName">Nombre del producto<span className='text-red-500'>*</span></FieldLabel>
+                            <Input id="productName" name="name" placeholder="Introduzca nombre del producto..." />
+                          </Field>
+                          <div className='flex flex-row gap-2'>
+                            <FieldLabel>Categorías</FieldLabel>
+                            <Button className="bg-gray-300 text-black h-6 text-sm" onClick={() => setOpenCategories(true)}><PlusIcon className='h-4 w-4' />Añadir</Button>
+                            <CommandDialog open={openCategories} onOpenChange={setOpenCategories}>
+                              <Command>
+                                <CommandInput placeholder="Buscar categoría por nombre." />
+                                <CommandList>
+                                  <CommandEmpty>No se encontraron resultados.</CommandEmpty>
+                                  {categories.map((category, index) => (
+                                    <CommandGroup heading={category.name} key={index}>
+                                      {category.subcategories.map((sub, index) => (
+                                        <CommandItem key={index}>{sub}</CommandItem>
+                                      ))}
+                                    </CommandGroup>
+                                  ))}
+                                </CommandList>
+                              </Command>
+                            </CommandDialog>
+                          </div>
+                          <div className='flex flex-col p-1 gap-1 rounded-md'>
+                            {selected.map((sel, index) => (
+                              <Item variant='outline' size='sm' key={index}>
+                                <ItemMedia>
+                                  <Dot />
+                                </ItemMedia>
+                                <ItemContent className="flex justify-center items-start">
+                                  <ItemTitle >{sel.category + " > " + sel.sub}</ItemTitle>
+                                </ItemContent>
+                                <ItemActions>
+                                  <button>
+                                    <X className="size-4 cursor-pointer" />
+                                  </button>
+                                </ItemActions>
+                              </Item>
+                            ))}
+                          </div>
+                          <Field>
+                            <FieldLabel htmlFor="productDesc">Descripción</FieldLabel>
+                            <Textarea id="productDesc" placeholder="Descripción del producto..."></Textarea>
+                          </Field>
+                          <div className='flex flex-row gap-2'>
+                            <Field>
+                              <FieldLabel htmlFor="productPrice">Precio</FieldLabel>
+                              <Input id="productPrice" type="number" placeholder="$0.00"></Input>
+                            </Field>
+                            <Field>
+                              <FieldLabel htmlFor="productStock">Stock</FieldLabel>
+                              <Input id="productStock" type="number" placeholder="0"></Input>
+                            </Field>
+                            <Field>
+                              <FieldLabel>Fecha vencimiento</FieldLabel>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <Button
+                                    variant='outline'
+                                    data-empty={!dueDate}
+                                    className="justify-between text-left font-normal data-[empty=true]:text-muted-foreground"
+                                  >
+                                    {dueDate ? format(dueDate, "PPP") : <span>Escoger fecha</span>}
+                                    <ChevronDownIcon />
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                  <Calendar
+                                    mode="single"
+                                    selected={dueDate}
+                                    onSelect={setDueDate}
+                                    locale={es}
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                            </Field>
+                          </div>
+                        </FieldGroup>
+                      </div>
+
+                      <div className="flex items-center justify-center h-full">
+                        <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-64 bg-neutral-secondary-medium border border-dashed border-default-strong rounded-base cursor-pointer hover:bg-neutral-tertiary-medium">
+                          <div className="flex flex-col items-center justify-center text-body pt-5 pb-6">
+                            <svg className="w-8 h-8 mb-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h3a3 3 0 0 0 0-6h-.025a5.56 5.56 0 0 0 .025-.5A5.5 5.5 0 0 0 7.207 9.021C7.137 9.017 7.071 9 7 9a4 4 0 1 0 0 8h2.167M12 19v-9m0 0-2 2m2-2 2 2" /></svg>
+                            <p className="mb-2 text-sm"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                            <p className="text-xs">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
+                          </div>
+                          <input id="dropzone-file" type="file" className="hidden" />
+                        </label>
+                      </div>
+                    </div>
+                  </TabsContent>
+
                 </Tabs>
 
 
