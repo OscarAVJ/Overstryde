@@ -9,6 +9,8 @@ import limiter from "./src/middlewares/rateLimit.js"
 import favoritesRoute from "./src/modules/favorites/favorites.route.js"
 import customerRoutes from "./src/modules/customers/customer.route.js"
 import registerCustomersRoutes from "./src/modules/customers/registerCustomer.route.js"
+import logoutRoutes from "./src/modules/login/logout.route.js"
+import loginCustomerRoutes from "./src/modules/login/loginCustomer.route.js"
 const app = express()
 app.use(limiter)
 
@@ -20,6 +22,8 @@ app.use(express.json())
 app.use(cookieParser())
 app.use("/api/customers", customerRoutes);
 app.use("/api/registerCustomers", registerCustomersRoutes);
+app.use("/api/logout", logoutRoutes);
+app.use("/api/loginCustomer", loginCustomerRoutes);
 
 app.use("/api/products", productRouter)
 app.use("/api/productReviews", reviewsRoute)
