@@ -1,36 +1,42 @@
-/* orders: 
-id, 
-shopping_cart_id, 
-delivered_address, 
-payment_method, 
-payment_status, 
-status (returned, delivered, pending) 
- */
+import mongoose, { Schema, model } from "mongoose";
 
-import mongoose, {Schema, model} from "mongoose";
+const OrderSchema = new Schema(
+  {
+    shopping_cart_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "shopping_carts",
+      required: true,
+    },
 
-const OrderSchema = new Schema({
-    shopping_cart_id : {
-        type : mongoose.Schema.Types.ObjectId,
-        ref: "Shopping_Cart_Id"
+    delivered_address: {
+      type: String,
+      required: true,
+      trim: true,
     },
-    delivered_address : {
-        type : String
+
+    payment_method: {
+      type: String,
+      required: true,
+      trim: true,
     },
-    payment_method : {
-        type: String
+
+    payment_status: {
+      type: String,
+      required: true,
+      enum: ["pending", "paid", "failed"],
+      default: "pending",
     },
-    payment_status : {
-        type : String
+
+    status: {
+      type: String,
+      required: true,
+      enum: ["returned", "delivered", "pending"],
+      default: "pending",
     },
-    status : {
-        type : String
-    }
-},
-{
-    timestamps : true,
-    strict : false 
-}
+  },
+  {
+    timestamps: true,
+  }
 );
 
-export default model ("orders", OrderSchema);
+export default model("orders", OrderSchema);

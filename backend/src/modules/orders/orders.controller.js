@@ -2,52 +2,137 @@ import orderModel from "./orders.model.js";
 
 const ordersController = {};
 
-// SELECT 
 ordersController.getOrders = async (req, res) => {
-    const orders = await orderModel.find()
-    res.json(orders)
+  try {
+    const orders = await orderModel.find();
+
+    return res.status(200).json(orders);
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+  }
 };
 
-// CREATE
 ordersController.insertOrders = async (req, res) => {
-    try {
-        let {
-            shopping_cart_id,delivered_address, payment_method,payment_status,status 
-        } = req.body;
+  try {
+    const {
+      shopping_cart_id,
+      delivered_address,
+      payment_method,
+      payment_status,
+      status,
+    } = req.body;
 
-        const newOrders = new orderModel ({shopping_cart_id,delivered_address, payment_method,payment_status,status })
-        await newOrders.save()
+    const newOrder = new orderModel({
+      shopping_cart_id,
+      delivered_address,
+      payment_method,
+      payment_status,
+      status,
+    });
 
-        return res.json(200).json({message: "Orders"})
+    await newOrder.save();
 
-    } catch (error) {
-        console.log("error" + error)
-        return res.json(500).json({message: "Internal server error"})
-    }
+    return res.status(201).json({
+      message: "Order created successfully",
+      order: newOrder,
+    });
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+  }
 };
 
-// DELETE
 ordersController.deleteOrders = async (req, res) => {
-    try {
-        const orders = await orderModel.findById(req.params.id)
+  try {
+    const deletedOrder = await orderModel.findByIdAndDelete(req.params.id);
 
-        await orderModel.findByIdAndDelete(req.params.id)
-        return res.status(200).json({message: "Orders deleted"})
-
-    } catch (error) {
-        console.log ("error" + error)
-        return res.status(500).json({message: "Internal server error"})
+    if (!deletedOrder) {
+      return res.status(404).json({
+        message: "Order not found",
+      });
     }
-};
 
-// UPDATE
+    return res.status(200).json({
+      message: "Order deleted successfully",
+    });
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+};
 
 ordersController.updateOrders = async (req, res) => {
-    // 1 - Solicitar los nuevos valores
-    const {shopping_cart_id,delivered_address, payment_method,payment_status,status} = req.body;
-    await orderModel.findByIdAndUpdate(req.params.id, {shopping_cart_id,delivered_address, payment_method,payment_status,status}, {new: true})
+  try {
+    const {
+      shopping_cart_id,
+      delivered_address,
+      payment_method,
+      payment_status,
+      status,
+    } = req.body;
 
-    res.json({message: "orders updated"})
+    const updatedOrder = await orderModel.findByIdAndUpdate(
+      req.params.id,
+      {
+        shopping_cart_id,
+        delivered_address,
+        payment_method,
+        payment_status,
+        status,
+      },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
 
+    if (!updatedOrder) {
+      return res.status(404).json({
+        message: "Order not found",
+      });
+    }
+
+    return res.status(200).json({
+      message: "Order updated successfully",
+      order: updatedOrder,
+    });
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+  }
 };
 
+ordersController.getOrderById = async (req, res) => {
+  try {
+    const order = await orderModel.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({
+        message: "Order not found",
+      });
+    }
+
+    return res.status(200).json(order);
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+};
+
+export default ordersController;
