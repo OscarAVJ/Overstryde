@@ -13,11 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "bcryptjs": "^3.0.3",
-<<<<<<< HEAD
     "cloudinary": "^1.41.3",
-=======
-    "cloudinary": "^2.10.0",
->>>>>>> 3b5f1a4 (Feat: se añadio la logica crud de customers)
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "crypto": "^1.0.1",
@@ -25,16 +21,10 @@
     "express": "^5.2.1",
     "express-rate-limit": "^8.5.2",
     "jsonwebtoken": "^9.0.3",
-<<<<<<< HEAD
     "mongoose": "^9.6.2",
     "multer": "^2.1.1",
     "multer-storage-cloudinary": "^4.0.0",
     "nodemailer": "^8.0.7"
-=======
-    "mongoose": "^9.6.3",
-    "multer": "^2.1.1",
-    "nodemailer": "^8.0.10"
->>>>>>> 3b5f1a4 (Feat: se añadio la logica crud de customers)
   },
   "devDependencies": {
     "nodemon": "^3.1.14"

@@ -21,68 +21,71 @@ is_verified,
 loginAttempts,timeOut
 
 */
-import mongoose, {Schema, model} from "mongoose";
+import mongoose, { Schema, model } from "mongoose";
 const CustomerSchema = new Schema({
-    name : {
-        type : String
+    name: {
+        type: String
     },
-    last_name : {
-        type : String
+    last_name: {
+        type: String
     },
     photo: {
         type: String
     },
-    email : {
-        type :  String
+    public_id: {
+        type: String
     },
-    password : {
-        type : String
+    email: {
+        type: String
     },
-    addresses : [{
-        country : {
-            type : String
+    password: {
+        type: String
+    },
+    addresses: [{
+        country: {
+            type: String
         },
-        address : {
-            type : String
+        address: {
+            type: String
         },
-        department : {
-            type : String
+        department: {
+            type: String
         },
-        city : {
-            type : String
+        city: {
+            type: String
         },
-        references : {
-            type : String
+        references: {
+            type: String
         },
-        phone : {
-            type : String
+        phone: {
+            type: String
         }
     }],
-    purchase_history : [{
-        orders_id : {
-            type : mongoose.Schema.Types.ObjectId,
-            ref : "orders"
+    purchase_history: [{
+        orders_id: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "orders"
         }
     }],
-    isActive : {
-        type : Boolean
+    isActive: {
+        type: Boolean
     },
-    isVerified : {
-        type : Boolean
+    isVerified: {
+        type: Boolean
     },
-    loginAttempts : {
-        type : Number
+    loginAttempts: {
+        type: Number
     },
-    timeOute : {
+    timeOut: {
         type: Date
     }
 },
-{
-    timestamps : true,
-    strict : false
-}
+    {
+        timestamps: true,
+        strict: false
+    }
 )
 
-export default model ("customers", CustomerSchema)
+export default model("customers", CustomerSchema)
 
 
