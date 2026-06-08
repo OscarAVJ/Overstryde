@@ -1,22 +1,22 @@
 import bcrypt from "bcryptjs"; // Encriptacion
 import jsonwebtoken from "jsonwebtoken"; // Token
-import customerModel from "../customers/customer.model.js";
+import adminsModel from "../admins/admins.model.js";
 import { config } from "../../utils/config.js";
 
 // Array de funciones
-const loginCustomerController = {};
+const loginAdminsController = {};
 
-loginCustomerController.login = async (req, res) => {
+loginAdminsController.login = async (req, res) => {
     try {
         
         // 1. Solcitar los datos (correo y contraseña)
         const {email, password } = req.body;
         // verificar si existe el correo en la base de datos
-        const userFound = await customerModel.findOne({email});
+        const userFound = await adminsModel.findOne({email});
 
         // Si no lo encuentra
         if(!userFound){
-            return res.status(404).json({message: "Customer not found"})
+            return res.status(404).json({message: "Admin not found"})
         }
 
         // Verificar si la cuenta está bloqueada
@@ -51,7 +51,7 @@ loginCustomerController.login = async (req, res) => {
         // Generar el token
         const token = jsonwebtoken.sign(
             // 1. ¿Que vamos a guardar?
-            {id: userFound._id, userType:"customer"},
+            {id: userFound._id, userType:"admin"},
             // 2 Secret key
             config.JWT.secret,
             // 3. tiempo de expiracion
@@ -70,4 +70,4 @@ loginCustomerController.login = async (req, res) => {
     }
 };
 
-export default loginCustomerController;
+export default loginAdminsController;
