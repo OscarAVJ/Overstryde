@@ -1,17 +1,16 @@
 import { Schema, model } from "mongoose";
 
-const categorySchema = new Schema(
+const subcategorySchema = new Schema(
   {
     name: { type: String, required: true, trim: true },
     slug: { type: String, required: true, trim: true, lowercase: true },
-    type: {
-      type: String,
+    category: {
+      type: Schema.Types.ObjectId,
+      ref: "categories",
       required: true,
-      enum: ["male", "female", "accesory"],
-      trim: true,
     },
   },
   { timestamps: true },
 );
 
-export default model("categories", categorySchema);
+export default model("subcategories", subcategorySchema);

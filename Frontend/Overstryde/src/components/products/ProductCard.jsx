@@ -51,7 +51,7 @@ export const ProductCard = ({ product }) => {
                         {product.name}
                     </p>
                     <p className='text-sm text-gray-500 line-clamp-1'>
-                        {product.category}
+                        {product.category?.name || product.category}
                     </p>
                 </div>
                 <div className='flex items-center justify-between'>

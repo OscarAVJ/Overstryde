@@ -9,6 +9,7 @@ import limiter from "./src/middlewares/rateLimit.js"
 import favoritesRoute from "./src/modules/favorites/favorites.route.js"
 import bannerRouter from "./src/modules/banners/banner.route.js"
 import categoriesRouter from "./src/modules/categories/categories.route.js"
+import subcategoriesRouter from "./src/modules/subcategories/subcategories.route.js"
 const app = express()
 app.use(limiter)
 
@@ -26,5 +27,6 @@ app.use("/api/orders", ordersRouter)
 app.use("/api/favorites", favoritesRoute)
 app.use("/api/banners", bannerRouter)
 app.use("/api/categories", categoriesRouter)
+app.use("/api/subcategories", subcategoriesRouter)
 
 export default app

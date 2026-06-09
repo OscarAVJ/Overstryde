@@ -1,6 +1,8 @@
 import productModel from "./models/products.model.js";
 import { isValidObjectId } from "mongoose";
 import { v2 as cloudinary } from "cloudinary";
+import categoryModel from "../categories/categories.model.js";
+import subcategoryModel from "../subcategories/models/subcategory.model.js";
 
 const productController = {};
 
@@ -22,7 +24,8 @@ const validateData = (payload, { isUpdate = false } = {}) => {
     fit,
     product_type,
     gender,
-    categories,
+    category,
+    subcategory,
     variants,
     price,
     expiration_date,
@@ -33,8 +36,9 @@ const validateData = (payload, { isUpdate = false } = {}) => {
   fit = fit?.trim();
   product_type = product_type?.trim();
   gender = gender?.trim();
+  category = category?.trim();
+  subcategory = subcategory?.trim();
   try {
-    categories = parseJsonField(categories, "Categories");
     variants = parseJsonField(variants, "Variants");
   } catch (error) {
     return { error: error.message };
@@ -53,11 +57,17 @@ const validateData = (payload, { isUpdate = false } = {}) => {
     }
     price = Number(price);
   }
-  if (!isUpdate || categories !== undefined) {
-    if (!Array.isArray(categories)) {
-      return { error: "Categories must be an array" };
-    }
-    categories = categories.map((category) => category?.trim()).filter(Boolean);
+  if (product_type !== undefined && !["alimenticio", "ropa"].includes(product_type)) {
+    return { error: "Product type must be alimenticio or ropa" };
+  }
+  if (gender !== undefined && !["male", "female", "accesory"].includes(gender)) {
+    return { error: "Gender must be male, female or accesory" };
+  }
+  if (category !== undefined && !isValidObjectId(category)) {
+    return { error: "Valid category id required" };
+  }
+  if (subcategory !== undefined && !isValidObjectId(subcategory)) {
+    return { error: "Valid subcategory id required" };
   }
   if (!isUpdate || variants !== undefined) {
     if (!Array.isArray(variants)) {
@@ -92,7 +102,8 @@ const validateData = (payload, { isUpdate = false } = {}) => {
     fit,
     product_type,
     gender,
-    categories,
+    category,
+    subcategory,
     variants,
     price,
     expiration_date,
@@ -107,6 +118,82 @@ const validateData = (payload, { isUpdate = false } = {}) => {
   return { product };
 };
 
+const ensureProductRelations = async (product, currentProduct = {}) => {
+  const categoryId = product.category || currentProduct.category;
+  const subcategoryId = product.subcategory || currentProduct.subcategory;
+
+  if (product.category) {
+    const categoryExists = await categoryModel.exists({ _id: product.category });
+    if (!categoryExists) {
+      return { error: "Category not found" };
+    }
+  }
+
+  if (product.subcategory) {
+    const subcategory = await subcategoryModel.findById(product.subcategory);
+    if (!subcategory) {
+      return { error: "Subcategory not found" };
+    }
+
+    if (categoryId && subcategory.category.toString() !== categoryId.toString()) {
+      return { error: "Subcategory does not belong to category" };
+    }
+  } else if (product.category && subcategoryId) {
+    const subcategory = await subcategoryModel.findById(subcategoryId);
+    if (subcategory && subcategory.category.toString() !== product.category.toString()) {
+      return { error: "Subcategory does not belong to category" };
+    }
+  }
+
+  return {};
+};
+
+const buildProductsFilter = async (query) => {
+  const filter = {};
+  const { category, subcategory, gender, product_type } = query;
+  const categoryType = gender === "accesories" ? "accesory" : gender;
+
+  if (gender) {
+    filter.gender = categoryType;
+  }
+
+  if (product_type) {
+    filter.product_type = product_type;
+  }
+
+  if (category) {
+    const categoryFilter = isValidObjectId(category)
+      ? { _id: category }
+      : { slug: category };
+    if (!isValidObjectId(category) && categoryType) {
+      categoryFilter.type = categoryType;
+    }
+    const categoryFound = await categoryModel.findOne(categoryFilter);
+    if (!categoryFound) {
+      return { filter, shouldReturnEmpty: true };
+    }
+    filter.category = categoryFound._id;
+  }
+
+  if (subcategory) {
+    const subcategoryFilter = isValidObjectId(subcategory)
+      ? { _id: subcategory }
+      : { slug: subcategory };
+
+    if (filter.category) {
+      subcategoryFilter.category = filter.category;
+    }
+
+    const subcategoryFound = await subcategoryModel.findOne(subcategoryFilter);
+    if (!subcategoryFound) {
+      return { filter, shouldReturnEmpty: true };
+    }
+    filter.subcategory = subcategoryFound._id;
+  }
+
+  return { filter };
+};
+
 const deleteCloudinaryImages = async (images = []) => {
   const publicIds = images.map((image) => image.public_id).filter(Boolean);
   await Promise.allSettled(
@@ -116,7 +203,15 @@ const deleteCloudinaryImages = async (images = []) => {
 
 productController.getProducts = async (req, res) => {
   try {
-    const products = await productModel.find();
+    const { filter, shouldReturnEmpty } = await buildProductsFilter(req.query);
+    if (shouldReturnEmpty) {
+      return res.status(200).json([]);
+    }
+
+    const products = await productModel
+      .find(filter)
+      .populate("category", "name slug type")
+      .populate("subcategory", "name slug");
     return res.status(200).json(products);
   } catch (error) {
     return res.status(500).json({ message: "Internal server error" });
@@ -125,7 +220,10 @@ productController.getProducts = async (req, res) => {
 
 productController.getProductById = async (req, res) => {
   try {
-    const product = await productModel.findById(req.params.id);
+    const product = await productModel
+      .findById(req.params.id)
+      .populate("category", "name slug type")
+      .populate("subcategory", "name slug");
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
@@ -142,6 +240,10 @@ productController.insertProduct = async (req, res) => {
       return res.status(400).json({ message: validateDataResult.error });
     }
     const product = validateDataResult.product;
+    const relationsResult = await ensureProductRelations(product);
+    if (relationsResult.error) {
+      return res.status(400).json({ message: relationsResult.error });
+    }
     const imagesReq = req.files;
     if (!Array.isArray(imagesReq)) {
       return res.status(400).json({ message: "Images must be an array" });
@@ -186,6 +288,10 @@ productController.updateProduct = async (req, res) => {
       return res.status(400).json({ message: validateDataResult.error });
     }
     const product = validateDataResult.product;
+    const relationsResult = await ensureProductRelations(product, productToUpdate);
+    if (relationsResult.error) {
+      return res.status(400).json({ message: relationsResult.error });
+    }
     const imagesReq = req.files;
     const shouldUpdateImages = Array.isArray(imagesReq) && imagesReq.length > 0;
     if (shouldUpdateImages) {

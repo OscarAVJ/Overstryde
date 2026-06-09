@@ -2,24 +2,23 @@ import { ProductCard } from '@/components/products/ProductCard'
 import { ProductCardSkeleton } from '@/components/products/ProductCardSkeleton';
 import { useSearchParams } from "react-router-dom";
 import useProducts from '@/hooks/useProducts';
+import { useMemo } from 'react';
 
 export const ProductsPage = () => {
     ///Este es un hook de react native y pues con el podemos acceder a los parametros que mandamos en el path de donde hagamos el to={/asdf?asdf=asdf}
     const [searchParams] = useSearchParams()
-    const { products, isLoading, error } = useProducts()
     ///Aca obtenemos el query que hemos puesto, en este caso es category
-    const filter = searchParams.get("category");
-    const categoryMap = {
-        hombres: "male",
-        mujeres: "female",
-        accesorios: "accesories",
+    const filters = useMemo(() => ({
+        category: searchParams.get("category"),
+        subcategory: searchParams.get("subcategory") ?? searchParams.get("sub"),
+        gender: searchParams.get("gender"),
+        product_type: searchParams.get("product_type"),
+    }), [searchParams])
+    const { products, isLoading, error } = useProducts(filters)
+
+    if (products.length === 0 && !isLoading && !error) {
+        return <p className="px-4 md:px-6 py-4">No hay productos para esta categoria.</p>
     }
-    const category = categoryMap[filter] ?? filter
-    const filteredData = !category
-        ? products
-        : category === "accesories"
-            ? products.filter((item) => !item.gender)
-            : products.filter((item) => item.gender === category)
 
     if (isLoading) {
         return (
@@ -37,7 +36,7 @@ export const ProductsPage = () => {
 
     return (
         <div className='grid grid-cols-2 md:grid-cols-4 gap-2  w-full px-4 md:px-6 py-4'>
-            {filteredData.map(item => <ProductCard key={item._id} product={item} />)}
+            {products.map(item => <ProductCard key={item._id} product={item} />)}
         </div>
     )
 }
