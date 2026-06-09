@@ -9,8 +9,8 @@ import {
 import { Button } from "@/components/ui/button"
 import { GenderSeparator } from "@/components/home/GenderSeparator"
 import { ProductCard } from "@/components/products/ProductCard"
-import { products } from "@/data/productsData.js"
 import { NavLink } from "react-router-dom"
+import useProducts from "@/hooks/useProducts"
 const genders = {
   "women": "https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=1600&q=80",
   "men": "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
@@ -37,10 +37,10 @@ const slides = [
 ]
 
 export const HomePage = () => {
-
-  const menData = products.filter((item) => item.category === "Hombres")
-  const womenData = products.filter((item) => item.category === "Mujeres")
-  const accesoriesData = products.filter((item) => item.category === "Accesorios")
+  const { products } = useProducts()
+  const menData = products.filter((item) => item.gender === "male")
+  const womenData = products.filter((item) => item.gender === "female")
+  const accesoriesData = products.filter((item) => !item.gender)
 
   return (
     <section className="bg-gray-100 w-full px-4 py-2">
@@ -74,8 +74,8 @@ export const HomePage = () => {
         <CarouselNext className="right-6" />
       </Carousel>
       <div className="flex flex-col md:flex-row pt-3 gap-2">
-        <GenderSeparator image={genders.men} text={"Para el"} subText={"Ropa masculina"} path={`/products?category=${encodeURIComponent("Hombres")}`} />
-        <GenderSeparator image={genders.women} text={"Para ella"} subText={"Ropa femenina"} path={`/products?category=${encodeURIComponent("Mujeres")}`} />
+        <GenderSeparator image={genders.men} text={"Para el"} subText={"Ropa masculina"} path={`/products?category=${encodeURIComponent("male")}`} />
+        <GenderSeparator image={genders.women} text={"Para ella"} subText={"Ropa femenina"} path={`/products?category=${encodeURIComponent("female")}`} />
       </div>
       <div>
       </div>
@@ -83,10 +83,10 @@ export const HomePage = () => {
         <h2 className="uppercase text-yellow-500 font-extrabold">Hombres</h2>
         <p className="font-semibold">Ultimos ingresos</p>
         <div className="grid grid-cols-2 gap-2  md:grid-cols-4  mt-2">
-          {menData.map((item, index) => <ProductCard key={item.id} product={item} />)}
+          {menData.map((item) => <ProductCard key={item._id} product={item} />)}
         </div>
         <div className="flex justify-center items-center mt-2">
-          <NavLink to={`/products?category=${encodeURIComponent("Hombres")}`}>
+          <NavLink to={`/products?category=${encodeURIComponent("male")}`}>
             <Button>Explorar más</Button>
           </NavLink>
         </div>
@@ -95,11 +95,11 @@ export const HomePage = () => {
         <h2 className="uppercase text-yellow-500 font-extrabold">Mujeres</h2>
         <p className="font-semibold">Ultimos ingresos</p>
         <div className="grid grid-cols-2 gap-2 md:gap-2  md:grid-cols-4  mt-2">
-          {womenData.map((item, index) => <ProductCard key={item.id} product={item} />)}
+          {womenData.map((item) => <ProductCard key={item._id} product={item} />)}
         </div>
         <div className="flex justify-center items-center mt-2">
           {/* ///Aca le pasamos los parametros a la ruta, diciendo que queremos los productos en donde la categoria sea = Mujeres y eso esta dentro de la funcion encode.... para que no salga el texto plano */}
-          <NavLink to={`/products?category=${encodeURIComponent("Mujeres")}`}>
+          <NavLink to={`/products?category=${encodeURIComponent("female")}`}>
             <Button>Explorar más</Button>
           </NavLink>
         </div>
@@ -108,10 +108,10 @@ export const HomePage = () => {
         <h2 className="uppercase text-yellow-500 font-extrabold">Accesorios</h2>
         <p className="font-semibold">Ultimos ingresos</p>
         <div className="grid grid-cols-2 gap-2 md:gap-2  md:grid-cols-4  mt-2">
-          {accesoriesData.map((item, index) => <ProductCard key={item.id} product={item} />)}
+          {accesoriesData.map((item,) => <ProductCard key={item._id} product={item} />)}
         </div>
         <div className="flex justify-center items-center mt-2">
-          <NavLink to={`/products?category=${encodeURIComponent("Accesorios")}`}>
+          <NavLink to={`/products?category=${encodeURIComponent("accesories")}`}>
             <Button>Explorar más</Button>
           </NavLink>
         </div>

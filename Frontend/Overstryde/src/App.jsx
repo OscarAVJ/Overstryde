@@ -1,7 +1,7 @@
 
 import './App.css'
-import { BrowserRouter as Router, Routes, Route }
-  from 'react-router'
+import { useEffect } from 'react'
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
 import { HomePage } from './pages/HomePage'
 import { RegisterPage } from './pages/RegisterPage'
 import { MainLayout } from './layouts/MainLayout'
@@ -16,10 +16,21 @@ import { TermsOfServicePage } from './pages/TermsOfServicePage'
 import { AboutPage } from './pages/AboutPage'
 import { ContactPage } from './pages/ContactPage'
 
+function ScrollToTop() {
+  const { pathname, search } = useLocation()
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+  }, [pathname, search])
+
+  return null
+}
+
 function App() {
   return (
     <>
       <Router>
+        <ScrollToTop />
         <Routes>
           <Route element={<MainLayout />}>
             <Route path="/" element={<HomePage />} />
@@ -37,6 +48,7 @@ function App() {
             <Route path='/recoverAccount' element={<RecoverAccountPage />} />
           </Route>
         </Routes>
+
       </Router>
     </>
   )
