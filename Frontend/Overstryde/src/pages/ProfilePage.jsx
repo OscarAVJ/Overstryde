@@ -7,7 +7,7 @@ import React from 'react'
 
 export const ProfilePage = () => {
   return (
-    <div className='py-15 mx-4'>
+    <div className=' mx-4'>
       <UserCard />
       <div className='grid grid-cols-1 md:grid-cols-2 gap-5'>
         <div>
