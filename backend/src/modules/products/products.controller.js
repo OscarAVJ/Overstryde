@@ -24,7 +24,7 @@ const validateData = (payload, { isUpdate = false } = {}) => {
     fit,
     product_type,
     gender,
-    category,
+    subCategories,
     subcategory,
     variants,
     price,
@@ -36,12 +36,15 @@ const validateData = (payload, { isUpdate = false } = {}) => {
   fit = fit?.trim();
   product_type = product_type?.trim();
   gender = gender?.trim();
-  category = category?.trim();
   subcategory = subcategory?.trim();
   try {
+    subCategories = parseJsonField(subCategories, "SubCategories");
     variants = parseJsonField(variants, "Variants");
   } catch (error) {
     return { error: error.message };
+  }
+  if (subCategories === undefined && subcategory !== undefined) {
+    subCategories = [subcategory];
   }
   if (!isUpdate || name !== undefined) {
     if (!name) {
@@ -63,11 +66,16 @@ const validateData = (payload, { isUpdate = false } = {}) => {
   if (gender !== undefined && !["male", "female", "accesory"].includes(gender)) {
     return { error: "Gender must be male, female or accesory" };
   }
-  if (category !== undefined && !isValidObjectId(category)) {
-    return { error: "Valid category id required" };
-  }
-  if (subcategory !== undefined && !isValidObjectId(subcategory)) {
-    return { error: "Valid subcategory id required" };
+  if (!isUpdate || subCategories !== undefined) {
+    if (!Array.isArray(subCategories)) {
+      return { error: "SubCategories must be an array" };
+    }
+    if (subCategories.length === 0) {
+      return { error: "At least one subcategory is required" };
+    }
+    if (subCategories.some((subCategory) => !isValidObjectId(subCategory))) {
+      return { error: "Every subcategory must be a valid id" };
+    }
   }
   if (!isUpdate || variants !== undefined) {
     if (!Array.isArray(variants)) {
@@ -102,8 +110,7 @@ const validateData = (payload, { isUpdate = false } = {}) => {
     fit,
     product_type,
     gender,
-    category,
-    subcategory,
+    subCategories,
     variants,
     price,
     expiration_date,
@@ -119,29 +126,16 @@ const validateData = (payload, { isUpdate = false } = {}) => {
 };
 
 const ensureProductRelations = async (product, currentProduct = {}) => {
-  const categoryId = product.category || currentProduct.category;
-  const subcategoryId = product.subcategory || currentProduct.subcategory;
+  const subCategories = product.subCategories || currentProduct.subCategories;
 
-  if (product.category) {
-    const categoryExists = await categoryModel.exists({ _id: product.category });
-    if (!categoryExists) {
-      return { error: "Category not found" };
-    }
-  }
+  if (product.subCategories) {
+    const uniqueSubcategories = [...new Set(subCategories.map((item) => item.toString()))];
+    const foundSubcategories = await subcategoryModel.find({
+      _id: { $in: uniqueSubcategories },
+    });
 
-  if (product.subcategory) {
-    const subcategory = await subcategoryModel.findById(product.subcategory);
-    if (!subcategory) {
-      return { error: "Subcategory not found" };
-    }
-
-    if (categoryId && subcategory.category.toString() !== categoryId.toString()) {
-      return { error: "Subcategory does not belong to category" };
-    }
-  } else if (product.category && subcategoryId) {
-    const subcategory = await subcategoryModel.findById(subcategoryId);
-    if (subcategory && subcategory.category.toString() !== product.category.toString()) {
-      return { error: "Subcategory does not belong to category" };
+    if (foundSubcategories.length !== uniqueSubcategories.length) {
+      return { error: "One or more subcategories were not found" };
     }
   }
 
@@ -152,6 +146,7 @@ const buildProductsFilter = async (query) => {
   const filter = {};
   const { category, subcategory, gender, product_type } = query;
   const categoryType = gender === "accesories" ? "accesory" : gender;
+  let categoryId = null;
 
   if (gender) {
     filter.gender = categoryType;
@@ -172,7 +167,12 @@ const buildProductsFilter = async (query) => {
     if (!categoryFound) {
       return { filter, shouldReturnEmpty: true };
     }
-    filter.category = categoryFound._id;
+    categoryId = categoryFound._id;
+    const subcategories = await subcategoryModel.find({ category: categoryId });
+    if (subcategories.length === 0) {
+      return { filter, shouldReturnEmpty: true };
+    }
+    filter.subCategories = { $in: subcategories.map((item) => item._id) };
   }
 
   if (subcategory) {
@@ -180,15 +180,15 @@ const buildProductsFilter = async (query) => {
       ? { _id: subcategory }
       : { slug: subcategory };
 
-    if (filter.category) {
-      subcategoryFilter.category = filter.category;
+    if (categoryId) {
+      subcategoryFilter.category = categoryId;
     }
 
     const subcategoryFound = await subcategoryModel.findOne(subcategoryFilter);
     if (!subcategoryFound) {
       return { filter, shouldReturnEmpty: true };
     }
-    filter.subcategory = subcategoryFound._id;
+    filter.subCategories = subcategoryFound._id;
   }
 
   return { filter };
@@ -210,8 +210,11 @@ productController.getProducts = async (req, res) => {
 
     const products = await productModel
       .find(filter)
-      .populate("category", "name slug type")
-      .populate("subcategory", "name slug");
+      .populate({
+        path: "subCategories",
+        select: "name slug category",
+        populate: { path: "category", select: "name slug type" },
+      });
     return res.status(200).json(products);
   } catch (error) {
     return res.status(500).json({ message: "Internal server error" });
@@ -222,8 +225,11 @@ productController.getProductById = async (req, res) => {
   try {
     const product = await productModel
       .findById(req.params.id)
-      .populate("category", "name slug type")
-      .populate("subcategory", "name slug");
+      .populate({
+        path: "subCategories",
+        select: "name slug category",
+        populate: { path: "category", select: "name slug type" },
+      });
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }

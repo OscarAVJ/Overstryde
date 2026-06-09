@@ -5,6 +5,8 @@ import { NavLink } from 'react-router-dom'
 
 export const ProductCard = ({ product }) => {
     const [isFav, setFav] = useState(false)
+    const firstSubCategory = product.subCategories?.[0]
+    const categoryName = firstSubCategory?.category?.name || firstSubCategory?.name
 
     return (
         <div className=' w-full max-w-75 flex flex-col gap-3'>
@@ -51,7 +53,7 @@ export const ProductCard = ({ product }) => {
                         {product.name}
                     </p>
                     <p className='text-sm text-gray-500 line-clamp-1'>
-                        {product.category?.name || product.category}
+                        {categoryName}
                     </p>
                 </div>
                 <div className='flex items-center justify-between'>

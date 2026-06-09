@@ -66,7 +66,7 @@ subcategoryController.getSubcategories = async (req, res) => {
 
     const subcategories = await subcategoryModel
       .find(filter)
-      .populate("category", "name slug type")
+      .populate("category")
       .sort({ name: 1 });
 
     return res.status(200).json(subcategories);
@@ -170,7 +170,7 @@ subcategoryController.deleteSubcategory = async (req, res) => {
       return res.status(400).json({ message: "Invalid subcategory id" });
     }
 
-    const hasProducts = await productModel.exists({ subcategory: id });
+    const hasProducts = await productModel.exists({ subCategories: id });
     if (hasProducts) {
       return res.status(409).json({
         message: "Cannot delete subcategory with products",
