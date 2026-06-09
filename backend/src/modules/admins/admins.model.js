@@ -10,8 +10,9 @@ is_verified,
 loginAttempts,
 timeOut
 */
-import mongoose, { Schema, model } from "mongoose";
-const CustomerSchema = new Schema({
+import { Schema, model } from "mongoose";
+
+const AdminSchema = new Schema({
     name: {
         type: String
     },
@@ -49,4 +50,4 @@ const CustomerSchema = new Schema({
     }
 )
 
-export default model("customers", CustomerSchema)
+export default model("admins", AdminSchema)
