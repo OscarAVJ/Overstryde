@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Plus, FolderOpen, Search, Pencil, Trash2, PlusIcon, Dot, X, ChevronDownIcon } from 'lucide-react'
+import { Plus, FolderOpen, Search, Pencil, Trash2, PlusIcon, Dot, X, ChevronDownIcon, Check } from 'lucide-react'
 import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card2"
 import { Field, FieldDescription, FieldLabel, FieldGroup } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
@@ -21,35 +21,88 @@ import { format } from "date-fns"
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { es } from 'date-fns/locale'
+import { useForm, Controller, useFieldArray } from "react-hook-form"
 
 
 const Products = () => {
 
+
+  //Usando react-hook-form para los datos del dialog
+  const {
+    register,
+    control,
+    watch,
+    getValues,
+    handleSubmit,
+    setValue,
+    reset,
+    formState: { errors }
+  } = useForm({
+    defaultValues: {
+      name: "",
+      images: [],
+      description: "",
+      fit: "",
+      product_type: "",
+      gender: "",
+      categories: [],
+      variants: [],
+      price: ""
+    }
+  })
+
+  //Constante para saber el valor de images
+  const images = watch("images");
+
   //HOOK PERSONALIZADO DE PRODUCTOS
-  const { products } = useProducts();
+  const { products, loading, error, formData, setFormData, addProduct, editProduct, removeProduct, getProduct } = useProducts();
 
   //DIALOG PARA ESCOGER SUBCATEGORIAS
   const [openCategories, setOpenCategories] = useState(false)
 
-  //ARRAY PARA EL MOMENTO DE INSERTAR UN PRODUCTO (categorías escogidas)
-  const [selectedCategories, setSelectedCategories] = useState([])
-
   //DIALOG DE EDITAR O AÑADIR VARIANTE DE ROPA
   const [openVariantEdit, setOpenVariantEdit] = useState(false)
+  const [variantData, setVariantData] = useState({
+    color: "",
+    hexColor: "",
+    size: "",
+    stock: 0
+  })
+
+  //Usamos useFieldArray para el array dinámico de las variantes de ropa.
+  const {
+    fields: variants,
+    append,
+    remove
+  } = useFieldArray({
+    control,
+    name: "variants"
+  })
+
+  //Método para añadir cada variante al array
+  const addVariant = () => {
+    append({
+      color: variantData.color,
+      hexColor: variantData.hexColor,
+      size: variantData.size,
+      stock: Number(variantData.stock)
+    })
+
+    //Después de añadirlo al array limpiamos el variantData
+    setVariantData({
+      color: "",
+      hexColor: "",
+      size: "",
+      stock: 0
+    })
+
+    setOpenVariantEdit(false)
+  }
 
   //FECHA VENCIMIENTO ALIMENTOS
   const [dueDate, setDueDate] = useState(new Date());
 
-  const selected = [
-    {
-      category: "Hombres",
-      sub: "Camisa"
-    },
-    {
-      category: "Mujeres",
-      sub: "Blusas"
-    }
-  ]
+  const selectedCategories = watch("categories")
 
   const categories = [
     {
@@ -69,6 +122,38 @@ const Products = () => {
       ]
     }
   ]
+
+  const handleFiles = (files) => {
+    const selectedFiles = Array.from(files);
+
+    const imageFiles = selectedFiles.filter((file) =>
+      file.type.startsWith("image/")
+    );
+
+    const currentImages = getValues("images")
+
+    const remainingSlots = 5 - currentImages.length;
+
+    const newImages = imageFiles
+      .slice(0, remainingSlots)
+      .map((file) => ({
+        file,
+        preview: URL.createObjectURL(file),
+      }));
+
+    setValue("images", [...currentImages, ...newImages]);
+  };
+
+  const removeImage = (index) => {
+    const currentImages = getValues("images")
+
+    URL.revokeObjectURL(currentImages[index].preview);
+
+    setValue(
+      "images",
+      currentImages.filter((_, i) => i !== index)
+    )
+  };
 
 
   function getStatus(stock) {
@@ -137,13 +222,13 @@ const Products = () => {
                             </CommandDialog>
                           </div>
                           <div className='flex flex-col p-1 gap-1 rounded-md'>
-                            {selected.map((sel, index) => (
+                            {selectedCategories.map((sel, index) => (
                               <Item variant='outline' size='sm' key={index}>
                                 <ItemMedia>
                                   <Dot />
                                 </ItemMedia>
                                 <ItemContent className="flex justify-center items-start">
-                                  <ItemTitle >{sel.category + " > " + sel.sub}</ItemTitle>
+                                  <ItemTitle >{sel}</ItemTitle>
                                 </ItemContent>
                                 <ItemActions>
                                   <button>
@@ -170,15 +255,72 @@ const Products = () => {
                         </FieldGroup>
                       </div>
 
-                      <div className="flex items-center justify-center h-full">
-                        <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-64 bg-neutral-secondary-medium border border-dashed border-default-strong rounded-base cursor-pointer hover:bg-neutral-tertiary-medium">
+                      <div className="flex flex-col gap-4 justify-center">
+                        <label
+                          htmlFor="dropzone-file"
+                          onDragOver={(e) => e.preventDefault()}
+                          onDrop={(e) => {
+                            e.preventDefault();
+                            handleFiles(e.dataTransfer.files);
+                          }}
+                          className="flex flex-col items-center justify-center w-full h-64 bg-neutral-secondary-medium border border-dashed border-default-strong rounded-base cursor-pointer hover:bg-neutral-tertiary-medium"
+                        >
                           <div className="flex flex-col items-center justify-center text-body pt-5 pb-6">
-                            <svg className="w-8 h-8 mb-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h3a3 3 0 0 0 0-6h-.025a5.56 5.56 0 0 0 .025-.5A5.5 5.5 0 0 0 7.207 9.021C7.137 9.017 7.071 9 7 9a4 4 0 1 0 0 8h2.167M12 19v-9m0 0-2 2m2-2 2 2" /></svg>
-                            <p className="mb-2 text-sm"><span className="font-semibold">Click to upload</span> or drag and drop</p>
-                            <p className="text-xs">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
+                            <svg
+                              className="w-8 h-8 mb-4"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                stroke="currentColor"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M15 17h3a3 3 0 0 0 0-6h-.025a5.56 5.56 0 0 0 .025-.5A5.5 5.5 0 0 0 7.207 9.021C7.137 9.017 7.071 9 7 9a4 4 0 1 0 0 8h2.167M12 19v-9m0 0-2 2m2-2 2 2"
+                              />
+                            </svg>
+
+                            <p className="mb-2 text-sm">
+                              <span className="font-semibold">Click para subir</span> o arrastra imágenes
+                            </p>
+
+                            <p className="text-xs">
+                              {images.length}/5 imágenes seleccionadas
+                            </p>
                           </div>
-                          <input id="dropzone-file" type="file" className="hidden" />
+
+                          <input
+                            id="dropzone-file"
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            className="hidden"
+                            onChange={(e) => handleFiles(e.target.files)}
+                          />
                         </label>
+
+                        {images.length > 0 && (
+                          <div className="grid grid-cols-2 gap-2">
+                            {images.map((image, index) => (
+                              <div key={index} className="relative">
+                                <img
+                                  src={image.preview}
+                                  alt={`preview-${index}`}
+                                  className="w-full h-28 object-cover rounded-md border"
+                                />
+
+                                <button
+                                  type="button"
+                                  onClick={() => removeImage(index)}
+                                  className="absolute top-1 right-1 bg-black/70 text-white rounded-full w-6 h-6 flex items-center justify-center"
+                                >
+                                  <X size={14} />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </TabsContent>
@@ -190,7 +332,14 @@ const Products = () => {
                         <FieldGroup>
                           <Field>
                             <FieldLabel htmlFor="productName">Nombre del producto<span className='text-red-500'>*</span></FieldLabel>
-                            <Input id="productName" name="name" placeholder="Introduzca nombre del producto..." />
+                            <Input
+                              id="productName"
+                              name="name"
+                              placeholder="Introduzca nombre del producto..."
+                              {...register("name", {
+                                required: "El nombre es obligatorio."
+                              })}
+                            />
                           </Field>
                           <div className='flex flex-row gap-2'>
                             <FieldLabel>Categorías</FieldLabel>
@@ -203,7 +352,37 @@ const Products = () => {
                                   {categories.map((category, index) => (
                                     <CommandGroup heading={category.name} key={index}>
                                       {category.subcategories.map((sub, index) => (
-                                        <CommandItem key={index}>{sub}</CommandItem>
+                                        <CommandItem
+                                          key={index}
+                                          onSelect={() => {
+                                            const currentCategories = watch("categories")
+
+                                            const exists = currentCategories.includes(sub);
+
+                                            if (exists) {
+                                              setValue("categories",
+                                                currentCategories.filter(
+                                                  category => category !== sub
+                                                )
+                                              )
+                                            } else {
+                                              setValue("categories", [
+                                                ...currentCategories,
+                                                sub
+                                              ]);
+                                            }
+
+                                            console.log(watch())
+                                            setOpenCategories(false);
+
+                                          }}
+                                        >
+                                          <Check
+                                            className={`mr-2 size-4 ${watch("categories").includes(sub) ? "opacity-100" : "opacity-0"
+                                              }`}
+                                          />
+                                          {sub}
+                                        </CommandItem>
                                       ))}
                                     </CommandGroup>
                                   ))}
@@ -212,30 +391,96 @@ const Products = () => {
                             </CommandDialog>
                           </div>
                           <div className='flex flex-col p-1 gap-1 rounded-md'>
-                            {selected.map((sel, index) => (
-                              <Item variant='outline' size='sm' key={index}>
+                            {selectedCategories.map((sel, index) => (
+                              <Item
+                                variant='outline'
+                                size='sm'
+                                key={index}
+                              >
                                 <ItemMedia>
                                   <Dot />
                                 </ItemMedia>
                                 <ItemContent className="flex justify-center items-start">
-                                  <ItemTitle >{sel.category + " > " + sel.sub}</ItemTitle>
+                                  <ItemTitle >{sel}</ItemTitle>
                                 </ItemContent>
                                 <ItemActions>
-                                  <button>
+                                  <button onClick={() => {
+                                    const currentCategories = watch("categories")
+
+                                    setValue("categories",
+                                      currentCategories.filter(
+                                        category => category !== sel
+                                      )
+                                    )
+                                  }}>
                                     <X className="size-4 cursor-pointer" />
                                   </button>
                                 </ItemActions>
                               </Item>
                             ))}
                           </div>
+
                           <Field>
                             <FieldLabel htmlFor="productDesc">Descripción</FieldLabel>
-                            <Textarea id="productDesc" placeholder="Descripción del producto..."></Textarea>
+                            <Textarea
+                              id="productDesc"
+                              placeholder="Descripción del producto..."
+                              {...register("description")}
+                            />
                           </Field>
                           <Field>
-                            <FieldLabel htmlFor="productPrice">Precio</FieldLabel>
-                            <Input id="productPrice" type="number" placeholder="$0.00"></Input>
+
+                            <FieldLabel>Género</FieldLabel>
+                            <Controller
+                              name="gender"
+                              control={control}
+                              rules={{
+                                required: "Seleccione un género"
+                              }}
+                              render={({ field }) => (
+                                <Select
+                                  defaultValue="Hombre"
+                                  value={field.value}
+                                  onValueChange={field.onChange}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Seleccione un género" />
+                                  </SelectTrigger>
+                                  <SelectContent position="popper">
+                                    <SelectGroup>
+                                      <SelectItem value="Hombre">Hombre</SelectItem>
+                                      <SelectItem value="Mujer">Mujer</SelectItem>
+                                    </SelectGroup>
+                                  </SelectContent>
+                                </Select>
+                              )}
+                            />
+
                           </Field>
+                          <div className='flex flex-row gap-2'>
+                            <Field>
+                              <FieldLabel htmlFor="productFit">Fit:</FieldLabel>
+                              <Input
+                                id="productStock"
+                                type="text"
+                                placeholder="'Oversize'"
+                                {...register("fit")}
+                              />
+                            </Field>
+                            <Field>
+                              <FieldLabel htmlFor="productPrice">Precio</FieldLabel>
+                              <Input
+                                id="productPrice"
+                                type="number"
+                                placeholder="$0.00"
+                                {...register("price", {
+                                  valueAsNumber: true,
+                                  required: true
+                                })}
+                              />
+                            </Field>
+
+                          </div>
                           <div className='flex flex-row gap-2'>
                             <FieldLabel>Variantes</FieldLabel>
                             <Dialog open={openVariantEdit} onOpenChange={setOpenVariantEdit}>
@@ -256,107 +501,202 @@ const Products = () => {
                                     <div className='flex flex-row gap-2'>
                                       <Field>
                                         <FieldLabel htmlFor="variantColorText">Color</FieldLabel>
-                                        <Input id="variantColorText" type="text" placeholder="'Rojo'"></Input>
+                                        <Input
+                                          id="variantColorText"
+                                          type="text"
+                                          placeholder="'Rojo'"
+                                          value={variantData.color}
+                                          onChange={(e) =>
+                                            setVariantData(prev => ({
+                                              ...prev,
+                                              color: e.target.value
+                                            }))
+                                          }
+                                        />
+
                                       </Field>
                                       <Field>
                                         <FieldLabel htmlFor="variantColorHex">Definir color</FieldLabel>
-                                        <Input id="variantColorHex" type="color" placeholder="0"></Input>
+                                        <Input
+                                          id="variantColorHex"
+                                          type="color"
+                                          placeholder="0"
+                                          value={variantData.hexColor}
+                                          onChange={(e) =>
+                                            setVariantData(prev => ({
+                                              ...prev,
+                                              hexColor: e.target.value
+                                            }))
+                                          }
+                                        />
                                       </Field>
                                     </div>
                                     <div className='flex flex-row gap-2'>
                                       <Field>
                                         <FieldLabel htmlFor="variantSize">Talla</FieldLabel>
-                                        <Input id="variantSize" type="text" placeholder="'M'"></Input>
+                                        <Input
+                                          id="variantSize"
+                                          type="text"
+                                          placeholder="'M'"
+                                          value={variantData.size}
+                                          onChange={(e) =>
+                                            setVariantData(prev => ({
+                                              ...prev,
+                                              size: e.target.value
+                                            }))
+                                          }
+                                        />
                                       </Field>
                                       <Field>
                                         <FieldLabel htmlFor="variantStock">Stock</FieldLabel>
-                                        <Input id="variantStock" type="number" placeholder="0"></Input>
+                                        <Input
+                                          id="variantStock"
+                                          type="number"
+                                          placeholder="0"
+                                          value={variantData.stock}
+                                          onChange={(e) => {
+                                            setVariantData(prev => ({
+                                              ...prev,
+                                              stock: Number(e.target.value)
+                                            }))
+                                          }}
+                                        />
                                       </Field>
                                     </div>
                                   </FieldGroup>
+
+                                  <DialogFooter>
+                                    <DialogClose asChild>
+                                      <Button variant='outline'>Cancelar</Button>
+                                    </DialogClose>
+                                    <Button
+                                      onClick={() => addVariant()}
+                                    >
+                                      Guardar
+                                    </Button>
+                                  </DialogFooter>
+
                                 </DialogContent>
                               </form>
                             </Dialog>
                           </div>
-                          <ScrollArea className="w-full h-35 rounded-sm border p-3">
+                          <ScrollArea className="w-full h-45 rounded-sm border p-3">
                             <div className='flex flex-col gap-4'>
                               <ItemGroup className="gap-1">
-                                <Item variant='outline' role="listitem">
-                                  <ItemMedia variant='image'>
-                                    <div className='h-6 w-6 bg-red-500'></div>
-                                  </ItemMedia>
-                                  <ItemContent>
-                                    <ItemTitle>Color "Rojo"</ItemTitle>
-                                    <ItemDescription>Stock: 10 | Talla: L</ItemDescription>
-                                  </ItemContent>
-                                  <ItemActions>
-                                    <button onClick={() => setOpenVariantEdit(true)}>
-                                      <Pencil className="size-4 cursor-pointer" />
-                                    </button>
-                                    <button>
-                                      <X className="size-4 cursor-pointer" />
-                                    </button>
-                                  </ItemActions>
-                                </Item>
 
-                                <Item variant='outline' role="listitem">
-                                  <ItemMedia variant='image'>
-                                    <div className='h-6 w-6 bg-gray-500'></div>
-                                  </ItemMedia>
-                                  <ItemContent>
-                                    <ItemTitle>Color "Gris"</ItemTitle>
-                                    <ItemDescription>Stock: 10 | Talla: L</ItemDescription>
-                                  </ItemContent>
-                                  <ItemActions>
-                                    <button onClick={() => setOpenVariantEdit(true)}>
-                                      <Pencil className="size-4 cursor-pointer" />
-                                    </button>
-                                    <button>
-                                      <X className="size-4 cursor-pointer" />
-                                    </button>
-                                  </ItemActions>
-                                </Item>
-
-                                <Item variant='outline' role="listitem">
-                                  <ItemMedia variant='image'>
-                                    <div className='h-6 w-6 bg-black'></div>
-                                  </ItemMedia>
-                                  <ItemContent>
-                                    <ItemTitle>Color "Negro"</ItemTitle>
-                                    <ItemDescription>Stock: 10 | Talla: L</ItemDescription>
-                                  </ItemContent>
-                                  <ItemActions>
-                                    <button onClick={() => setOpenVariantEdit(true)}>
-                                      <Pencil className="size-4 cursor-pointer" />
-                                    </button>
-                                    <button>
-                                      <X className="size-4 cursor-pointer" />
-                                    </button>
-                                  </ItemActions>
-                                </Item>
+                                {variants.map((variant, index) => (
+                                  <Item
+                                   variant='outline' 
+                                   role="listitem"
+                                   key={index}
+                                  >
+                                    <ItemMedia variant='image'>
+                                      <div 
+                                       className='h-6 w-6 border'
+                                       style={{backgroundColor: variant.hexColor}}
+                                      />
+                                    </ItemMedia>
+                                    <ItemContent>
+                                      <ItemTitle>Color "{variant.color}"</ItemTitle>
+                                      <ItemDescription>
+                                        Stock: {variant.stock} | Talla: {variant.size}
+                                      </ItemDescription>
+                                    </ItemContent>
+                                    <ItemActions>
+                                      <button onClick={() => {
+                                        setOpenVariantEdit(true)
+                                        setVariantData({
+                                          color: variant.color,
+                                          hexColor: variant.hexColor,
+                                          size: variant.size,
+                                          stock: variant.stock
+                                        })
+                                      }}>
+                                        <Pencil className="size-4 cursor-pointer" />
+                                      </button>
+                                      <button
+                                        type='button'
+                                        onClick={() => remove(index)}
+                                      >
+                                        <X className="size-4 cursor-pointer" />
+                                      </button>
+                                    </ItemActions>
+                                  </Item>
+                                ))}
 
                               </ItemGroup>
 
                             </div>
                           </ScrollArea>
-                          <div className='flex flex-row gap-2'>
-                            <Field>
-                              <FieldLabel htmlFor="productStock">Stock</FieldLabel>
-                              <Input id="productStock" type="number" placeholder="0"></Input>
-                            </Field>
-                          </div>
                         </FieldGroup>
                       </div>
 
-                      <div className="flex items-center justify-center h-full">
-                        <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-64 bg-neutral-secondary-medium border border-dashed border-default-strong rounded-base cursor-pointer hover:bg-neutral-tertiary-medium">
+                      <div className="flex flex-col gap-4 justify-center">
+                        <label
+                          htmlFor="dropzone-file"
+                          onDragOver={(e) => e.preventDefault()}
+                          onDrop={(e) => {
+                            e.preventDefault();
+                            handleFiles(e.dataTransfer.files);
+                          }}
+                          className="flex flex-col items-center justify-center w-full h-64 bg-neutral-secondary-medium border border-dashed border-default-strong rounded-base cursor-pointer hover:bg-neutral-tertiary-medium"
+                        >
                           <div className="flex flex-col items-center justify-center text-body pt-5 pb-6">
-                            <svg className="w-8 h-8 mb-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h3a3 3 0 0 0 0-6h-.025a5.56 5.56 0 0 0 .025-.5A5.5 5.5 0 0 0 7.207 9.021C7.137 9.017 7.071 9 7 9a4 4 0 1 0 0 8h2.167M12 19v-9m0 0-2 2m2-2 2 2" /></svg>
-                            <p className="mb-2 text-sm"><span className="font-semibold">Click to upload</span> or drag and drop</p>
-                            <p className="text-xs">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
+                            <svg
+                              className="w-8 h-8 mb-4"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                stroke="currentColor"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M15 17h3a3 3 0 0 0 0-6h-.025a5.56 5.56 0 0 0 .025-.5A5.5 5.5 0 0 0 7.207 9.021C7.137 9.017 7.071 9 7 9a4 4 0 1 0 0 8h2.167M12 19v-9m0 0-2 2m2-2 2 2"
+                              />
+                            </svg>
+
+                            <p className="mb-2 text-sm">
+                              <span className="font-semibold">Click para subir</span> o arrastra imágenes
+                            </p>
+
+                            <p className="text-xs">
+                              {images.length}/5 imágenes seleccionadas
+                            </p>
                           </div>
-                          <input id="dropzone-file" type="file" className="hidden" />
+
+                          <input
+                            id="dropzone-file"
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            className="hidden"
+                            onChange={(e) => handleFiles(e.target.files)}
+                          />
                         </label>
+
+                        {images.length > 0 && (
+                          <div className="grid grid-cols-2 gap-2">
+                            {images.map((image, index) => (
+                              <div key={index} className="relative">
+                                <img
+                                  src={image.preview}
+                                  alt={`preview-${index}`}
+                                  className="w-full h-28 object-cover rounded-md border"
+                                />
+
+                                <button
+                                  type="button"
+                                  onClick={() => removeImage(index)}
+                                  className="absolute top-1 right-1 bg-black/70 text-white rounded-full w-6 h-6 flex items-center justify-center"
+                                >
+                                  <X size={14} />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </TabsContent>
@@ -390,13 +730,13 @@ const Products = () => {
                             </CommandDialog>
                           </div>
                           <div className='flex flex-col p-1 gap-1 rounded-md'>
-                            {selected.map((sel, index) => (
+                            {selectedCategories.map((sel, index) => (
                               <Item variant='outline' size='sm' key={index}>
                                 <ItemMedia>
                                   <Dot />
                                 </ItemMedia>
                                 <ItemContent className="flex justify-center items-start">
-                                  <ItemTitle >{sel.category + " > " + sel.sub}</ItemTitle>
+                                  <ItemTitle >{sel}</ItemTitle>
                                 </ItemContent>
                                 <ItemActions>
                                   <button>
@@ -446,15 +786,72 @@ const Products = () => {
                         </FieldGroup>
                       </div>
 
-                      <div className="flex items-center justify-center h-full">
-                        <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-64 bg-neutral-secondary-medium border border-dashed border-default-strong rounded-base cursor-pointer hover:bg-neutral-tertiary-medium">
+                      <div className="flex flex-col gap-4 justify-center">
+                        <label
+                          htmlFor="dropzone-file"
+                          onDragOver={(e) => e.preventDefault()}
+                          onDrop={(e) => {
+                            e.preventDefault();
+                            handleFiles(e.dataTransfer.files);
+                          }}
+                          className="flex flex-col items-center justify-center w-full h-64 bg-neutral-secondary-medium border border-dashed border-default-strong rounded-base cursor-pointer hover:bg-neutral-tertiary-medium"
+                        >
                           <div className="flex flex-col items-center justify-center text-body pt-5 pb-6">
-                            <svg className="w-8 h-8 mb-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h3a3 3 0 0 0 0-6h-.025a5.56 5.56 0 0 0 .025-.5A5.5 5.5 0 0 0 7.207 9.021C7.137 9.017 7.071 9 7 9a4 4 0 1 0 0 8h2.167M12 19v-9m0 0-2 2m2-2 2 2" /></svg>
-                            <p className="mb-2 text-sm"><span className="font-semibold">Click to upload</span> or drag and drop</p>
-                            <p className="text-xs">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
+                            <svg
+                              className="w-8 h-8 mb-4"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                stroke="currentColor"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M15 17h3a3 3 0 0 0 0-6h-.025a5.56 5.56 0 0 0 .025-.5A5.5 5.5 0 0 0 7.207 9.021C7.137 9.017 7.071 9 7 9a4 4 0 1 0 0 8h2.167M12 19v-9m0 0-2 2m2-2 2 2"
+                              />
+                            </svg>
+
+                            <p className="mb-2 text-sm">
+                              <span className="font-semibold">Click para subir</span> o arrastra imágenes
+                            </p>
+
+                            <p className="text-xs">
+                              {images.length}/5 imágenes seleccionadas
+                            </p>
                           </div>
-                          <input id="dropzone-file" type="file" className="hidden" />
+
+                          <input
+                            id="dropzone-file"
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            className="hidden"
+                            onChange={(e) => handleFiles(e.target.files)}
+                          />
                         </label>
+
+                        {images.length > 0 && (
+                          <div className="grid grid-cols-2 gap-2">
+                            {images.map((image, index) => (
+                              <div key={index} className="relative">
+                                <img
+                                  src={image.preview}
+                                  alt={`preview-${index}`}
+                                  className="w-full h-28 object-cover rounded-md border"
+                                />
+
+                                <button
+                                  type="button"
+                                  onClick={() => removeImage(index)}
+                                  className="absolute top-1 right-1 bg-black/70 text-white rounded-full w-6 h-6 flex items-center justify-center"
+                                >
+                                  <X size={14} />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </TabsContent>
@@ -466,7 +863,7 @@ const Products = () => {
                   <DialogClose asChild>
                     <Button variant='outline'>Cancelar</Button>
                   </DialogClose>
-                  <Button>Guardar</Button>
+                  <Button onClick={() =>{console.log(watch())}}>Guardar</Button>
                 </DialogFooter>
 
               </DialogContent>
