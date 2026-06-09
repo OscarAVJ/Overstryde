@@ -129,13 +129,15 @@ ordersController.updateOrder = async (req, res) => {
       validateDataResult.order,
       { new: true, runValidators: true }
     );
-
     return res.status(200).json({
       message: "Order updated successfully",
       order: updatedOrder,
     });
   } catch (error) {
-    return res.status(500).json({ message: "Internal server error" });
+    console.error(error);
+    return res.status(500).json({
+      message: "Internal server error",
+    });
   }
 };
 
