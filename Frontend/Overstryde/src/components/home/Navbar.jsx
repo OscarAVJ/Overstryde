@@ -1,12 +1,10 @@
-import { NavLink } from "react-router";
+import { NavLink } from "react-router-dom";
 import {
     NavigationMenu,
     NavigationMenuContent,
     NavigationMenuItem,
-    NavigationMenuLink,
     NavigationMenuList,
     NavigationMenuTrigger,
-    navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu"
 import { Input } from "../common/Input";
 import { Heart, ShoppingBag, User, X } from "lucide-react";
@@ -16,41 +14,34 @@ import { CustomDrawerFooter } from "../shoppingCart/ShoppingDrawerFooter";
 import { DrawerClose } from "../ui/drawer";
 import { ShoppingCart } from "../shoppingCart/ShoppingCart";
 import { CustomNavigationMenuContent } from "./CustomNavigationMenuContent";
-import { navigationData } from "@/data/navData";
+import useCategories from "@/hooks/useCategories";
 
 export const Navbar = () => {
+    const { navigationCategories } = useCategories()
+
     return (
         <nav className="hidden md:block sticky items-center top-0 z-50 w-full h-13 bg-white shadow-2xs">
             <div className={"m-1 flex justify-between"}>
                 <NavigationMenu>
                     <NavigationMenuList>
-                        <NavigationMenuItem>
-                            <NavigationMenuTrigger className={"text-base"}>{navigationData[0].category}</NavigationMenuTrigger>
-                            <NavigationMenuContent className="p-6">
-                                <div className="grid gap-2 md:w-full md:grid-cols-4 lg:w-150">
-                                    {navigationData[0].items.map(item => <CustomNavigationMenuContent items={item.links} category={item.title} />
-                                    )}
-                                </div>
-                            </NavigationMenuContent>
-                        </NavigationMenuItem>
-                        <NavigationMenuItem className="hidden md:flex">
-                            <NavigationMenuTrigger className={"text-base"}>{navigationData[1].category}</NavigationMenuTrigger>
-                            <NavigationMenuContent className="p-6">
-                                <div className="grid gap-2 md:w-full md:grid-cols-4  lg:w-150">
-                                    {navigationData[1].items.map(item => <CustomNavigationMenuContent items={item.links} category={item.title} />
-                                    )}
-                                </div>
-                            </NavigationMenuContent>
-                        </NavigationMenuItem>
-                        <NavigationMenuItem className="hidden md:flex">
-                            <NavigationMenuTrigger className={"text-base"}>{navigationData[2].category}</NavigationMenuTrigger>
-                            <NavigationMenuContent className="p-6">
-                                <div className="grid gap-2 md:w-full md:grid-cols-4  lg:w-150">
-                                    {navigationData[2].items.map(item => <CustomNavigationMenuContent items={item.links} category={item.title} />
-                                    )}
-                                </div>
-                            </NavigationMenuContent>
-                        </NavigationMenuItem>
+                        {navigationCategories.map((navigationCategory) => (
+                            <NavigationMenuItem key={navigationCategory.type} className="hidden md:flex">
+                                <NavigationMenuTrigger className={"text-base"}>
+                                    {navigationCategory.category}
+                                </NavigationMenuTrigger>
+                                <NavigationMenuContent className="p-6">
+                                    <div className="grid gap-2 md:w-full md:grid-cols-4 lg:w-150">
+                                        {navigationCategory.items.map((item) => (
+                                            <CustomNavigationMenuContent
+                                                key={item.id}
+                                                items={item.links}
+                                                category={item.title}
+                                            />
+                                        ))}
+                                    </div>
+                                </NavigationMenuContent>
+                            </NavigationMenuItem>
+                        ))}
                     </NavigationMenuList>
                 </NavigationMenu>
                 <div>
@@ -65,7 +56,7 @@ export const Navbar = () => {
                     <NavLink to={"/login"} className={""}>
                         <User size={25} className="transition-transform duration-300 hover:-translate-y-1" />
                     </NavLink>
-                    <CustomDrawer direction={"right"} icon={<ShoppingBag size={30} className="transition-transform duration-300 hover:-translate-y-1 text-black" />} header={<CustomDrawerHeader title={"Carrito de compras"} description={"Todas las prendas que tu escojas estarán aca"} icon={<DrawerClose>
+                    <CustomDrawer direction={"right"} icon={<ShoppingBag size={30} className="transition-transform duration-300 hover:-translate-y-1 text-black" />} header={<CustomDrawerHeader title={"Carrito de compras"} description={"Todas las prendas que tu escojas estaran aca"} icon={<DrawerClose>
                         <X size={25} />
                     </DrawerClose>
                     } />} content={<ShoppingCart />
