@@ -18,7 +18,11 @@ export function MenuAccordion({ columns }) {
                     <AccordionTrigger>{category.category}</AccordionTrigger>
                     <AccordionContent>
                         <div className="flex flex-col gap-2">
-                            {category.items.map((item) => <Link key={item}>{item}</Link>)}
+                            {category.items.map((item) => (
+                                <Link key={item.href} to={item.href}>
+                                    {item.label}
+                                </Link>
+                            ))}
                         </div>
                     </AccordionContent>
                 </AccordionItem>

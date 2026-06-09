@@ -8,9 +8,14 @@ const productModel = new Schema(
     images: [imageSchema],
     description: { type: String },
     fit: { type: String },
-    product_type: { type: String },
-    gender: { type: String },
-    categories: [String],
+    product_type: { type: String, enum: ["alimenticio", "ropa"] },
+    gender: { type: String, enum: ["male", "female", "accesory"] },
+    subCategories: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "subcategories",
+      },
+    ],
     variants: [varianSchema],
     price: { type: Number },
     expiration_date: { type: Date },
