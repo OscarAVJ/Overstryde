@@ -1,6 +1,7 @@
 import cookieParser from "cookie-parser"
 import express from "express"
 import cors from "cors"
+import ordersRoute from "./src/modules/orders/orders.route.js"
 import productRouter from "./src/modules/products/product.route.js"
 import reviewsRoute from "./src/modules/productReviews/productReviews.route.js"
 import cartRouter from "./src/modules/cart/cart.route.js"
@@ -21,6 +22,7 @@ app.use(cors({
 }))
 app.use(express.json())
 app.use(cookieParser())
+app.use("/api/orders", ordersRoute)
 app.use("/api/customers", customerRoutes);
 app.use("/api/registerCustomers", registerCustomersRoutes);
 app.use("/api/logout", logoutRoutes);
