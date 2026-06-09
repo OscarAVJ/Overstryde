@@ -88,12 +88,6 @@ const validateData = (payload, { isUpdate = false } = {}) => {
     for (const variant of variants) {
       variant.size = variant.size?.trim();
       variant.color = variant.color?.trim();
-      if (!variant.size) {
-        return { error: "Variant size required" };
-      }
-      if (!variant.color) {
-        return { error: "Variant color required" };
-      }
       if (!variant.stock && variant.stock !== 0) {
         return { error: "Variant stock required" };
       }
