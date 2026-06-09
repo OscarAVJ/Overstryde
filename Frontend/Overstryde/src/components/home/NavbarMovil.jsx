@@ -23,7 +23,7 @@ import { CustomDrawerFooter } from '../shoppingCart/ShoppingDrawerFooter'
 export const NavbarMovil = () => {
 
     return (
-        <div className='flex w-full px-2 justify-between items-center bg-white shadow-md fixed z-50 md:hidden'>
+        <div className='flex w-full px-2 justify-between items-center bg-white shadow-md sticky top-0 z-50 md:hidden'>
             <CustomDrawer direction={"left"} icon={<Menu />} header={<CustomDrawerHeader title={"Explora OVERSTRYD"} description={"Encuentra ropa deportiva diseñada para rendimiento y estilo"} icon={<Heart size={25} className="transition-transform duration-300 hover:-translate-y-1" />
             } />} content={<NavTabs />
             } />
