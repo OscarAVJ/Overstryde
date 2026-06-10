@@ -1,5 +1,6 @@
 import express from "express";
 import adminsController from "./admins.controller.js";
+import upload from "../../middlewares/multer.js";
 
 const router = express.Router();
 
@@ -8,7 +9,7 @@ router.route("/")
 
 router.route("/:id")
 .get(adminsController.getAdminById)
-.put(adminsController.updateAdmins)
+.put(upload.single("photo"), adminsController.updateAdmins)
 .delete(adminsController.deleteAdmins);
 
 export default router;
