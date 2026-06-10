@@ -18,7 +18,7 @@ export const getProductById = async (id) => {
     try {
         const response = await fetch(`${API_URL}/${id}`);
 
-        if(!response.ok){
+        if (!response.ok) {
             throw new Error("Error obteniendo el producto.")
         }
 
@@ -29,36 +29,49 @@ export const getProductById = async (id) => {
 
 }
 
-export const createProduct = async (product) =>{
+export const createProduct = async (product) => {
     const formData = new FormData();
 
+    //Campos para todos los productos
     formData.append("name", product.name);
     formData.append("description", product.description);
-    formData.append("fit", product.fit);
     formData.append("product_type", product.product_type);
-    formData.append("gender", product.gender);
     formData.append("price", product.price);
-
     formData.append(
-        "categories",
-        JSON.stringify(product.categories)
+        "subCategories",
+        JSON.stringify(product.subCategories)
     );
-    
-    formData.append(
-        "variants",
-        JSON.stringify(product.variants)
-    );
+    product.images.forEach((image) => {
+        formData.append("images", image.file);
+    });
 
-    if (product.expiration_date) {
+    //Campos para productos de ropa
+    if (product.product_type === "ropa") {
+        formData.append(
+            "variants",
+            JSON.stringify(product.variants)
+        );
+        formData.append("fit", product.fit);
+        formData.append("gender", product.gender);
+    }
+
+    //Si se trata de un alimento
+    if (product.expiration_date && product.product_type === "alimenticio") {
         formData.append(
             "expiration_date",
             product.expiration_date
         );
     }
 
-    product.images.forEach((image) => {
-        formData.append("images", image);
-    });
+    //Cuando no se trata de ropa, el stock va afuera
+    if (product.product_type != "ropa") {
+        formData.append("stock", product.stock)
+        formData.append("gender", "accesory");
+        formData.append(
+            "subCategories",
+            JSON.stringify([])
+        );
+    }
 
     const response = await fetch(API_URL, {
         method: "POST",

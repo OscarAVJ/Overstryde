@@ -22,10 +22,13 @@ import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { es } from 'date-fns/locale'
 import { useForm, Controller, useFieldArray } from "react-hook-form"
+import { toast } from "sonner"
 
 
 const Products = () => {
 
+  //FECHA VENCIMIENTO ALIMENTOS
+  const [dueDate, setDueDate] = useState(new Date());
 
   //Usando react-hook-form para los datos del dialog
   const {
@@ -43,19 +46,85 @@ const Products = () => {
       images: [],
       description: "",
       fit: "",
-      product_type: "",
+      product_type: "general",
       gender: "",
-      categories: [],
+      subCategories: [],
       variants: [],
-      price: ""
+      price: "",
+      stock: null,
+      dueDate: null
     }
   })
 
   //Constante para saber el valor de images
   const images = watch("images");
 
+  //Constante para determinar el product_type
+  const [productType, setProductType] = useState("general");
+
   //HOOK PERSONALIZADO DE PRODUCTOS
   const { products, loading, error, formData, setFormData, addProduct, editProduct, removeProduct, getProduct } = useProducts();
+
+  const onSubmit = (data) => {
+
+    //validaciones manuales
+    if (data.subCategories.length === 0) {
+      toast.error("Formulario incompleto.", {
+        description: "Debe escoger al menos una subcategoria.",
+        position: "top-right",
+        descriptionClassName: "!text-black"
+      })
+      return
+    }
+
+    if (data.product_type === "ropa" &&
+      data.variants.length === 0
+    ) {
+      toast.error("Formulario incompleto.", {
+        description: "Debe crear al menos una variante para la prenda",
+        position: "top-right",
+        descriptionClassName: "!text-black"
+      })
+      return
+    }
+
+    if(data.product_type === "ropa" && data.fit === ""){
+      toast.error("Formulario incompleto.", {
+        description: "Tiene que proporcionar el fit de la prenda.",
+        position: "top-right",
+        descriptionClassName: "!text-black"
+      })
+      return
+    }
+
+    if (data.images.length === 0) {
+      toast.error("Formulario incompleto.", {
+        description: "El producto debe tener al menos una foto.",
+        position: "top-right",
+        descriptionClassName: "!text-black"
+      })
+      return
+    }
+
+    if(data.product_type != "ropa" && !data.stock){
+      toast.error("Formulario incompleto.", {
+        description: "Ingrese el stock del producto.",
+        position: "top-right",
+        descriptionClassName: "!text-black"
+      })
+      return
+    }
+
+    addProduct(data);
+  }
+
+  const onError = (errors) => {
+    toast.error("Formulario incompleto.", {
+      description: Object.values(errors)[0]?.message,
+      position: "top-right",
+      descriptionClassName: "!text-black"
+    })
+  }
 
   //DIALOG PARA ESCOGER SUBCATEGORIAS
   const [openCategories, setOpenCategories] = useState(false)
@@ -81,44 +150,47 @@ const Products = () => {
 
   //Método para añadir cada variante al array
   const addVariant = () => {
-    append({
-      color: variantData.color,
-      hexColor: variantData.hexColor,
-      size: variantData.size,
-      stock: Number(variantData.stock)
-    })
+    if (variantData.color == "" || variantData.hexColor == "" || variantData.size == "" || variantData.stock == 0 || !variantData.stock) {
+      alert("Llene todos los campos de la variante.")
+    } else {
+      append({
+        color: variantData.color,
+        hexColor: variantData.hexColor,
+        size: variantData.size,
+        stock: Number(variantData.stock)
+      })
 
-    //Después de añadirlo al array limpiamos el variantData
-    setVariantData({
-      color: "",
-      hexColor: "",
-      size: "",
-      stock: 0
-    })
+      //Después de añadirlo al array limpiamos el variantData
+      setVariantData({
+        color: "",
+        hexColor: "",
+        size: "",
+        stock: 0
+      })
 
-    setOpenVariantEdit(false)
+      setOpenVariantEdit(false)
+    }
   }
 
-  //FECHA VENCIMIENTO ALIMENTOS
-  const [dueDate, setDueDate] = useState(new Date());
 
-  const selectedCategories = watch("categories")
+
+  const selectedCategories = watch("subCategories")
 
   const categories = [
     {
       name: "Hombres",
       subcategories: [
-        "Camisas",
-        "Camisetas",
-        "Pants"
+        "6a2855be8bc00a32dfc2842f",
+        "6a2855be8bc00a32dfc2842f",
+        "6a2855be8bc00a32dfc2842f"
       ]
     },
     {
       name: "Mujeres",
       subcategories: [
-        "Blusas",
-        "Pantalones",
-        "Vinchas"
+        "6a2855be8bc00a32dfc2842f",
+        "6a2855be8bc00a32dfc2842f",
+        "6a2855be8bc00a32dfc2842f"
       ]
     }
   ]
@@ -181,16 +253,27 @@ const Products = () => {
               <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader className="flex flex-col gap-4 sm:gap-0 sm:flex-row justify-between items-center">
                   <div>
-                    <DialogTitle className="text-2xl font-bold">Agregar nuevo producto</DialogTitle>
+                    <DialogTitle className="text-2xl font-bold ">Agregar nuevo producto</DialogTitle>
                     <DialogDescription>Complete todos los datos del nuevo producto</DialogDescription>
                   </div>
                 </DialogHeader>
                 <Separator></Separator>
-                <Tabs>
+                <Tabs
+                  value={productType}
+                  onValueChange={(value) => {
+                    setProductType(value);
+                    setValue("product_type", value)
+                  }}
+                >
                   <TabsList>
                     <TabsTrigger value="general">Producto general</TabsTrigger>
-                    <TabsTrigger value="food">Producto alimenticio</TabsTrigger>
-                    <TabsTrigger value="clothes">Ropa</TabsTrigger>
+                    <TabsTrigger value="alimenticio">Producto alimenticio</TabsTrigger>
+                    <TabsTrigger value="ropa" onClick={() => {
+                      console.log(watch())
+                    }}
+                    >
+                      Ropa
+                    </TabsTrigger>
                   </TabsList>
 
                   {/*TAB DE PRODUCTO GENERAL */}
@@ -200,20 +283,58 @@ const Products = () => {
                         <FieldGroup>
                           <Field>
                             <FieldLabel htmlFor="productName">Nombre del producto<span className='text-red-500'>*</span></FieldLabel>
-                            <Input id="productName" name="name" placeholder="Introduzca nombre del producto..." />
+                            <Input
+                              id="productName"
+                              name="name"
+                              placeholder="Introduzca nombre del producto..."
+                              {...register("name", {
+                                required: "El nombre es obligatorio."
+                              })}
+                            />
                           </Field>
+
                           <div className='flex flex-row gap-2'>
-                            <FieldLabel>Categorías</FieldLabel>
-                            <Button className="bg-gray-300 text-black h-6 text-sm" onClick={() => setOpenCategories(true)}><PlusIcon className='h-4 w-4' />Añadir</Button>
+                            <FieldLabel>Subcategorías</FieldLabel>
+                            <Button type="button" className="bg-gray-300 text-black h-6 text-sm" onClick={() => setOpenCategories(true)}><PlusIcon className='h-4 w-4' />Añadir</Button>
                             <CommandDialog open={openCategories} onOpenChange={setOpenCategories}>
                               <Command>
-                                <CommandInput placeholder="Buscar categoría por nombre." />
+                                <CommandInput placeholder="Buscar subcategoría por nombre." />
                                 <CommandList>
                                   <CommandEmpty>No se encontraron resultados.</CommandEmpty>
                                   {categories.map((category, index) => (
                                     <CommandGroup heading={category.name} key={index}>
                                       {category.subcategories.map((sub, index) => (
-                                        <CommandItem key={index}>{sub}</CommandItem>
+                                        <CommandItem
+                                          key={index}
+                                          onSelect={() => {
+                                            const currentCategories = watch("subCategories")
+
+                                            const exists = currentCategories.includes(sub);
+
+                                            if (exists) {
+                                              setValue("subCategories",
+                                                currentCategories.filter(
+                                                  category => category !== sub
+                                                )
+                                              )
+                                            } else {
+                                              setValue("subCategories", [
+                                                ...currentCategories,
+                                                sub
+                                              ]);
+                                            }
+
+                                            console.log(watch())
+                                            setOpenCategories(false);
+
+                                          }}
+                                        >
+                                          <Check
+                                            className={`mr-2 size-4 ${watch("subCategories").includes(sub) ? "opacity-100" : "opacity-0"
+                                              }`}
+                                          />
+                                          {sub}
+                                        </CommandItem>
                                       ))}
                                     </CommandGroup>
                                   ))}
@@ -222,34 +343,82 @@ const Products = () => {
                             </CommandDialog>
                           </div>
                           <div className='flex flex-col p-1 gap-1 rounded-md'>
-                            {selectedCategories.map((sel, index) => (
-                              <Item variant='outline' size='sm' key={index}>
-                                <ItemMedia>
-                                  <Dot />
-                                </ItemMedia>
-                                <ItemContent className="flex justify-center items-start">
-                                  <ItemTitle >{sel}</ItemTitle>
-                                </ItemContent>
-                                <ItemActions>
-                                  <button>
-                                    <X className="size-4 cursor-pointer" />
-                                  </button>
-                                </ItemActions>
-                              </Item>
-                            ))}
+                            {
+                              selectedCategories.length === 0 ? (
+                                <p className='text-gray-500'>Sin subcategorías seleccionadas</p>
+                              ) : (
+                                selectedCategories.map((sel, index) => (
+                                  <Item
+                                    variant='outline'
+                                    size='sm'
+                                    key={index}
+                                  >
+                                    <ItemMedia>
+                                      <Dot />
+                                    </ItemMedia>
+
+                                    <ItemContent className="flex justify-center items-start">
+                                      <ItemTitle>{sel}</ItemTitle>
+                                    </ItemContent>
+
+                                    <ItemActions>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          const currentCategories =
+                                            getValues("subCategories");
+
+                                          setValue(
+                                            "subCategories",
+                                            currentCategories.filter(
+                                              category => category !== sel
+                                            )
+                                          );
+                                        }}
+                                      >
+                                        <X className="size-4 cursor-pointer" />
+                                      </button>
+                                    </ItemActions>
+                                  </Item>
+                                ))
+                              )
+                            }
                           </div>
+
                           <Field>
                             <FieldLabel htmlFor="productDesc">Descripción</FieldLabel>
-                            <Textarea id="productDesc" placeholder="Descripción del producto..."></Textarea>
+                            <Textarea
+                              id="productDesc"
+                              placeholder="Descripción del producto..."
+                              {...register("description", {
+                                required: "Una descripción del producto es obligatoria."
+                              })}
+                            />
                           </Field>
+
                           <div className='flex flex-row gap-2'>
                             <Field>
                               <FieldLabel htmlFor="productPrice">Precio</FieldLabel>
-                              <Input id="productPrice" type="number" placeholder="$0.00"></Input>
+                              <Input
+                                id="productPrice"
+                                type="number"
+                                placeholder="$0.00"
+                                {...register("price", {
+                                  valueAsNumber: true,
+                                  required: "El precio del producto es obligatorio."
+                                })}
+                              />
                             </Field>
                             <Field>
                               <FieldLabel htmlFor="productStock">Stock</FieldLabel>
-                              <Input id="productStock" type="number" placeholder="0"></Input>
+                              <Input 
+                                id="productStock" 
+                                type="number" 
+                                placeholder="0"
+                                {...register("stock", {
+                                  valueAsNumber: true
+                                })}
+                              />
                             </Field>
                           </div>
                         </FieldGroup>
@@ -326,7 +495,7 @@ const Products = () => {
                   </TabsContent>
 
                   {/* TAB DE PRODUCTOS DE ROPA */}
-                  <TabsContent value="clothes">
+                  <TabsContent value="ropa">
                     <div className='grid grid-cols-1 sm:grid-cols-3 gap-6 p-2'>
                       <div className='sm:col-span-2'>
                         <FieldGroup>
@@ -342,11 +511,11 @@ const Products = () => {
                             />
                           </Field>
                           <div className='flex flex-row gap-2'>
-                            <FieldLabel>Categorías</FieldLabel>
-                            <Button className="bg-gray-300 text-black h-6 text-sm" onClick={() => setOpenCategories(true)}><PlusIcon className='h-4 w-4' />Añadir</Button>
+                            <FieldLabel>Subcategorías</FieldLabel>
+                            <Button type="button" className="bg-gray-300 text-black h-6 text-sm" onClick={() => setOpenCategories(true)}><PlusIcon className='h-4 w-4' />Añadir</Button>
                             <CommandDialog open={openCategories} onOpenChange={setOpenCategories}>
                               <Command>
-                                <CommandInput placeholder="Buscar categoría por nombre." />
+                                <CommandInput placeholder="Buscar subcategoría por nombre." />
                                 <CommandList>
                                   <CommandEmpty>No se encontraron resultados.</CommandEmpty>
                                   {categories.map((category, index) => (
@@ -355,18 +524,18 @@ const Products = () => {
                                         <CommandItem
                                           key={index}
                                           onSelect={() => {
-                                            const currentCategories = watch("categories")
+                                            const currentCategories = watch("subCategories")
 
                                             const exists = currentCategories.includes(sub);
 
                                             if (exists) {
-                                              setValue("categories",
+                                              setValue("subCategories",
                                                 currentCategories.filter(
                                                   category => category !== sub
                                                 )
                                               )
                                             } else {
-                                              setValue("categories", [
+                                              setValue("subCategories", [
                                                 ...currentCategories,
                                                 sub
                                               ]);
@@ -378,7 +547,7 @@ const Products = () => {
                                           }}
                                         >
                                           <Check
-                                            className={`mr-2 size-4 ${watch("categories").includes(sub) ? "opacity-100" : "opacity-0"
+                                            className={`mr-2 size-4 ${watch("subCategories").includes(sub) ? "opacity-100" : "opacity-0"
                                               }`}
                                           />
                                           {sub}
@@ -391,33 +560,46 @@ const Products = () => {
                             </CommandDialog>
                           </div>
                           <div className='flex flex-col p-1 gap-1 rounded-md'>
-                            {selectedCategories.map((sel, index) => (
-                              <Item
-                                variant='outline'
-                                size='sm'
-                                key={index}
-                              >
-                                <ItemMedia>
-                                  <Dot />
-                                </ItemMedia>
-                                <ItemContent className="flex justify-center items-start">
-                                  <ItemTitle >{sel}</ItemTitle>
-                                </ItemContent>
-                                <ItemActions>
-                                  <button onClick={() => {
-                                    const currentCategories = watch("categories")
+                            {
+                              selectedCategories.length === 0 ? (
+                                <p className='text-gray-500'>Sin subcategorías seleccionadas</p>
+                              ) : (
+                                selectedCategories.map((sel, index) => (
+                                  <Item
+                                    variant='outline'
+                                    size='sm'
+                                    key={index}
+                                  >
+                                    <ItemMedia>
+                                      <Dot />
+                                    </ItemMedia>
 
-                                    setValue("categories",
-                                      currentCategories.filter(
-                                        category => category !== sel
-                                      )
-                                    )
-                                  }}>
-                                    <X className="size-4 cursor-pointer" />
-                                  </button>
-                                </ItemActions>
-                              </Item>
-                            ))}
+                                    <ItemContent className="flex justify-center items-start">
+                                      <ItemTitle>{sel}</ItemTitle>
+                                    </ItemContent>
+
+                                    <ItemActions>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          const currentCategories =
+                                            getValues("subCategories");
+
+                                          setValue(
+                                            "subCategories",
+                                            currentCategories.filter(
+                                              category => category !== sel
+                                            )
+                                          );
+                                        }}
+                                      >
+                                        <X className="size-4 cursor-pointer" />
+                                      </button>
+                                    </ItemActions>
+                                  </Item>
+                                ))
+                              )
+                            }
                           </div>
 
                           <Field>
@@ -425,9 +607,12 @@ const Products = () => {
                             <Textarea
                               id="productDesc"
                               placeholder="Descripción del producto..."
-                              {...register("description")}
+                              {...register("description", {
+                                required: "Una descripción del producto es obligatoria."
+                              })}
                             />
                           </Field>
+
                           <Field>
 
                             <FieldLabel>Género</FieldLabel>
@@ -439,7 +624,7 @@ const Products = () => {
                               }}
                               render={({ field }) => (
                                 <Select
-                                  defaultValue="Hombre"
+                                  defaultValue="male"
                                   value={field.value}
                                   onValueChange={field.onChange}
                                 >
@@ -448,8 +633,8 @@ const Products = () => {
                                   </SelectTrigger>
                                   <SelectContent position="popper">
                                     <SelectGroup>
-                                      <SelectItem value="Hombre">Hombre</SelectItem>
-                                      <SelectItem value="Mujer">Mujer</SelectItem>
+                                      <SelectItem value="male">Hombre</SelectItem>
+                                      <SelectItem value="female">Mujer</SelectItem>
                                     </SelectGroup>
                                   </SelectContent>
                                 </Select>
@@ -475,7 +660,7 @@ const Products = () => {
                                 placeholder="$0.00"
                                 {...register("price", {
                                   valueAsNumber: true,
-                                  required: true
+                                  required: "El precio del producto es obligatorio."
                                 })}
                               />
                             </Field>
@@ -484,145 +669,149 @@ const Products = () => {
                           <div className='flex flex-row gap-2'>
                             <FieldLabel>Variantes</FieldLabel>
                             <Dialog open={openVariantEdit} onOpenChange={setOpenVariantEdit}>
-                              <form>
-                                <DialogTrigger asChild>
-                                  <Button className="bg-gray-300 text-black h-6 text-sm"><PlusIcon className='h-4 w-4' />Añadir variante</Button>
-                                </DialogTrigger>
-                                <DialogContent>
-                                  <DialogHeader>
-                                    <DialogTitle className="hidden">
-                                      Variante de producto
-                                    </DialogTitle>
-                                    <DialogDescription>
-                                      Añadir una variante de la prenda.
-                                    </DialogDescription>
-                                  </DialogHeader>
-                                  <FieldGroup>
-                                    <div className='flex flex-row gap-2'>
-                                      <Field>
-                                        <FieldLabel htmlFor="variantColorText">Color</FieldLabel>
-                                        <Input
-                                          id="variantColorText"
-                                          type="text"
-                                          placeholder="'Rojo'"
-                                          value={variantData.color}
-                                          onChange={(e) =>
-                                            setVariantData(prev => ({
-                                              ...prev,
-                                              color: e.target.value
-                                            }))
-                                          }
-                                        />
 
-                                      </Field>
-                                      <Field>
-                                        <FieldLabel htmlFor="variantColorHex">Definir color</FieldLabel>
-                                        <Input
-                                          id="variantColorHex"
-                                          type="color"
-                                          placeholder="0"
-                                          value={variantData.hexColor}
-                                          onChange={(e) =>
-                                            setVariantData(prev => ({
-                                              ...prev,
-                                              hexColor: e.target.value
-                                            }))
-                                          }
-                                        />
-                                      </Field>
-                                    </div>
-                                    <div className='flex flex-row gap-2'>
-                                      <Field>
-                                        <FieldLabel htmlFor="variantSize">Talla</FieldLabel>
-                                        <Input
-                                          id="variantSize"
-                                          type="text"
-                                          placeholder="'M'"
-                                          value={variantData.size}
-                                          onChange={(e) =>
-                                            setVariantData(prev => ({
-                                              ...prev,
-                                              size: e.target.value
-                                            }))
-                                          }
-                                        />
-                                      </Field>
-                                      <Field>
-                                        <FieldLabel htmlFor="variantStock">Stock</FieldLabel>
-                                        <Input
-                                          id="variantStock"
-                                          type="number"
-                                          placeholder="0"
-                                          value={variantData.stock}
-                                          onChange={(e) => {
-                                            setVariantData(prev => ({
-                                              ...prev,
-                                              stock: Number(e.target.value)
-                                            }))
-                                          }}
-                                        />
-                                      </Field>
-                                    </div>
-                                  </FieldGroup>
+                              <DialogTrigger asChild>
+                                <Button className="bg-gray-300 text-black h-6 text-sm"><PlusIcon className='h-4 w-4' />Añadir variante</Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle className="hidden">
+                                    Variante de producto
+                                  </DialogTitle>
+                                  <DialogDescription>
+                                    Añadir una variante de la prenda.
+                                  </DialogDescription>
+                                </DialogHeader>
+                                <FieldGroup>
+                                  <div className='flex flex-row gap-2'>
+                                    <Field>
+                                      <FieldLabel htmlFor="variantColorText">Color</FieldLabel>
+                                      <Input
+                                        id="variantColorText"
+                                        type="text"
+                                        placeholder="'Rojo'"
+                                        value={variantData.color}
+                                        onChange={(e) =>
+                                          setVariantData(prev => ({
+                                            ...prev,
+                                            color: e.target.value
+                                          }))
+                                        }
+                                      />
 
-                                  <DialogFooter>
-                                    <DialogClose asChild>
-                                      <Button variant='outline'>Cancelar</Button>
-                                    </DialogClose>
-                                    <Button
-                                      onClick={() => addVariant()}
-                                    >
-                                      Guardar
-                                    </Button>
-                                  </DialogFooter>
+                                    </Field>
+                                    <Field>
+                                      <FieldLabel htmlFor="variantColorHex">Definir color</FieldLabel>
+                                      <Input
+                                        id="variantColorHex"
+                                        type="color"
+                                        placeholder="0"
+                                        value={variantData.hexColor}
+                                        onChange={(e) =>
+                                          setVariantData(prev => ({
+                                            ...prev,
+                                            hexColor: e.target.value
+                                          }))
+                                        }
+                                      />
+                                    </Field>
+                                  </div>
+                                  <div className='flex flex-row gap-2'>
+                                    <Field>
+                                      <FieldLabel htmlFor="variantSize">Talla</FieldLabel>
+                                      <Input
+                                        id="variantSize"
+                                        type="text"
+                                        placeholder="'M'"
+                                        value={variantData.size}
+                                        onChange={(e) =>
+                                          setVariantData(prev => ({
+                                            ...prev,
+                                            size: e.target.value
+                                          }))
+                                        }
+                                      />
+                                    </Field>
+                                    <Field>
+                                      <FieldLabel htmlFor="variantStock">Stock</FieldLabel>
+                                      <Input
+                                        id="variantStock"
+                                        type="number"
+                                        placeholder="0"
+                                        value={variantData.stock}
+                                        onChange={(e) => {
+                                          setVariantData(prev => ({
+                                            ...prev,
+                                            stock: Number(e.target.value)
+                                          }))
+                                        }}
+                                      />
+                                    </Field>
+                                  </div>
+                                </FieldGroup>
 
-                                </DialogContent>
-                              </form>
+                                <DialogFooter>
+                                  <DialogClose asChild>
+                                    <Button variant='outline'>Cancelar</Button>
+                                  </DialogClose>
+                                  <Button
+                                    type="button"
+                                    onClick={() => addVariant()}
+                                  >
+                                    Guardar
+                                  </Button>
+                                </DialogFooter>
+
+                              </DialogContent>
+
                             </Dialog>
                           </div>
                           <ScrollArea className="w-full h-45 rounded-sm border p-3">
                             <div className='flex flex-col gap-4'>
                               <ItemGroup className="gap-1">
 
-                                {variants.map((variant, index) => (
-                                  <Item
-                                   variant='outline' 
-                                   role="listitem"
-                                   key={index}
-                                  >
-                                    <ItemMedia variant='image'>
-                                      <div 
-                                       className='h-6 w-6 border'
-                                       style={{backgroundColor: variant.hexColor}}
-                                      />
-                                    </ItemMedia>
-                                    <ItemContent>
-                                      <ItemTitle>Color "{variant.color}"</ItemTitle>
-                                      <ItemDescription>
-                                        Stock: {variant.stock} | Talla: {variant.size}
-                                      </ItemDescription>
-                                    </ItemContent>
-                                    <ItemActions>
-                                      <button onClick={() => {
-                                        setOpenVariantEdit(true)
-                                        setVariantData({
-                                          color: variant.color,
-                                          hexColor: variant.hexColor,
-                                          size: variant.size,
-                                          stock: variant.stock
-                                        })
-                                      }}>
-                                        <Pencil className="size-4 cursor-pointer" />
-                                      </button>
-                                      <button
-                                        type='button'
-                                        onClick={() => remove(index)}
-                                      >
-                                        <X className="size-4 cursor-pointer" />
-                                      </button>
-                                    </ItemActions>
-                                  </Item>
-                                ))}
+                                {variants.length === 0 ? (<p className='text-gray-500'>No hay variantes creadas.</p>)
+                                  :
+                                  (variants.map((variant, index) => (
+                                    <Item
+                                      variant='outline'
+                                      role="listitem"
+                                      key={index}
+                                    >
+                                      <ItemMedia variant='image'>
+                                        <div
+                                          className='h-6 w-6 border'
+                                          style={{ backgroundColor: variant.hexColor }}
+                                        />
+                                      </ItemMedia>
+                                      <ItemContent>
+                                        <ItemTitle>Color "{variant.color}"</ItemTitle>
+                                        <ItemDescription>
+                                          Stock: {variant.stock} | Talla: {variant.size}
+                                        </ItemDescription>
+                                      </ItemContent>
+                                      <ItemActions>
+                                        <button onClick={() => {
+                                          setOpenVariantEdit(true)
+                                          setVariantData({
+                                            color: variant.color,
+                                            hexColor: variant.hexColor,
+                                            size: variant.size,
+                                            stock: variant.stock
+                                          })
+                                        }}>
+                                          <Pencil className="size-4 cursor-pointer" />
+                                        </button>
+                                        <button
+                                          type='button'
+                                          onClick={() => remove(index)}
+                                        >
+                                          <X className="size-4 cursor-pointer" />
+                                        </button>
+                                      </ItemActions>
+                                    </Item>
+                                  )))
+                                }
 
                               </ItemGroup>
 
@@ -702,7 +891,7 @@ const Products = () => {
                   </TabsContent>
 
                   {/*TAB PARA PRODUCTOS ALIMENTICIOS */}
-                  <TabsContent value="food">
+                  <TabsContent value="alimenticio">
                     <div className='grid grid-cols-1 sm:grid-cols-3 gap-6 p-2'>
                       <div className='sm:col-span-2'>
                         <FieldGroup>
@@ -861,9 +1050,12 @@ const Products = () => {
 
                 <DialogFooter>
                   <DialogClose asChild>
-                    <Button variant='outline'>Cancelar</Button>
+                    <Button variant='outline' onClick={() => { reset(); }}>Cancelar</Button>
                   </DialogClose>
-                  <Button onClick={() =>{console.log(watch())}}>Guardar</Button>
+                  <Button type="submit" onClick={() => {
+                    console.log("CLICK");
+                    handleSubmit(onSubmit, onError)();
+                  }}>Guardar</Button>
                 </DialogFooter>
 
               </DialogContent>
@@ -959,7 +1151,7 @@ const Products = () => {
 
                     </TableCell>
 
-                    <TableCell>{product.categories[0]}</TableCell>
+                    <TableCell>{product.subCategories[0].name}</TableCell>
 
                     <TableCell>${product.price.toFixed(2)}</TableCell>
 

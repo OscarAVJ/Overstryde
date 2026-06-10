@@ -9,29 +9,33 @@ import Categories from "./pages/Categories";
 import Banners from "./pages/Banners";
 import Login from "./pages/Login"
 import ForgotPassword from "./pages/ForgotPassword";
+import { Toaster } from "./components/ui/sonner";
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
+    <>
+      <BrowserRouter>
+        <Routes>
 
-        {/*Layout para login y recuperar contraseña */}
-        <Route path="/auth" element={<AuthLayout/>}>
-          <Route path="login" element={<Login/>}/>
-          <Route path="forgotPassword" element={<ForgotPassword/>}/>
-        </Route>
+          {/*Layout para login y recuperar contraseña */}
+          <Route path="/auth" element={<AuthLayout />}>
+            <Route path="login" element={<Login />} />
+            <Route path="forgotPassword" element={<ForgotPassword />} />
+          </Route>
 
-        {/*Layout principal*/}
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Dashboard/>} />
-          <Route path="orders" element={<Orders />} />
-          <Route path="products" element={<Products/>}/>
-          <Route path="categories" element={<Categories/>}/>
-          <Route path="banners" element={<Banners/>}/>
-        </Route>
+          {/*Layout principal*/}
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="orders" element={<Orders />} />
+            <Route path="products" element={<Products />} />
+            <Route path="categories" element={<Categories />} />
+            <Route path="banners" element={<Banners />} />
+          </Route>
 
-      </Routes>
-    </BrowserRouter>
+        </Routes>
+      </BrowserRouter>
+      <Toaster/>
+    </>
   )
 }
 
