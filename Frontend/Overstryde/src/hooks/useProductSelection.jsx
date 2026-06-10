@@ -129,7 +129,7 @@ const useProductSelection = (product) => {
                 quantity,
             })
             setCartMessage("Producto agregado al carrito.")
-        } catch (error) {
+        } catch {
             setCartMessage("No se pudo agregar el producto al carrito.")
         }
     }, [addCartItem, canAddToCart, isClothing, product, quantity, selectedVariant])
