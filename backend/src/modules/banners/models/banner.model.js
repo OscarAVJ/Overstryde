@@ -14,7 +14,7 @@ const bannerSchema = new Schema(
     image: imageSchema,
     description: { type: String, trim: true },
     title: { type: String, required: true, trim: true },
-    shortcuts: [shortcutSchema],
+    shortcut: shortcutSchema,
     active: { type: Boolean, default: true },
   },
   { timestamps: true },

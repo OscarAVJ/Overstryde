@@ -1,15 +1,68 @@
 import { isValidObjectId } from "mongoose";
 import cartModel from "./models/cart.model.js";
 import productsModel from "../products/models/products.model.js";
-import ordersModel from "../orders/models/orders.model.js";
 
 const cartController = {};
 
+const populateCartProducts = (query) =>
+  query.populate("products.productId", "name price images variants");
+
+const buildCartProducts = async (products = []) => {
+  if (!Array.isArray(products) || products.length === 0) {
+    return { error: "Cart must have at least one product" };
+  }
+
+  let total = 0;
+  const newProducts = [];
+
+  for (const element of products) {
+    if (!isValidObjectId(element.productId)) {
+      return { error: "Invalid product id" };
+    }
+    if (!isValidObjectId(element.variantId)) {
+      return { error: "Invalid variant id" };
+    }
+
+    const quantity = Number(element.quantity);
+    if (!Number.isInteger(quantity) || quantity < 1) {
+      return { error: "Product quantity must be a positive integer" };
+    }
+
+    const productFound = await productsModel.findById(element.productId);
+    if (!productFound) {
+      return { error: "Product not found", status: 404 };
+    }
+
+    const variantFound = productFound.variants.id(element.variantId);
+    if (!variantFound) {
+      return { error: "Variant not found", status: 404 };
+    }
+
+    if (quantity > variantFound.stock) {
+      return {
+        error: `Only ${variantFound.stock} units available for ${productFound.name}`,
+      };
+    }
+
+    const subTotal = productFound.price * quantity;
+    total += subTotal;
+
+    newProducts.push({
+      productId: productFound._id,
+      variantId: variantFound._id,
+      option: variantFound.size,
+      color: variantFound.color,
+      quantity,
+      subTotal,
+    });
+  }
+
+  return { products: newProducts, total };
+};
+
 cartController.getCart = async (req, res) => {
   try {
-    const data = await cartModel
-      .find()
-      .populate("products.productId", "name price images");
+    const data = await populateCartProducts(cartModel.find());
     return res.status(200).json(data);
   } catch (error) {
     return res.status(500).json({ message: "Internal server error" });
@@ -23,9 +76,7 @@ cartController.getCartById = async (req, res) => {
       return res.status(400).json({ message: "Invalid cart id" });
     }
 
-    const cart = await cartModel
-      .findById(id)
-      .populate("products.productId", "name price images");
+    const cart = await populateCartProducts(cartModel.findById(id));
     if (!cart) {
       return res.status(404).json({ message: "Cart not found" });
     }
@@ -39,13 +90,8 @@ cartController.getCartById = async (req, res) => {
 cartController.getCartsByCustomerId = async (req, res) => {
   try {
     const { id } = req.params;
-    if (!isValidObjectId(id)) {
-      return res.status(400).json({ message: "Invalid cart id" });
-    }
 
-    const cart = await cartModel
-      .find({customerId: id})
-      .populate("products.productId", "name price images");
+    const cart = await populateCartProducts(cartModel.find({ customerId: id }));
     if (!cart) {
       return res.status(404).json({ message: "Cart not found" });
     }
@@ -59,53 +105,29 @@ cartController.getCartsByCustomerId = async (req, res) => {
 cartController.insertCart = async (req, res) => {
   try {
     const { customerId, products, status } = req.body;
+    const cartProductsResult = await buildCartProducts(products);
 
-    if (!Array.isArray(products) || products.length === 0) {
+    if (cartProductsResult.error) {
       return res
-        .status(400)
-        .json({ message: "Cart must have at least one product" });
-    }
-
-    let total = 0;
-    const newProducts = [];
-
-    for (const element of products) {
-      const quantity = Number(element.quantity);
-      if (!Number.isInteger(quantity) || quantity < 1) {
-        return res
-          .status(400)
-          .json({ message: "Product quantity must be a positive integer" });
-      }
-
-      const productFound = await productsModel.findById(element.productId);
-      if (!productFound) {
-        return res.status(404).json({ message: "Product not found" });
-      }
-
-      const subTotal = productFound.price * quantity;
-      total += subTotal;
-
-      newProducts.push({
-        productId: productFound._id,
-        quantity,
-        subTotal,
-      });
+        .status(cartProductsResult.status || 400)
+        .json({ message: cartProductsResult.error });
     }
 
     const newCart = new cartModel({
       customerId,
-      products: newProducts,
-      total,
+      products: cartProductsResult.products,
+      total: cartProductsResult.total,
       status,
     });
 
     const savedCart = await newCart.save();
+    const populatedCart = await populateCartProducts(cartModel.findById(savedCart._id));
+
     return res.status(201).json({
       message: "Cart created successfully",
-      cart: savedCart,
+      cart: populatedCart,
     });
   } catch (error) {
-    console.error(error)
     return res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -123,55 +145,25 @@ cartController.updateCart = async (req, res) => {
     }
 
     const { customerId, products, status } = req.body;
-    if (!isValidObjectId(customerId)) {
-      return res.status(400).json({ message: "Invalid customer id" });
-    }
+    const cartProductsResult = await buildCartProducts(products);
 
-    if (!Array.isArray(products) || products.length === 0) {
+    if (cartProductsResult.error) {
       return res
-        .status(400)
-        .json({ message: "Cart must have at least one product" });
-    }
-
-    let total = 0;
-    const newProducts = [];
-
-    for (const element of products) {
-      if (!isValidObjectId(element.productId)) {
-        return res.status(400).json({ message: "Invalid product id" });
-      }
-
-      const quantity = Number(element.quantity);
-      if (!Number.isInteger(quantity) || quantity < 1) {
-        return res
-          .status(400)
-          .json({ message: "Product quantity must be a positive integer" });
-      }
-
-      const productFound = await productsModel.findById(element.productId);
-      if (!productFound) {
-        return res.status(404).json({ message: "Product not found" });
-      }
-
-      const subTotal = productFound.price * quantity;
-      total += subTotal;
-
-      newProducts.push({
-        productId: productFound._id,
-        quantity,
-        subTotal,
-      });
+        .status(cartProductsResult.status || 400)
+        .json({ message: cartProductsResult.error });
     }
 
     foundCart.customerId = customerId;
-    foundCart.products = newProducts;
-    foundCart.total = total;
+    foundCart.products = cartProductsResult.products;
+    foundCart.total = cartProductsResult.total;
     foundCart.status = status;
 
-    const updatedCart = await foundCart.save();
+    await foundCart.save();
+    const populatedCart = await populateCartProducts(cartModel.findById(id));
+
     return res.status(200).json({
       message: "Cart updated successfully",
-      cart: updatedCart,
+      cart: populatedCart,
     });
   } catch (error) {
     return res.status(500).json({ message: "Internal server error" });

@@ -35,7 +35,7 @@ export const ProductsPage = () => {
     }
 
     return (
-        <div className='grid grid-cols-2 md:grid-cols-4 gap-2  w-full px-4 md:px-6 py-4'>
+        <div className='grid grid-cols-2 md:grid-cols-5 gap-2  w-full px-4 md:px-6 py-4'>
             {products.map(item => <ProductCard key={item._id} product={item} />)}
         </div>
     )

@@ -18,22 +18,26 @@ const parseJsonField = (value, fieldName) => {
 const parseBooleanField = (value) => {
   if (value === undefined) return undefined;
   if (typeof value === "boolean") return value;
-  if (value === "true") return true;
-  if (value === "false") return false;
+  if (typeof value === "string" && value.trim().toLowerCase() === "true") return true;
+  if (typeof value === "string" && value.trim().toLowerCase() === "false") return false;
   return value;
 };
 
 const validateData = (payload, { isUpdate = false } = {}) => {
-  let { title, description, shortcuts, active } = payload;
+  let { title, description, shortcut, shortcut_title, path, active } = payload;
 
   title = title?.trim();
   description = description?.trim();
   active = parseBooleanField(active);
 
   try {
-    shortcuts = parseJsonField(shortcuts, "Shortcuts");
+    shortcut = parseJsonField(shortcut, "Shortcut");
   } catch (error) {
     return { error: error.message };
+  }
+
+  if (shortcut === undefined && (shortcut_title !== undefined || path !== undefined)) {
+    shortcut = { shortcut_title, path };
   }
 
   if (!isUpdate || title !== undefined) {
@@ -46,30 +50,28 @@ const validateData = (payload, { isUpdate = false } = {}) => {
     return { error: "Active must be a boolean" };
   }
 
-  if (shortcuts !== undefined) {
-    if (!Array.isArray(shortcuts)) {
-      return { error: "Shortcuts must be an array" };
+  if (shortcut !== undefined) {
+    if (typeof shortcut !== "object" || Array.isArray(shortcut)) {
+      return { error: "Shortcut must be an object" };
     }
 
-    shortcuts = shortcuts.map((shortcut) => ({
+    shortcut = {
       shortcut_title: shortcut.shortcut_title?.trim(),
       path: shortcut.path?.trim(),
-    }));
+    };
 
-    for (const shortcut of shortcuts) {
-      if (!shortcut.shortcut_title) {
-        return { error: "Shortcut title required" };
-      }
-      if (!shortcut.path) {
-        return { error: "Shortcut path required" };
-      }
+    if (!shortcut.shortcut_title) {
+      return { error: "Shortcut title required" };
+    }
+    if (!shortcut.path) {
+      return { error: "Shortcut path required" };
     }
   }
 
   const banner = {
     title,
     description,
-    shortcuts,
+    shortcut,
     active,
   };
 

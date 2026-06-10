@@ -7,6 +7,18 @@ const cartProductSchema = new Schema(
       ref: "products",
       required: true,
     },
+    variantId: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+    },
+    option: {
+      type: String,
+      trim: true,
+    },
+    color: {
+      type: String,
+      trim: true,
+    },
     quantity: {
       type: Number,
       required: true,
