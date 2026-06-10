@@ -60,10 +60,16 @@ const validateData = (payload, { isUpdate = false } = {}) => {
     }
     price = Number(price);
   }
-  if (product_type !== undefined && !["alimenticio", "ropa", "general"].includes(product_type)) {
+  if (
+    product_type !== undefined &&
+    !["alimenticio", "ropa", "general"].includes(product_type)
+  ) {
     return { error: "Product type must be alimenticio, ropa or general" };
   }
-  if (gender !== undefined && !["male", "female", "accesory"].includes(gender)) {
+  if (
+    gender !== undefined &&
+    !["male", "female", "accesory"].includes(gender)
+  ) {
     return { error: "Gender must be male, female or accesory" };
   }
   if (!isUpdate || subCategories !== undefined) {
@@ -77,27 +83,27 @@ const validateData = (payload, { isUpdate = false } = {}) => {
       return { error: "Every subcategory must be a valid id" };
     }
   }
-  if (!isUpdate || variants !== undefined) {
-    if (!Array.isArray(variants)) {
-      return { error: "Variants must be an array" };
-    }
-    if (variants.length === 0) {
-      return { error: "At least one variant is required" };
-    }
-
-    for (const variant of variants) {
-      variant.size = variant.size?.trim();
-      variant.color = variant.color?.trim();
-      if (!variant.stock && variant.stock !== 0) {
-        return { error: "Variant stock required" };
+  if (product_type === "ropa") {
+    if (!isUpdate || variants !== undefined) {
+      if (!Array.isArray(variants)) {
+        return { error: "Variants must be an array" };
       }
-      if (isNaN(variant.stock) || Number(variant.stock) < 0) {
-        return { error: "Variant stock must be a valid positive number" };
+      if (variants.length === 0) {
+        return { error: "At least one variant is required" };
       }
-      variant.stock = Number(variant.stock);
+      for (const variant of variants) {
+        variant.size = variant.size?.trim();
+        variant.color = variant.color?.trim();
+        if (!variant.stock && variant.stock !== 0) {
+          return { error: "Variant stock required" };
+        }
+        if (isNaN(variant.stock) || Number(variant.stock) < 0) {
+          return { error: "Variant stock must be a valid positive number" };
+        }
+        variant.stock = Number(variant.stock);
+      }
     }
   }
-
   const product = {
     name,
     description,
@@ -123,7 +129,9 @@ const ensureProductRelations = async (product, currentProduct = {}) => {
   const subCategories = product.subCategories || currentProduct.subCategories;
 
   if (product.subCategories) {
-    const uniqueSubcategories = [...new Set(subCategories.map((item) => item.toString()))];
+    const uniqueSubcategories = [
+      ...new Set(subCategories.map((item) => item.toString())),
+    ];
     const foundSubcategories = await subcategoryModel.find({
       _id: { $in: uniqueSubcategories },
     });
@@ -202,13 +210,11 @@ productController.getProducts = async (req, res) => {
       return res.status(200).json([]);
     }
 
-    const products = await productModel
-      .find(filter)
-      .populate({
-        path: "subCategories",
-        select: "name slug category",
-        populate: { path: "category", select: "name slug type" },
-      });
+    const products = await productModel.find(filter).populate({
+      path: "subCategories",
+      select: "name slug category",
+      populate: { path: "category", select: "name slug type" },
+    });
     return res.status(200).json(products);
   } catch (error) {
     return res.status(500).json({ message: "Internal server error" });
@@ -217,13 +223,11 @@ productController.getProducts = async (req, res) => {
 
 productController.getProductById = async (req, res) => {
   try {
-    const product = await productModel
-      .findById(req.params.id)
-      .populate({
-        path: "subCategories",
-        select: "name slug category",
-        populate: { path: "category", select: "name slug type" },
-      });
+    const product = await productModel.findById(req.params.id).populate({
+      path: "subCategories",
+      select: "name slug category",
+      populate: { path: "category", select: "name slug type" },
+    });
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
@@ -288,7 +292,10 @@ productController.updateProduct = async (req, res) => {
       return res.status(400).json({ message: validateDataResult.error });
     }
     const product = validateDataResult.product;
-    const relationsResult = await ensureProductRelations(product, productToUpdate);
+    const relationsResult = await ensureProductRelations(
+      product,
+      productToUpdate,
+    );
     if (relationsResult.error) {
       return res.status(400).json({ message: relationsResult.error });
     }
