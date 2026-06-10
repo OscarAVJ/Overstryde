@@ -67,6 +67,8 @@ const Products = () => {
 
   const onSubmit = (data) => {
 
+    console.log("DATA COMPLETA:", data)
+
     //validaciones manuales
     if (data.subCategories.length === 0) {
       toast.error("Formulario incompleto.", {
@@ -1132,7 +1134,7 @@ const Products = () => {
 
             <TableBody>
               {products.map((product, index) => {
-                const status = getStatus(product.variants[0].stock);
+                const status = getStatus( product.stock ? product.stock : product.variants[0].stock);
 
                 return (
                   <TableRow key={index}>
@@ -1155,7 +1157,9 @@ const Products = () => {
 
                     <TableCell>${product.price.toFixed(2)}</TableCell>
 
-                    <TableCell>{product.variants[0].stock} unidades</TableCell>
+                    <TableCell>
+                      {product.stock ? product.stock : product.variants[0].stock} unidades
+                    </TableCell>
 
                     <TableCell>
                       <Badge variant={status.variant}>{status.label}</Badge>

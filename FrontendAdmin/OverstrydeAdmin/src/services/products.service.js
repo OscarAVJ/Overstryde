@@ -30,6 +30,8 @@ export const getProductById = async (id) => {
 }
 
 export const createProduct = async (product) => {
+    console.log("PRODUCT RECIBIDO:", product);
+
     const formData = new FormData();
 
     //Campos para todos los productos
@@ -59,7 +61,7 @@ export const createProduct = async (product) => {
     if (product.expiration_date && product.product_type === "alimenticio") {
         formData.append(
             "expiration_date",
-            product.expiration_date
+            product.expiration_date.toISOString()
         );
     }
 
@@ -67,10 +69,6 @@ export const createProduct = async (product) => {
     if (product.product_type != "ropa") {
         formData.append("stock", product.stock)
         formData.append("gender", "accesory");
-        formData.append(
-            "subCategories",
-            JSON.stringify([])
-        );
     }
 
     const response = await fetch(API_URL, {
