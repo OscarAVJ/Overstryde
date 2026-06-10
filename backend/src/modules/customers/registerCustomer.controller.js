@@ -116,11 +116,20 @@ registerCustomerController.register = async (req, res) => {
 
             to: email,
 
-            subject: "Account verification",
+            subject: "Verificación de la cuenta",
 
             text:
-                `Verification code: ${verificationCode}
-                 Valid for 15 minutes`
+                `Código de verificación: ${verificationCode}
+                 valido por 15 minutos.`,
+            html: `
+        <div style="font-family:sans-serif;max-width:480px;margin:auto;">
+          <h2 style="color:#000">Verificación de la cuenta</h2>
+          <p>Usa este código para verificar tu cuenta:</p>
+          <div style="font-size:2rem;font-weight:bold;letter-spacing:8px;text-align:center;padding:16px;background:#fef9c3;border-radius:8px;">
+            ${verificationCode}
+          </div>
+        </div>
+      `,
 
         };
 
