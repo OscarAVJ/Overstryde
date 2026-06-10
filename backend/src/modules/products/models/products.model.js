@@ -8,7 +8,7 @@ const productModel = new Schema(
     images: [imageSchema],
     description: { type: String },
     fit: { type: String },
-    product_type: { type: String, enum: ["alimenticio", "ropa"] },
+    product_type: { type: String, enum: ["alimenticio", "ropa", "general"] },
     gender: { type: String, enum: ["male", "female", "accesory"] },
     subCategories: [
       {

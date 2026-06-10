@@ -56,7 +56,7 @@ const useProductSelection = (product) => {
     )
     const optionLabel = product?.product_type === "alimenticio"
         ? "Presentacion"
-        : product?.gender === "accesory"
+        : product?.product_type === "general" || product?.gender === "accesory"
             ? "Opcion"
             : "Talla"
     const canAddToCart = Boolean(

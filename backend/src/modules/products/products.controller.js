@@ -60,8 +60,8 @@ const validateData = (payload, { isUpdate = false } = {}) => {
     }
     price = Number(price);
   }
-  if (product_type !== undefined && !["alimenticio", "ropa"].includes(product_type)) {
-    return { error: "Product type must be alimenticio or ropa" };
+  if (product_type !== undefined && !["alimenticio", "ropa", "general"].includes(product_type)) {
+    return { error: "Product type must be alimenticio, ropa or general" };
   }
   if (gender !== undefined && !["male", "female", "accesory"].includes(gender)) {
     return { error: "Gender must be male, female or accesory" };
