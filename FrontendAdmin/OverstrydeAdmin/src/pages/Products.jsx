@@ -27,9 +27,6 @@ import { toast } from "sonner"
 
 const Products = () => {
 
-  //FECHA VENCIMIENTO ALIMENTOS
-  const [dueDate, setDueDate] = useState(new Date());
-
   //Usando react-hook-form para los datos del dialog
   const {
     register,
@@ -52,9 +49,12 @@ const Products = () => {
       variants: [],
       price: "",
       stock: null,
-      dueDate: null
+      expiration_date: null
     }
   })
+
+  const [openDialog, setOpenDialog] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   //Constante para saber el valor de images
   const images = watch("images");
@@ -90,7 +90,7 @@ const Products = () => {
       return
     }
 
-    if(data.product_type === "ropa" && data.fit === ""){
+    if (data.product_type === "ropa" && data.fit === "") {
       toast.error("Formulario incompleto.", {
         description: "Tiene que proporcionar el fit de la prenda.",
         position: "top-right",
@@ -108,7 +108,7 @@ const Products = () => {
       return
     }
 
-    if(data.product_type != "ropa" && !data.stock){
+    if (data.product_type != "ropa" && !data.stock) {
       toast.error("Formulario incompleto.", {
         description: "Ingrese el stock del producto.",
         position: "top-right",
@@ -117,7 +117,21 @@ const Products = () => {
       return
     }
 
+    if(data.product_type === "alimenticio" && !data.expiration_date){
+      toast.error("Formulario incompleto.", {
+        description: "Ingrese la fecha de vencimiento del producto.",
+        position: "top-right",
+        descriptionClassName: "!text-black"
+      })
+      return;
+    }
+
     addProduct(data);
+    toast.success("Producto creado.", {
+      position: "top-right"
+    })
+    reset();
+    setOpenDialog(false);
   }
 
   const onError = (errors) => {
@@ -126,6 +140,27 @@ const Products = () => {
       position: "top-right",
       descriptionClassName: "!text-black"
     })
+  }
+
+  const onEdit = (data) =>{
+    setIsEditing(true);
+    switch (data.product_type) {
+      case "general":
+        setValue("name", data.name)
+        setValue("subCategories", data.subCategories)
+        setValue("")
+        break;
+      
+      case "alimenticio":
+        break;
+
+      case "ropa":
+
+        break;  
+    
+      default:
+        break;
+    }
   }
 
   //DIALOG PARA ESCOGER SUBCATEGORIAS
@@ -244,7 +279,7 @@ const Products = () => {
           <p className='text-muted-foreground text-center sm:text-left'>Administra los productos y categorías de la tienda</p>
         </div>
         <div className='flex flex-row gap-1.5 items-center justify-center sm:justify-end'>
-          <Dialog>
+          <Dialog open={openDialog} onOpenChange={setOpenDialog}>
             <form>
               <DialogTrigger asChild>
                 <Button className="h-12">
@@ -263,8 +298,10 @@ const Products = () => {
                 <Tabs
                   value={productType}
                   onValueChange={(value) => {
+                    reset();
                     setProductType(value);
                     setValue("product_type", value)
+                    
                   }}
                 >
                   <TabsList>
@@ -413,9 +450,9 @@ const Products = () => {
                             </Field>
                             <Field>
                               <FieldLabel htmlFor="productStock">Stock</FieldLabel>
-                              <Input 
-                                id="productStock" 
-                                type="number" 
+                              <Input
+                                id="productStock"
+                                type="number"
                                 placeholder="0"
                                 {...register("stock", {
                                   valueAsNumber: true
@@ -899,20 +936,58 @@ const Products = () => {
                         <FieldGroup>
                           <Field>
                             <FieldLabel htmlFor="productName">Nombre del producto<span className='text-red-500'>*</span></FieldLabel>
-                            <Input id="productName" name="name" placeholder="Introduzca nombre del producto..." />
+                            <Input
+                              id="productName"
+                              name="name"
+                              placeholder="Introduzca nombre del producto..."
+                              {...register("name", {
+                                required: "El nombre es obligatorio."
+                              })}
+                            />
                           </Field>
+
                           <div className='flex flex-row gap-2'>
-                            <FieldLabel>Categorías</FieldLabel>
-                            <Button className="bg-gray-300 text-black h-6 text-sm" onClick={() => setOpenCategories(true)}><PlusIcon className='h-4 w-4' />Añadir</Button>
+                            <FieldLabel>Subcategorías</FieldLabel>
+                            <Button type="button" className="bg-gray-300 text-black h-6 text-sm" onClick={() => setOpenCategories(true)}><PlusIcon className='h-4 w-4' />Añadir</Button>
                             <CommandDialog open={openCategories} onOpenChange={setOpenCategories}>
                               <Command>
-                                <CommandInput placeholder="Buscar categoría por nombre." />
+                                <CommandInput placeholder="Buscar subcategoría por nombre." />
                                 <CommandList>
                                   <CommandEmpty>No se encontraron resultados.</CommandEmpty>
                                   {categories.map((category, index) => (
                                     <CommandGroup heading={category.name} key={index}>
                                       {category.subcategories.map((sub, index) => (
-                                        <CommandItem key={index}>{sub}</CommandItem>
+                                        <CommandItem
+                                          key={index}
+                                          onSelect={() => {
+                                            const currentCategories = watch("subCategories")
+
+                                            const exists = currentCategories.includes(sub);
+
+                                            if (exists) {
+                                              setValue("subCategories",
+                                                currentCategories.filter(
+                                                  category => category !== sub
+                                                )
+                                              )
+                                            } else {
+                                              setValue("subCategories", [
+                                                ...currentCategories,
+                                                sub
+                                              ]);
+                                            }
+
+                                            console.log(watch())
+                                            setOpenCategories(false);
+
+                                          }}
+                                        >
+                                          <Check
+                                            className={`mr-2 size-4 ${watch("subCategories").includes(sub) ? "opacity-100" : "opacity-0"
+                                              }`}
+                                          />
+                                          {sub}
+                                        </CommandItem>
                                       ))}
                                     </CommandGroup>
                                   ))}
@@ -921,57 +996,113 @@ const Products = () => {
                             </CommandDialog>
                           </div>
                           <div className='flex flex-col p-1 gap-1 rounded-md'>
-                            {selectedCategories.map((sel, index) => (
-                              <Item variant='outline' size='sm' key={index}>
-                                <ItemMedia>
-                                  <Dot />
-                                </ItemMedia>
-                                <ItemContent className="flex justify-center items-start">
-                                  <ItemTitle >{sel}</ItemTitle>
-                                </ItemContent>
-                                <ItemActions>
-                                  <button>
-                                    <X className="size-4 cursor-pointer" />
-                                  </button>
-                                </ItemActions>
-                              </Item>
-                            ))}
+                            {
+                              selectedCategories.length === 0 ? (
+                                <p className='text-gray-500'>Sin subcategorías seleccionadas</p>
+                              ) : (
+                                selectedCategories.map((sel, index) => (
+                                  <Item
+                                    variant='outline'
+                                    size='sm'
+                                    key={index}
+                                  >
+                                    <ItemMedia>
+                                      <Dot />
+                                    </ItemMedia>
+
+                                    <ItemContent className="flex justify-center items-start">
+                                      <ItemTitle>{sel}</ItemTitle>
+                                    </ItemContent>
+
+                                    <ItemActions>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          const currentCategories =
+                                            getValues("subCategories");
+
+                                          setValue(
+                                            "subCategories",
+                                            currentCategories.filter(
+                                              category => category !== sel
+                                            )
+                                          );
+                                        }}
+                                      >
+                                        <X className="size-4 cursor-pointer" />
+                                      </button>
+                                    </ItemActions>
+                                  </Item>
+                                ))
+                              )
+                            }
                           </div>
                           <Field>
                             <FieldLabel htmlFor="productDesc">Descripción</FieldLabel>
-                            <Textarea id="productDesc" placeholder="Descripción del producto..."></Textarea>
+                            <Textarea
+                              id="productDesc"
+                              placeholder="Descripción del producto..."
+                              {...register("description", {
+                                required: "Una descripción del producto es obligatoria."
+                              })}
+                            />
                           </Field>
                           <div className='flex flex-row gap-2'>
                             <Field>
                               <FieldLabel htmlFor="productPrice">Precio</FieldLabel>
-                              <Input id="productPrice" type="number" placeholder="$0.00"></Input>
+                              <Input
+                                id="productPrice"
+                                type="number"
+                                placeholder="$0.00"
+                                {...register("price", {
+                                  valueAsNumber: true,
+                                  required: "El precio del producto es obligatorio."
+                                })}
+                              />
                             </Field>
                             <Field>
                               <FieldLabel htmlFor="productStock">Stock</FieldLabel>
-                              <Input id="productStock" type="number" placeholder="0"></Input>
+                              <Input
+                                id="productStock"
+                                type="number"
+                                placeholder="0"
+                                {...register("stock", {
+                                  valueAsNumber: true
+                                })}
+                              />
                             </Field>
+
                             <Field>
                               <FieldLabel>Fecha vencimiento</FieldLabel>
-                              <Popover>
-                                <PopoverTrigger asChild>
-                                  <Button
-                                    variant='outline'
-                                    data-empty={!dueDate}
-                                    className="justify-between text-left font-normal data-[empty=true]:text-muted-foreground"
-                                  >
-                                    {dueDate ? format(dueDate, "PPP") : <span>Escoger fecha</span>}
-                                    <ChevronDownIcon />
-                                  </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0" align="start">
-                                  <Calendar
-                                    mode="single"
-                                    selected={dueDate}
-                                    onSelect={setDueDate}
-                                    locale={es}
-                                  />
-                                </PopoverContent>
-                              </Popover>
+
+                              <Controller
+                                name='expiration_date'
+                                control={control}
+                                render={({ field }) => (
+                                  <Popover>
+                                    <PopoverTrigger asChild>
+                                      <Button
+                                        variant='outline'
+                                        data-empty={!field.value}
+                                        className="justify-between text-left font-normal data-[empty=true]:text-muted-foreground"
+                                      >
+                                        {field.value
+                                          ? format(field.value, "PPP")
+                                          : <span>Escoger fecha</span>}
+                                        <ChevronDownIcon />
+                                      </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="start">
+                                      <Calendar
+                                        mode="single"
+                                        selected={field.value}
+                                        onSelect={field.onChange}
+                                        locale={es}
+                                      />
+                                    </PopoverContent>
+                                  </Popover>
+                                )}
+                              />
                             </Field>
                           </div>
                         </FieldGroup>
@@ -1134,7 +1265,7 @@ const Products = () => {
 
             <TableBody>
               {products.map((product, index) => {
-                const status = getStatus( product.stock ? product.stock : product.variants[0].stock);
+                const status = getStatus(product.stock ? product.stock : product.variants[0].stock);
 
                 return (
                   <TableRow key={index}>
