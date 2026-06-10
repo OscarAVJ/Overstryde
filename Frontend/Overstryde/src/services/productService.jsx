@@ -19,4 +19,12 @@ productService.getProducts = async (filters = {}) => {
     return json
 }
 
+productService.getProductById = async (id) => {
+    const response = await fetch(`${URL}/${id}`)
+    if (!response.ok) {
+        throw new Error("Could not load product")
+    }
+    return response.json()
+}
+
 export default productService
