@@ -18,6 +18,7 @@ const productModel = new Schema(
     ],
     variants: [varianSchema],
     price: { type: Number },
+    stock: { type: Number },
     expiration_date: { type: Date },
   },
   { timestamps: true, strict: false }

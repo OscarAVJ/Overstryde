@@ -18,6 +18,7 @@ export const SingleProductView = () => {
     selectedOption,
     selectedColor,
     selectedVariant,
+    isClothing,
     stock,
     quantity,
     cartMessage,
@@ -135,7 +136,7 @@ export const SingleProductView = () => {
           </>
         )}
 
-        {selectedVariant && (
+        {(!isClothing || selectedVariant) && (
           <p className='text-sm text-gray-600'>Stock disponible: {stock}</p>
         )}
 
@@ -152,7 +153,7 @@ export const SingleProductView = () => {
           <Button
             type="button"
             variant="outline"
-            disabled={!selectedVariant || quantity >= stock}
+            disabled={!canAddToCart || quantity >= stock}
             onClick={increaseQuantity}
           >
             +

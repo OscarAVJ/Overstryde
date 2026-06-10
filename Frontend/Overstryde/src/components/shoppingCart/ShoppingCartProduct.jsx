@@ -9,6 +9,7 @@ export const ShoppingCartProduct = ({ item, isShoppingCart, onQuantityChange, on
 
   const product = item.productId
   const image = product?.images?.[0]?.path
+  const itemKey = item.variantId || product?._id || item.productId
 
   return (
     <div className='flex flex-col gap-y-2'>
@@ -31,14 +32,14 @@ export const ShoppingCartProduct = ({ item, isShoppingCart, onQuantityChange, on
                 <>
                   <button
                     className='transform duration-300 active:-translate-y-0.5'
-                    onClick={() => onQuantityChange(item.variantId, item.quantity - 1)}
+                    onClick={() => onQuantityChange(itemKey, item.quantity - 1)}
                   >
                     -
                   </button>
                   <p>{item.quantity}</p>
                   <button
                     className='transform duration-300 active:-translate-y-0.5'
-                    onClick={() => onQuantityChange(item.variantId, item.quantity + 1)}
+                    onClick={() => onQuantityChange(itemKey, item.quantity + 1)}
                   >
                     +
                   </button>
@@ -50,7 +51,7 @@ export const ShoppingCartProduct = ({ item, isShoppingCart, onQuantityChange, on
             <Button
               variant='outlined'
               className={"h-auto p-2 bg-gray-100"}
-              onClick={() => onRemove(item.variantId)}
+              onClick={() => onRemove(itemKey)}
             >
               <Trash size={24} />
             </Button>

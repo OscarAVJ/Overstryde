@@ -59,10 +59,17 @@ cartService.deleteCart = async (id) => {
 }
 
 cartService.toCartPayloadProducts = (products = []) =>
-    products.map((item) => ({
-        productId: item.productId?._id || item.productId,
-        variantId: item.variantId,
-        quantity: item.quantity,
-    }))
+    products.map((item) => {
+        const product = {
+            productId: item.productId?._id || item.productId,
+            quantity: item.quantity,
+        }
+
+        if (item.variantId) {
+            product.variantId = item.variantId
+        }
+
+        return product
+    })
 
 export default cartService

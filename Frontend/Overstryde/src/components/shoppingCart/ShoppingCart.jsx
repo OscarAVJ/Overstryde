@@ -16,7 +16,7 @@ export const ShoppingCart = () => {
     <div className='flex flex-col gap-y-2'>
       {cart.products.map((item) => (
         <ShoppingCartProduct
-          key={item.variantId}
+          key={item.variantId || item.productId?._id || item.productId}
           item={item}
           isShoppingCart={true}
           onQuantityChange={updateCartItemQuantity}
