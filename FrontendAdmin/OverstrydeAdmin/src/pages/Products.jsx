@@ -108,16 +108,17 @@ const Products = () => {
                         <FieldLabel htmlFor="productDesc">Descripción</FieldLabel>
                         <Textarea id="productDesc" placeholder="Descripción del producto..."></Textarea>
                       </Field>
-                      <div className='flex flex-row gap-2'>
-                        <Field>
-                          <FieldLabel htmlFor="productPrice">Precio</FieldLabel>
-                          <Input id="productPrice" type="number"></Input>
-                        </Field>
-                        <Field>
-                          <FieldLabel htmlFor="productStock">Stock</FieldLabel>
-                          <Input id="productStock" type="number"></Input>
-                        </Field>
-                      </div>
+                      <Field>
+                        <FieldLabel htmlFor="productPrice">Precio</FieldLabel>
+                        <Input id="productPrice" type="number"></Input>
+                      </Field>
+                      <Field>
+                        <FieldLabel htmlFor="productStock">Stock</FieldLabel>
+                        <Input id="productStock" type="number"></Input>
+                        <FieldDescription>
+                          Usar solo para productos generales o alimenticios; la ropa maneja stock por variantes.
+                        </FieldDescription>
+                      </Field>
                     </FieldGroup>
                   </div>
 

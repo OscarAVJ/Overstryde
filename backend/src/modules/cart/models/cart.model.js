@@ -9,7 +9,6 @@ const cartProductSchema = new Schema(
     },
     variantId: {
       type: mongoose.Schema.Types.ObjectId,
-      required: true,
     },
     option: {
       type: String,

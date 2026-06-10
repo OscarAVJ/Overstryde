@@ -1,6 +1,8 @@
 import cartService from "@/services/cartService"
 import { useCallback, useEffect, useState } from "react"
 
+const getCartItemKey = (item) => item.variantId || item.productId?._id || item.productId
+
 const useCart = () => {
     const [cart, setCart] = useState(null)
     const [isLoading, setIsLoading] = useState(true)
@@ -34,12 +36,13 @@ const useCart = () => {
     const addCartItem = useCallback(async (cartItem) => {
         const currentCart = await loadCart()
         const currentProducts = currentCart?.products || []
-        const existingItem = currentProducts.find((item) => item.variantId === cartItem.variantId)
+        const cartItemKey = getCartItemKey(cartItem)
+        const existingItem = currentProducts.find((item) => getCartItemKey(item) === cartItemKey)
         let nextProducts
 
         if (existingItem) {
             nextProducts = currentProducts.map((item) => (
-                item.variantId === cartItem.variantId
+                getCartItemKey(item) === cartItemKey
                     ? { ...item, quantity: item.quantity + cartItem.quantity }
                     : item
             ))
@@ -61,13 +64,13 @@ const useCart = () => {
         return savedCart
     }, [loadCart])
 
-    const updateCartItemQuantity = useCallback(async (variantId, quantity) => {
+    const updateCartItemQuantity = useCallback(async (itemKey, quantity) => {
         const currentCart = await loadCart()
         if (!currentCart) return null
 
         const nextProducts = currentCart.products
             .map((item) => (
-                item.variantId === variantId ? { ...item, quantity } : item
+                getCartItemKey(item) === itemKey ? { ...item, quantity } : item
             ))
             .filter((item) => item.quantity > 0)
 
@@ -89,8 +92,8 @@ const useCart = () => {
         return savedCart
     }, [loadCart])
 
-    const removeCartItem = useCallback((variantId) => (
-        updateCartItemQuantity(variantId, 0)
+    const removeCartItem = useCallback((itemKey) => (
+        updateCartItemQuantity(itemKey, 0)
     ), [updateCartItemQuantity])
 
     useEffect(() => {

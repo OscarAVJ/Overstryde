@@ -20,7 +20,11 @@ const useProductSelection = (product) => {
     const [cartMessage, setCartMessage] = useState("")
 
     const images = product?.images || []
-    const variants = useMemo(() => product?.variants || [], [product])
+    const isClothing = product?.product_type === "ropa"
+    const variants = useMemo(
+        () => isClothing ? product?.variants || [] : [],
+        [isClothing, product],
+    )
     const colors = useMemo(
         () => [...new Set(variants.map((variant) => variant.color).filter(Boolean))],
         [variants],
@@ -39,7 +43,7 @@ const useProductSelection = (product) => {
             return matchesOption && matchesColor
         }) || null
     }, [colors, options, selectedColor, selectedOption, variants])
-    const stock = selectedVariant?.stock || 0
+    const stock = isClothing ? selectedVariant?.stock || 0 : Number(product?.stock || 0)
     const categoryNames = useMemo(
         () => [
             ...new Set(
@@ -54,14 +58,10 @@ const useProductSelection = (product) => {
         () => product?.subCategories?.map((subCategory) => subCategory.name) || [],
         [product],
     )
-    const optionLabel = product?.product_type === "alimenticio"
-        ? "Presentacion"
-        : product?.product_type === "general" || product?.gender === "accesory"
-            ? "Opcion"
-            : "Talla"
+    const optionLabel = "Talla"
     const canAddToCart = Boolean(
         product &&
-        selectedVariant &&
+        (!isClothing || selectedVariant) &&
         quantity > 0 &&
         quantity <= stock &&
         (options.length === 0 || selectedOption) &&
@@ -69,15 +69,22 @@ const useProductSelection = (product) => {
     )
 
     useEffect(() => {
-        if (!product || variants.length === 0) return
+        if (!product) return
+
+        setSelectedImage(product.images?.[0] || null)
+        setQuantity(1)
+        setCartMessage("")
+
+        if (!isClothing || variants.length === 0) {
+            setSelectedOption("")
+            setSelectedColor("")
+            return
+        }
 
         const firstVariant = variants[0]
         setSelectedOption(firstVariant.size || "")
         setSelectedColor(firstVariant.color || "")
-        setSelectedImage(product.images?.[0] || null)
-        setQuantity(1)
-        setCartMessage("")
-    }, [product, variants])
+    }, [isClothing, product, variants])
 
     const handleOptionChange = useCallback((value) => {
         if (!value) return
@@ -111,21 +118,21 @@ const useProductSelection = (product) => {
 
     const handleAddToCart = useCallback(async () => {
         if (!canAddToCart) {
-            setCartMessage("Selecciona una variante disponible.")
+            setCartMessage(isClothing ? "Selecciona una variante disponible." : "No hay stock disponible.")
             return
         }
 
         try {
             await addCartItem({
                 productId: product._id,
-                variantId: selectedVariant._id,
+                variantId: selectedVariant?._id,
                 quantity,
             })
             setCartMessage("Producto agregado al carrito.")
         } catch (error) {
             setCartMessage("No se pudo agregar el producto al carrito.")
         }
-    }, [addCartItem, canAddToCart, product, quantity, selectedVariant])
+    }, [addCartItem, canAddToCart, isClothing, product, quantity, selectedVariant])
 
     return {
         images,
@@ -135,6 +142,7 @@ const useProductSelection = (product) => {
         selectedOption,
         selectedColor,
         selectedVariant,
+        isClothing,
         stock,
         quantity,
         cartMessage,

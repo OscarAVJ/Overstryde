@@ -17,7 +17,7 @@ const parseJsonField = (value, fieldName) => {
   }
 };
 
-const validateData = (payload, { isUpdate = false } = {}) => {
+const validateData = (payload, { isUpdate = false, currentProduct = null } = {}) => {
   let {
     name,
     description,
@@ -28,6 +28,7 @@ const validateData = (payload, { isUpdate = false } = {}) => {
     subcategory,
     variants,
     price,
+    stock,
     expiration_date,
   } = payload;
 
@@ -60,6 +61,8 @@ const validateData = (payload, { isUpdate = false } = {}) => {
     }
     price = Number(price);
   }
+  const nextProductType = product_type ?? currentProduct?.product_type;
+
   if (
     product_type !== undefined &&
     !["alimenticio", "ropa", "general"].includes(product_type)
@@ -83,7 +86,7 @@ const validateData = (payload, { isUpdate = false } = {}) => {
       return { error: "Every subcategory must be a valid id" };
     }
   }
-  if (product_type === "ropa") {
+  if (nextProductType === "ropa") {
     if (!isUpdate || variants !== undefined) {
       if (!Array.isArray(variants)) {
         return { error: "Variants must be an array" };
@@ -103,6 +106,30 @@ const validateData = (payload, { isUpdate = false } = {}) => {
         variant.stock = Number(variant.stock);
       }
     }
+    stock = undefined;
+  } else if (nextProductType) {
+    if (variants !== undefined) {
+      if (!Array.isArray(variants)) {
+        return { error: "Variants must be an array" };
+      }
+      if (variants.length > 0) {
+        return { error: "Only clothing products can have variants" };
+      }
+    }
+    variants = [];
+
+    if (!isUpdate || stock !== undefined || product_type !== undefined) {
+      if (stock === undefined && currentProduct?.stock !== undefined) {
+        stock = currentProduct.stock;
+      }
+      if (!stock && stock !== 0) {
+        return { error: "Product stock required" };
+      }
+      if (isNaN(stock) || Number(stock) < 0) {
+        return { error: "Product stock must be a valid positive number" };
+      }
+      stock = Number(stock);
+    }
   }
   const product = {
     name,
@@ -113,6 +140,7 @@ const validateData = (payload, { isUpdate = false } = {}) => {
     subCategories,
     variants,
     price,
+    stock,
     expiration_date,
   };
 
@@ -287,7 +315,10 @@ productController.updateProduct = async (req, res) => {
     if (!productToUpdate) {
       return res.status(404).json({ message: "Product not found" });
     }
-    const validateDataResult = validateData(req.body, { isUpdate: true });
+    const validateDataResult = validateData(req.body, {
+      isUpdate: true,
+      currentProduct: productToUpdate,
+    });
     if (validateDataResult.error) {
       return res.status(400).json({ message: validateDataResult.error });
     }
@@ -312,7 +343,13 @@ productController.updateProduct = async (req, res) => {
         public_id: image.filename,
       }));
     }
-    const updatedProduct = await productModel.findByIdAndUpdate(id, product, {
+    const effectiveProductType = product.product_type || productToUpdate.product_type;
+    const updatePayload =
+      effectiveProductType === "ropa"
+        ? { $set: product, $unset: { stock: "" } }
+        : product;
+
+    const updatedProduct = await productModel.findByIdAndUpdate(id, updatePayload, {
       new: true,
     });
     if (shouldUpdateImages) {

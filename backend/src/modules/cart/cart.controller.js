@@ -5,7 +5,7 @@ import productsModel from "../products/models/products.model.js";
 const cartController = {};
 
 const populateCartProducts = (query) =>
-  query.populate("products.productId", "name price images variants");
+  query.populate("products.productId", "name price stock product_type images variants");
 
 const buildCartProducts = async (products = []) => {
   if (!Array.isArray(products) || products.length === 0) {
@@ -19,10 +19,6 @@ const buildCartProducts = async (products = []) => {
     if (!isValidObjectId(element.productId)) {
       return { error: "Invalid product id" };
     }
-    if (!isValidObjectId(element.variantId)) {
-      return { error: "Invalid variant id" };
-    }
-
     const quantity = Number(element.quantity);
     if (!Number.isInteger(quantity) || quantity < 1) {
       return { error: "Product quantity must be a positive integer" };
@@ -33,14 +29,31 @@ const buildCartProducts = async (products = []) => {
       return { error: "Product not found", status: 404 };
     }
 
-    const variantFound = productFound.variants.id(element.variantId);
-    if (!variantFound) {
-      return { error: "Variant not found", status: 404 };
+    let variantFound = null;
+    let availableStock = productFound.stock;
+
+    if (productFound.product_type === "ropa") {
+      if (!isValidObjectId(element.variantId)) {
+        return { error: "Invalid variant id" };
+      }
+
+      variantFound = productFound.variants.id(element.variantId);
+      if (!variantFound) {
+        return { error: "Variant not found", status: 404 };
+      }
+
+      availableStock = variantFound.stock;
+    } else if (element.variantId) {
+      return { error: "Only clothing products can use variants" };
     }
 
-    if (quantity > variantFound.stock) {
+    if (!availableStock && availableStock !== 0) {
+      return { error: `Stock is not configured for ${productFound.name}` };
+    }
+
+    if (quantity > availableStock) {
       return {
-        error: `Only ${variantFound.stock} units available for ${productFound.name}`,
+        error: `Only ${availableStock} units available for ${productFound.name}`,
       };
     }
 
@@ -49,9 +62,9 @@ const buildCartProducts = async (products = []) => {
 
     newProducts.push({
       productId: productFound._id,
-      variantId: variantFound._id,
-      option: variantFound.size,
-      color: variantFound.color,
+      variantId: variantFound?._id,
+      option: variantFound?.size,
+      color: variantFound?.color,
       quantity,
       subTotal,
     });
