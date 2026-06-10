@@ -15,6 +15,7 @@ const useProductSelection = (product) => {
     const { addCartItem } = useCart()
     const [selectedOption, setSelectedOption] = useState("")
     const [selectedColor, setSelectedColor] = useState("")
+    const [selectedImage, setSelectedImage] = useState(null)
     const [quantity, setQuantity] = useState(1)
     const [cartMessage, setCartMessage] = useState("")
 
@@ -73,6 +74,7 @@ const useProductSelection = (product) => {
         const firstVariant = variants[0]
         setSelectedOption(firstVariant.size || "")
         setSelectedColor(firstVariant.color || "")
+        setSelectedImage(product.images?.[0] || null)
         setQuantity(1)
         setCartMessage("")
     }, [product, variants])
@@ -93,6 +95,10 @@ const useProductSelection = (product) => {
         setSelectedColor(value)
         setQuantity(1)
         setCartMessage("")
+    }, [])
+
+    const handleImageChange = useCallback((image) => {
+        setSelectedImage(image)
     }, [])
 
     const decreaseQuantity = useCallback(() => {
@@ -123,6 +129,7 @@ const useProductSelection = (product) => {
 
     return {
         images,
+        selectedImage,
         colors,
         options,
         selectedOption,
@@ -137,6 +144,7 @@ const useProductSelection = (product) => {
         canAddToCart,
         handleOptionChange,
         handleColorChange,
+        handleImageChange,
         decreaseQuantity,
         increaseQuantity,
         handleAddToCart,

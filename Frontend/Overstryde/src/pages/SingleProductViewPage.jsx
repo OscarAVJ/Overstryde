@@ -12,6 +12,7 @@ export const SingleProductView = () => {
   const { product, isLoading, error } = useProduct(id)
   const {
     images,
+    selectedImage,
     colors,
     options,
     selectedOption,
@@ -26,6 +27,7 @@ export const SingleProductView = () => {
     canAddToCart,
     handleOptionChange,
     handleColorChange,
+    handleImageChange,
     decreaseQuantity,
     increaseQuantity,
     handleAddToCart,
@@ -53,18 +55,24 @@ export const SingleProductView = () => {
     <div className='flex flex-col justify-center px-4 mx-auto pt-15 md:flex-row md:max-w-6xl w-full gap-3'>
       <div className='flex-col items-center gap-2 hidden sm:flex'>
         <img
-          src={images[0]?.path}
+          src={selectedImage?.path || images[0]?.path}
           alt={product.name}
           className='w-85 h-120 rounded-lg object-cover'
         />
         <div className='grid grid-cols-4 gap-2'>
           {images.slice(0, 4).map((image) => (
-            <img
+            <button
               key={image.public_id || image.path}
-              src={image.path}
-              alt={product.name}
-              className='w-30 h-40 rounded-lg object-cover'
-            />
+              type="button"
+              onClick={() => handleImageChange(image)}
+              className={`rounded-lg overflow-hidden border-2 ${selectedImage?.path === image.path ? "border-yellow-400" : "border-transparent"}`}
+            >
+              <img
+                src={image.path}
+                alt={product.name}
+                className='w-30 h-40 rounded-lg object-cover'
+              />
+            </button>
           ))}
         </div>
       </div>
