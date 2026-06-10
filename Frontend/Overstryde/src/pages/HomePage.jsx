@@ -50,17 +50,14 @@ export const HomePage = () => {
                       <p className="text-sm md:text-base text-white/90">
                         {banner.description}
                       </p>
-                      <div className="flex flex-wrap gap-x-4 gap-y-2">
-                        {banner.shortcuts?.map((shortcut) => (
-                          <NavLink
-                            key={`${banner._id}-${shortcut.path}`}
-                            to={shortcut.path}
-                            className="text-yellow-400 underline font-semibold"
-                          >
-                            {shortcut.shortcut_title}
-                          </NavLink>
-                        ))}
-                      </div>
+                      {banner.shortcut && (
+                        <NavLink
+                          to={banner.shortcut.path}
+                          className="text-yellow-400 underline font-semibold"
+                        >
+                          {banner.shortcut.shortcut_title}
+                        </NavLink>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -80,7 +77,7 @@ export const HomePage = () => {
       <div className="mt-2 w-full">
         <h2 className="uppercase text-yellow-500 font-extrabold">Hombres</h2>
         <p className="font-semibold">Ultimos ingresos</p>
-        <div className="grid grid-cols-2 gap-2 md:grid-cols-4 mt-2">
+        <div className="grid grid-cols-2 gap-2 md:grid-cols-5 mt-2">
           {menData.map((item) => <ProductCard key={item._id} product={item} />)}
         </div>
         <div className="flex justify-center items-center mt-2">
@@ -93,7 +90,7 @@ export const HomePage = () => {
       <div className="mt-2">
         <h2 className="uppercase text-yellow-500 font-extrabold">Mujeres</h2>
         <p className="font-semibold">Ultimos ingresos</p>
-        <div className="grid grid-cols-2 gap-2 md:gap-2 md:grid-cols-4 mt-2">
+        <div className="grid grid-cols-2 gap-2 md:gap-2 md:grid-cols-5 mt-2">
           {womenData.map((item) => <ProductCard key={item._id} product={item} />)}
         </div>
         <div className="flex justify-center items-center mt-2">
@@ -106,7 +103,7 @@ export const HomePage = () => {
       <div className="mt-2">
         <h2 className="uppercase text-yellow-500 font-extrabold">Accesorios</h2>
         <p className="font-semibold">Ultimos ingresos</p>
-        <div className="grid grid-cols-2 gap-2 md:gap-2 md:grid-cols-4 mt-2">
+        <div className="grid grid-cols-2 gap-2 md:gap-2 md:grid-cols-5 mt-2">
           {accesoriesData.map((item) => <ProductCard key={item._id} product={item} />)}
         </div>
         <div className="flex justify-center items-center mt-2">

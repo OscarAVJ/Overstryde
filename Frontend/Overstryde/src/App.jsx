@@ -35,7 +35,7 @@ function App() {
           <Route element={<MainLayout />}>
             <Route path="/" element={<HomePage />} />
             <Route path={"/products"} element={<ProductsPage />} />
-            <Route path={"/singleProduct"} element={<SingleProductView />} />
+            <Route path={"/singleProduct/:id"} element={<SingleProductView />} />
             <Route path={"/checkoutPayment"} element={<CheckoutPaymentPage />} />
             <Route path={"/profile"} element={<ProfilePage />} />
             <Route path={"/termsOfService"} element={<TermsOfServicePage />} />

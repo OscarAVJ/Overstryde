@@ -1,47 +1,172 @@
-import { Star } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
-import React, { useState } from 'react'
-import { ProductColors } from '@/components/common/ProductColors'
 import { Button } from '@/components/ui/button'
-import { products } from '@/data/productsData'
 import { ProductCarouselMovile } from '@/components/products/ProductCarouselMovile'
+import { Skeleton } from '@/components/ui/skeleton'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import { useParams } from 'react-router-dom'
+import useProduct from '@/hooks/useProduct'
+import useProductSelection, { normalizeColorValue } from '@/hooks/useProductSelection'
 
-const productsMovile = Array(4).fill(products[0]);
-export const SingleProductView = ({ principalColor }) => {
-  const [selectedColor, setSelectedColor] = useState(principalColor);
+export const SingleProductView = () => {
+  const { id } = useParams()
+  const { product, isLoading, error } = useProduct(id)
+  const {
+    images,
+    selectedImage,
+    colors,
+    options,
+    selectedOption,
+    selectedColor,
+    selectedVariant,
+    stock,
+    quantity,
+    cartMessage,
+    optionLabel,
+    canAddToCart,
+    handleOptionChange,
+    handleColorChange,
+    handleImageChange,
+    decreaseQuantity,
+    increaseQuantity,
+    handleAddToCart,
+  } = useProductSelection(product)
+
+  if (isLoading) {
+    return (
+      <div className='flex flex-col justify-center px-4 mx-auto pt-15 md:flex-row md:max-w-6xl w-full gap-3'>
+        <Skeleton className='hidden sm:block w-85 h-120 rounded-lg' />
+        <div className='flex flex-col gap-3 w-auto md:w-140'>
+          <Skeleton className='h-8 w-4/5' />
+          <Skeleton className='h-5 w-28' />
+          <Skeleton className='h-10 w-full' />
+          <Skeleton className='h-32 w-full' />
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !product) {
+    return <p className='px-4 py-8 text-red-600'>No se pudo cargar el producto.</p>
+  }
+
   return (
     <div className='flex flex-col justify-center px-4 mx-auto pt-15 md:flex-row md:max-w-6xl w-full gap-3'>
       <div className='flex-col items-center gap-2 hidden sm:flex'>
-        <img src="https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8Z3ltfGVufDB8fDB8fHww" alt="" className='w-85 h-120 rounded-lg' />
+        <img
+          src={selectedImage?.path || images[0]?.path}
+          alt={product.name}
+          className='w-85 h-120 rounded-lg object-cover'
+        />
         <div className='grid grid-cols-4 gap-2'>
-          {Array.from({ length: 4 }, () => <img src={products[0].image} alt="" className='w-30 h-40 rounded-lg' />)}
+          {images.slice(0, 4).map((image) => (
+            <button
+              key={image.public_id || image.path}
+              type="button"
+              onClick={() => handleImageChange(image)}
+              className={`rounded-lg overflow-hidden border-2 ${selectedImage?.path === image.path ? "border-yellow-400" : "border-transparent"}`}
+            >
+              <img
+                src={image.path}
+                alt={product.name}
+                className='w-30 h-40 rounded-lg object-cover'
+              />
+            </button>
+          ))}
         </div>
       </div>
-      <div className='sm:hidden'>
-        <ProductCarouselMovile products={productsMovile} />
-      </div>
-      <div className='flex flex-col gap-2 w-auto md:w-140'>
-        <h1 className='uppercase'>006-Camisa de compresión OVERSTRYDE</h1>
-        <div className='flex'>
-          <Star size={16} color="#000000" /><Star size={16} color="#000000" /><Star size={16} color="#000000" />
-          <Star size={16} color="#000000" /><Star size={16} color="#000000" />
-        </div>
-        <Separator></Separator>
-        <p>Color: {selectedColor}</p>
-        <div className='flex gap-2'>
-          <ProductColors value={"Negro"} color={"bg-black"} onClick={setSelectedColor} onMouseEnter={setSelectedColor} onMouseLeave={setSelectedColor} />
-          <ProductColors value={"Rojo"} color={"bg-red-500"} onClick={setSelectedColor} onMouseEnter={setSelectedColor} onMouseLeave={setSelectedColor} />
-          <ProductColors value={"Azul"} color={"bg-blue-500"} onClick={setSelectedColor} onMouseEnter={setSelectedColor} onMouseLeave={setSelectedColor} />
-        </div>
-        <Button>Agregar al carrito</Button>
-        <Separator></Separator>
-        <p>Descripción </p>
-        <p>
-          Qui veniam dolore quis qui. Ut ullamco qui consectetur pariatur. Amet aute qui ad tempor aliqua id ipsum excepteur fugiat qui cillum magna incididunt. Amet adipisicing ex ea tempor aute est officia ullamco excepteur Lorem. Pariatur id exercitation eu consequat sit aute consequat esse ad incididunt irure nostrud. Incididunt aute elit dolore eu mollit labore proident magna.
-        </p>
-        <h1>Fit: Slim</h1>
-        <h1>Material: 100% Algodon</h1>
 
+      <div className='sm:hidden'>
+        <ProductCarouselMovile products={images.map((image) => ({
+          id: image.public_id || image.path,
+          image: image.path,
+          name: product.name,
+        }))} />
+      </div>
+
+      <div className='flex flex-col gap-2 w-auto md:w-140'>
+        <h1 className='uppercase font-bold'>{product.name}</h1>
+        <p className='font-bold text-xl'>${product.price}</p>
+      
+        <Separator />
+
+        {options.length > 0 && (
+          <>
+            <p>{optionLabel}</p>
+            <ToggleGroup
+              type="single"
+              value={selectedOption}
+              onValueChange={handleOptionChange}
+              className="flex flex-wrap justify-start"
+              variant="outline"
+            >
+              {options.map((option) => (
+                <ToggleGroupItem key={option} value={option} aria-label={option}>
+                  {option}
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
+          </>
+        )}
+
+        {colors.length > 0 && (
+          <>
+            <p>Color {selectedColor && <span className='text-gray-500'>({selectedColor})</span>}</p>
+            <ToggleGroup
+              type="single"
+              value={selectedColor}
+              onValueChange={handleColorChange}
+              className="flex flex-wrap justify-start"
+              variant="outline"
+            >
+              {colors.map((color) => (
+                <ToggleGroupItem
+                  key={color}
+                  value={color}
+                  aria-label={color}
+                  className="h-9 w-9 p-1"
+                >
+                  <span
+                    className="block h-6 w-6 rounded-full border border-black/20"
+                    style={{ backgroundColor: normalizeColorValue(color) }}
+                  />
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
+          </>
+        )}
+
+        {selectedVariant && (
+          <p className='text-sm text-gray-600'>Stock disponible: {stock}</p>
+        )}
+
+        <div className='flex items-center gap-3'>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={quantity <= 1}
+            onClick={decreaseQuantity}
+          >
+            -
+          </Button>
+          <span className='min-w-8 text-center font-semibold'>{quantity}</span>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={!selectedVariant || quantity >= stock}
+            onClick={increaseQuantity}
+          >
+            +
+          </Button>
+        </div>
+
+        <Button disabled={!canAddToCart} onClick={handleAddToCart}>
+          Agregar al carrito
+        </Button>
+        {cartMessage && <p className='text-sm text-gray-600'>{cartMessage}</p>}
+        <Separator />
+
+        <p className='font-semibold'>Descripcion</p>
+        <p>{product.description}</p>
       </div>
     </div>
   )

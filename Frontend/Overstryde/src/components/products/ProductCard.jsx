@@ -13,7 +13,7 @@ export const ProductCard = ({ product }) => {
             
             {/* Imagen */}
             <div className="relative w-full aspect-3/4 overflow-hidden rounded-xl bg-gray-100">
-                <NavLink to={"/singleProduct"}>
+                <NavLink to={`/singleProduct/${product._id}`}>
                     <img
                         src={product.images[0].path}
                         alt={product.name}
@@ -61,7 +61,7 @@ export const ProductCard = ({ product }) => {
                         ${product.price}
                     </p>
 
-                    <NavLink to={"/singleProduct"}>
+                    <NavLink to={`/singleProduct/${product._id}`}>
                         <p className='font-medium underline text-sm'>
                             Ordenar
                         </p>
