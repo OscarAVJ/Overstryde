@@ -13,13 +13,16 @@ registerAdminController.register = async (req, res) => {
 
     try {
 
-        const {
+        let {
             name,
             last_name,
             email,
             password
         } = req.body;
-
+        name = name?.trim()
+        last_name = last_name?.trim()
+        email = email?.trim()
+        password = password?.trim()
         const existAdmin =
             await adminsModel.findOne({ email });
 

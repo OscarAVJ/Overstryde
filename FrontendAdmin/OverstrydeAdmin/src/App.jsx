@@ -10,6 +10,8 @@ import Banners from "./pages/Banners";
 import Login from "./pages/Login"
 import ForgotPassword from "./pages/ForgotPassword";
 import { Toaster } from "./components/ui/sonner";
+import ProtectedRoute from "./ProtectedRoute";
+import Users from "./pages/Users";
 
 function App() {
   return (
@@ -24,17 +26,20 @@ function App() {
           </Route>
 
           {/*Layout principal*/}
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Dashboard />} />
-            <Route path="orders" element={<Orders />} />
-            <Route path="products" element={<Products />} />
-            <Route path="categories" element={<Categories />} />
-            <Route path="banners" element={<Banners />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="/" element={<Layout />}>
+              <Route index element={<Dashboard />} />
+              <Route path="orders" element={<Orders />} />
+              <Route path="products" element={<Products />} />
+              <Route path="categories" element={<Categories />} />
+              <Route path="banners" element={<Banners />} />
+              <Route path="users" element={<Users />} />
+            </Route>
           </Route>
 
         </Routes>
       </BrowserRouter>
-      <Toaster/>
+      <Toaster />
     </>
   )
 }
