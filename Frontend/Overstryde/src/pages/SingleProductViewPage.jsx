@@ -21,8 +21,6 @@ export const SingleProductView = () => {
     stock,
     quantity,
     cartMessage,
-    categoryNames,
-    subCategoryNames,
     optionLabel,
     canAddToCart,
     handleOptionChange,
@@ -169,11 +167,6 @@ export const SingleProductView = () => {
 
         <p className='font-semibold'>Descripcion</p>
         <p>{product.description}</p>
-
-        {categoryNames.length > 0 && <p>Categoria: {categoryNames.join(", ")}</p>}
-        {subCategoryNames.length > 0 && <p>Subcategorias: {subCategoryNames.join(", ")}</p>}
-        {product.fit && <p>Fit: {product.fit}</p>}
-        {product.product_type && <p>Tipo: {product.product_type}</p>}
       </div>
     </div>
   )
