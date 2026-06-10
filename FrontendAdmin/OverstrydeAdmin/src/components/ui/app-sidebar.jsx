@@ -12,7 +12,7 @@ import {
     SidebarFooter,
     SidebarRail
 } from "@/components/ui/sidebar";
-import { LayoutDashboard, ClipboardList, PackageSearch, FolderOpen, Image, EllipsisVertical, LogOut } from "lucide-react";
+import { LayoutDashboard, ClipboardList, PackageSearch, FolderOpen, Image, EllipsisVertical, LogOut, Users } from "lucide-react";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -23,9 +23,10 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Separator } from "@/components/ui/separator";
+import { useAuth } from "@/context/AuthContext";
 
 export function AppSidebar() {
-
+    const { logout } = useAuth()
     const location = useLocation();
 
     return (
@@ -115,6 +116,20 @@ export function AppSidebar() {
                                     </Link>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
+                            <SidebarMenuItem>
+                                <SidebarMenuButton
+                                    asChild
+                                    isActive={location.pathname === "/users"}
+                                    className="h-12 data-[active=true]:text-yellow-400 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center"
+                                >
+                                    <Link to={"/users"}>
+                                        <Users className="\ !w-6 !h-6 group-data-[collapsible=icon]:mr-0" />
+                                        <span className="group-data-[collapsible=icon]:hidden font-inter">
+                                            Usuarios
+                                        </span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
                         </SidebarMenu>
                     </SidebarGroupContent>
                 </SidebarGroup>
@@ -138,7 +153,7 @@ export function AppSidebar() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-40 " align="start">
                         <DropdownMenuGroup>
-                            <DropdownMenuItem>
+                            <DropdownMenuItem onClick={logout}>
                                 <LogOut />
                                 <Link to="/auth/login">
                                     Cerrar sesión
