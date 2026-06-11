@@ -11,6 +11,9 @@ export const normalizeColorValue = (color = "") => {
     return trimmedColor
 }
 
+const getVariantColorName = (variant) => variant.color?.trim() || variant.hexColor?.trim() || ""
+const getVariantHexColor = (variant) => variant.hexColor?.trim() || variant.color?.trim() || ""
+
 const useProductSelection = (product) => {
     const { addCartItem } = useCart()
     const [selectedOption, setSelectedOption] = useState("")
@@ -26,7 +29,21 @@ const useProductSelection = (product) => {
         [isClothing, product],
     )
     const colors = useMemo(
-        () => [...new Set(variants.map((variant) => variant.color).filter(Boolean))],
+        () => {
+            const uniqueColors = new Map()
+
+            variants.forEach((variant) => {
+                const name = getVariantColorName(variant)
+                if (!name || uniqueColors.has(name)) return
+
+                uniqueColors.set(name, {
+                    name,
+                    hexColor: getVariantHexColor(variant),
+                })
+            })
+
+            return [...uniqueColors.values()]
+        },
         [variants],
     )
     const options = useMemo(
@@ -38,7 +55,7 @@ const useProductSelection = (product) => {
 
         return variants.find((variant) => {
             const matchesOption = options.length === 0 || variant.size === selectedOption
-            const matchesColor = colors.length === 0 || variant.color === selectedColor
+            const matchesColor = colors.length === 0 || getVariantColorName(variant) === selectedColor
 
             return matchesOption && matchesColor
         }) || null
@@ -83,15 +100,16 @@ const useProductSelection = (product) => {
 
         const firstVariant = variants[0]
         setSelectedOption(firstVariant.size || "")
-        setSelectedColor(firstVariant.color || "")
+        setSelectedColor(getVariantColorName(firstVariant))
     }, [isClothing, product, variants])
 
     const handleOptionChange = useCallback((value) => {
         if (!value) return
         setSelectedOption(value)
         const firstVariantForOption = variants.find((variant) => variant.size === value)
-        if (firstVariantForOption?.color) {
-            setSelectedColor(firstVariantForOption.color)
+        const firstColorForOption = firstVariantForOption ? getVariantColorName(firstVariantForOption) : ""
+        if (firstColorForOption) {
+            setSelectedColor(firstColorForOption)
         }
         setQuantity(1)
         setCartMessage("")

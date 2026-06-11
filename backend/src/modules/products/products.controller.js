@@ -17,6 +17,19 @@ const parseJsonField = (value, fieldName) => {
   }
 };
 
+const normalizeHexColor = (value = "") => {
+  const trimmedValue = value.trim();
+
+  if (/^[0-9a-fA-F]{3}$/.test(trimmedValue) || /^[0-9a-fA-F]{6}$/.test(trimmedValue)) {
+    return `#${trimmedValue}`;
+  }
+
+  return trimmedValue;
+};
+
+const isValidHexColor = (value = "") =>
+  /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(value);
+
 const validateData = (payload, { isUpdate = false, currentProduct = null } = {}) => {
   let {
     name,
@@ -97,6 +110,19 @@ const validateData = (payload, { isUpdate = false, currentProduct = null } = {})
       for (const variant of variants) {
         variant.size = variant.size?.trim();
         variant.color = variant.color?.trim();
+        variant.hexColor = normalizeHexColor(variant.hexColor || "");
+        if (!variant.size) {
+          return { error: "Variant size required" };
+        }
+        if (!variant.color) {
+          return { error: "Variant color name required" };
+        }
+        if (!variant.hexColor) {
+          return { error: "Variant hexColor required" };
+        }
+        if (!isValidHexColor(variant.hexColor)) {
+          return { error: "Variant hexColor must be a valid hexadecimal color" };
+        }
         if (!variant.stock && variant.stock !== 0) {
           return { error: "Variant stock required" };
         }

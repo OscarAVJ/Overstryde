@@ -3,12 +3,16 @@ import { v2 as cloudinary } from "cloudinary";
 
 const adminsController = {};
 
+const parseBoolean = (value) => {
+    if (value === undefined) return undefined;
+    if (typeof value === "boolean") return value;
+    return value === "true";
+};
+
 adminsController.getAdmins = async (req, res) => {
     try {
 
         const admins = await adminsModel.find()
-            .populate("purchase_history.orders_id");
-
         res.status(200).json(admins);
 
     } catch (error) {
@@ -27,8 +31,6 @@ adminsController.getAdminById = async (req, res) => {
     try {
 
         const admin = await adminsModel.findById(req.params.id)
-            .populate("purchase_history.orders_id");
-
         if (!admin) {
             return res.status(404).json({
                 message: "Admin not found"
@@ -66,9 +68,9 @@ adminsController.updateAdmins = async (req, res) => {
             name: req.body.name,
             last_name: req.body.last_name,
             email: req.body.email,
-            isActive: req.body.isActive,
-            isVerified: req.body.isVerified,
-            loginAttempts: req.body.loginAttempts,
+            isActive: parseBoolean(req.body.isActive),
+            isVerified: parseBoolean(req.body.isVerified),
+            loginAttempts: req.body.loginAttempts !== undefined ? Number(req.body.loginAttempts) : undefined,
             timeOut: req.body.timeOut
         };
 
@@ -85,6 +87,12 @@ adminsController.updateAdmins = async (req, res) => {
             updateData.photo = req.file.path;
             updateData.public_id = req.file.filename;
         }
+
+        Object.keys(updateData).forEach((key) => {
+            if (updateData[key] === undefined) {
+                delete updateData[key];
+            }
+        });
 
         const updatedAdmin =
             await adminsModel.findByIdAndUpdate(

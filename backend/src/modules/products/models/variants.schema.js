@@ -3,6 +3,7 @@ const varianSchema = new Schema(
   {
     size: { type: String },
     color: { type: String },
+    hexColor: { type: String },
     stock: { type: Number },
   },
   { _id: true }

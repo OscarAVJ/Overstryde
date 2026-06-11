@@ -27,7 +27,6 @@ import {
 
 const Dashboard = () => {
   const navigate = useNavigate();
-
   const stats = [
     { title: "Total Productos", value: "1,247", extra: "+12%" },
     { title: "Órdenes", value: "3,891", extra: "+8%" },

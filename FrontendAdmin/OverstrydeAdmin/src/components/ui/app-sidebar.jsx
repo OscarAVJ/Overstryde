@@ -12,7 +12,7 @@ import {
     SidebarFooter,
     SidebarRail
 } from "@/components/ui/sidebar";
-import { LayoutDashboard, ClipboardList, PackageSearch, FolderOpen, Image, EllipsisVertical, LogOut } from "lucide-react";
+import { LayoutDashboard, ClipboardList, PackageSearch, FolderOpen, Image, EllipsisVertical, LogOut, Users } from "lucide-react";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -23,9 +23,10 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Separator } from "@/components/ui/separator";
+import { useAuth } from "@/context/AuthContext";
 
 export function AppSidebar() {
-
+    const {authUser, logout } = useAuth()
     const location = useLocation();
 
     return (
@@ -115,6 +116,20 @@ export function AppSidebar() {
                                     </Link>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
+                            <SidebarMenuItem>
+                                <SidebarMenuButton
+                                    asChild
+                                    isActive={location.pathname === "/users"}
+                                    className="h-12 data-[active=true]:text-yellow-400 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center"
+                                >
+                                    <Link to={"/users"}>
+                                        <Users className="\ !w-6 !h-6 group-data-[collapsible=icon]:mr-0" />
+                                        <span className="group-data-[collapsible=icon]:hidden font-inter">
+                                            Usuarios
+                                        </span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
                         </SidebarMenu>
                     </SidebarGroupContent>
                 </SidebarGroup>
@@ -127,18 +142,18 @@ export function AppSidebar() {
 
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <div className=" sidebarFooter flex flex-row items-center justify-between lg:justify-start p-3 rounded-xl ring-2 ring-gray-700 gap-3 mx-1 group-data-[collapsible=icon]:hidden hover:!bg-gray-800 transition-colors duration-200">
-                            <img src="https://thumbs.dreamstime.com/b/foto-de-perfil-un-hombre-cauc%C3%A1sico-sonriente-los-a%C3%B1os-con-gafas-del-joven-y-feliz-en-espect%C3%A1culos-muestra-confianza-liderazgo-196716547.jpg" alt="" className="h-10 w-10 object-cover rounded-full" />
+                        <div className=" sidebarFooter flex flex-row items-center justify-between lg:justify-start p-1 rounded-xl ring-2 ring-gray-700 gap-3 mx-1 group-data-[collapsible=icon]:hidden hover:!bg-gray-800 transition-colors duration-200">
+                            <img src={authUser.photo} alt="" className="h-10 w-10 object-cover rounded-full" />
                             <div className="flex flex-col m-0">
-                                <p className="font-bold text-xs">Max Jiménez</p>
-                                <p className="text-xs">20240071@gmail.com</p>
+                                <p className="font-bold text-xs">{authUser.name}</p>
+                                <p className="text-xs">{authUser.email}</p>
                             </div>
                             <EllipsisVertical className="!w-4 !h-4 shrink-0" />
                         </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-40 " align="start">
                         <DropdownMenuGroup>
-                            <DropdownMenuItem>
+                            <DropdownMenuItem onClick={logout}>
                                 <LogOut />
                                 <Link to="/auth/login">
                                     Cerrar sesión
