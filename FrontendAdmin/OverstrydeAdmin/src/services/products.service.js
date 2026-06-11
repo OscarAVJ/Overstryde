@@ -100,16 +100,20 @@ export const updateProduct = async (id, product) => {
     if (product.product_type !== undefined)
         formData.append("product_type", product.product_type);
 
-    if (product.gender !== undefined)
-        formData.append("gender", product.gender);
-
+    if (product.gender !== undefined) {
+        if (product.product_type !== "ropa") {
+            formData.append("gender", "accesory")
+        } else {
+            formData.append("gender", product.gender);
+        }
+    }
     if (product.price !== undefined)
         formData.append("price", product.price);
 
-    if (product.categories !== undefined)
+    if (product.subCategories !== undefined)
         formData.append(
-            "categories",
-            JSON.stringify(product.categories)
+            "subCategories",
+            JSON.stringify(product.subCategories)
         );
 
     if (product.variants !== undefined)
@@ -118,15 +122,20 @@ export const updateProduct = async (id, product) => {
             JSON.stringify(product.variants)
         );
 
-    if (product.expiration_date !== undefined)
+    if (product.expiration_date !== undefined && product.expiration_date !== null)
         formData.append(
             "expiration_date",
-            product.expiration_date
+            product.expiration_date.toISOString()
         );
-
-    if (product.images?.length > 0) {
+    if (product.stock !== undefined) {
+        formData.append(
+            "stock",
+            product.stock
+        )
+    }
+    if (product.images.length !== 0) {
         product.images.forEach((image) => {
-            formData.append("images", image);
+            formData.append("images", image.file);
         });
     }
 

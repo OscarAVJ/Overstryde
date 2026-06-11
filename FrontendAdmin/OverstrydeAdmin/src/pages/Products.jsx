@@ -13,9 +13,10 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Command, CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
+import { Command, CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandShortcut } from '@/components/ui/command'
 import { Item, ItemActions, ItemContent, ItemDescription, ItemGroup, ItemMedia, ItemTitle } from "@/components/ui/item"
 import useProducts from '@/hooks/useProducts'
+import useSubcategories from "@/hooks/useSubcategories"
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { format } from "date-fns"
 import { Calendar } from '@/components/ui/calendar'
@@ -23,6 +24,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { es } from 'date-fns/locale'
 import { useForm, Controller, useFieldArray } from "react-hook-form"
 import { toast } from "sonner"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 
 
 const Products = () => {
@@ -55,6 +57,10 @@ const Products = () => {
 
   const [openDialog, setOpenDialog] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [editingProductId, setEditingProductId] = useState(null)
+  const [replaceImages, setReplaceImages] = useState(false)
+  const [currentImages, setCurrentImages] = useState([])
+  const [search, setSearch] = useState("");
 
   //Constante para saber el valor de images
   const images = watch("images");
@@ -64,6 +70,29 @@ const Products = () => {
 
   //HOOK PERSONALIZADO DE PRODUCTOS
   const { products, loading, error, formData, setFormData, addProduct, editProduct, removeProduct, getProduct } = useProducts();
+
+  const filteredProducts = products.filter((product) =>{
+    const searchTerm = search.toLowerCase();
+
+    return (
+      product.name.toLowerCase().includes(searchTerm) ||
+      product.product_type.toLowerCase().includes(searchTerm) ||
+      product.subCategories.some((sub) =>{
+        sub.name.toLowerCase().includes(searchTerm)
+      })
+    )
+  })
+
+  //HOOK DE SUBCATEGORIES
+  const { subcategories } = useSubcategories();
+
+  const disableTab = (value) => {
+    if (isEditing === true && value !== productType) {
+      return true;
+    } {
+      return false;
+    }
+  }
 
   const onSubmit = (data) => {
 
@@ -99,13 +128,27 @@ const Products = () => {
       return
     }
 
-    if (data.images.length === 0) {
+    if (!isEditing && data.images.length === 0) {
       toast.error("Formulario incompleto.", {
         description: "El producto debe tener al menos una foto.",
         position: "top-right",
         descriptionClassName: "!text-black"
       })
       return
+    }
+
+    if (
+      isEditing &&
+      replaceImages &&
+      data.images.length === 0
+    ) {
+      toast.error("Formulario incompleto.", {
+        description: "Debe subir las nuevas imágenes.",
+        position: "top-right",
+        descriptionClassName: "!text-black"
+      });
+
+      return;
     }
 
     if (data.product_type != "ropa" && !data.stock) {
@@ -117,7 +160,7 @@ const Products = () => {
       return
     }
 
-    if(data.product_type === "alimenticio" && !data.expiration_date){
+    if (data.product_type === "alimenticio" && !data.expiration_date) {
       toast.error("Formulario incompleto.", {
         description: "Ingrese la fecha de vencimiento del producto.",
         position: "top-right",
@@ -126,12 +169,31 @@ const Products = () => {
       return;
     }
 
-    addProduct(data);
-    toast.success("Producto creado.", {
-      position: "top-right"
-    })
-    reset();
-    setOpenDialog(false);
+    try {
+
+      if (isEditing) {
+        editProduct(editingProductId, data);
+        toast.success("Producto actualizado.", {
+          position: "top-right"
+        })
+      } else {
+        addProduct(data);
+        toast.success("Producto creado.", {
+          position: "top-right"
+        })
+      }
+
+      setIsEditing(false);
+      setEditingProductId(null);
+      reset();
+      setOpenDialog(false);
+
+    } catch (error) {
+      toast.error("Ocurrió un error", {
+        description: error.message
+      });
+    }
+
   }
 
   const onError = (errors) => {
@@ -142,25 +204,55 @@ const Products = () => {
     })
   }
 
-  const onEdit = (data) =>{
+  const onEdit = (data) => {
     setIsEditing(true);
+    setEditingProductId(data._id)
+    setReplaceImages(false)
+    setCurrentImages(data.images)
+    setValue("name", data.name)
+    setValue("subCategories", data.subCategories.map(sub => sub._id))
+    setValue("description", data.description)
+    setValue("product_type", data.product_type)
+    setValue("price", data.price)
+
     switch (data.product_type) {
       case "general":
-        setValue("name", data.name)
-        setValue("subCategories", data.subCategories)
-        setValue("")
+        setValue("stock", data.stock)
         break;
-      
+
       case "alimenticio":
+        setValue("stock", data.stock)
+        setValue("expiration_date", new Date(data.expiration_date))
         break;
 
       case "ropa":
-
-        break;  
-    
-      default:
+        setValue("variants", data.variants)
+        setValue("fit", data.fit)
+        setValue("gender", data.gender)
         break;
     }
+
+    setProductType(data.product_type)
+    setOpenDialog(true);
+  }
+
+  const onDelete = (productId) => {
+    try {
+      removeProduct(productId)
+      toast.success("Producto eliminado.", {
+        position: "top-right"
+      })
+    } catch (error) {
+      toast.error("Ocurrió un error", {
+        description: error.message
+      });
+    }
+  }
+
+  const handleNewProduct = () => {
+    setIsEditing(false)
+    reset();
+    setProductType("general")
   }
 
   //DIALOG PARA ESCOGER SUBCATEGORIAS
@@ -213,25 +305,6 @@ const Products = () => {
 
   const selectedCategories = watch("subCategories")
 
-  const categories = [
-    {
-      name: "Hombres",
-      subcategories: [
-        "6a2855be8bc00a32dfc2842f",
-        "6a2855be8bc00a32dfc2842f",
-        "6a2855be8bc00a32dfc2842f"
-      ]
-    },
-    {
-      name: "Mujeres",
-      subcategories: [
-        "6a2855be8bc00a32dfc2842f",
-        "6a2855be8bc00a32dfc2842f",
-        "6a2855be8bc00a32dfc2842f"
-      ]
-    }
-  ]
-
   const handleFiles = (files) => {
     const selectedFiles = Array.from(files);
 
@@ -279,10 +352,27 @@ const Products = () => {
           <p className='text-muted-foreground text-center sm:text-left'>Administra los productos y categorías de la tienda</p>
         </div>
         <div className='flex flex-row gap-1.5 items-center justify-center sm:justify-end'>
-          <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+          <Dialog
+            open={openDialog}
+            onOpenChange={(open) => {
+              if (!open) {
+                console.log("Se cerró el dialog");
+
+                reset();
+
+                setIsEditing(false);
+
+                setCurrentImages([]);
+
+                setValue("images", []);
+              }
+
+              setOpenDialog(open);
+            }}
+          >
             <form>
               <DialogTrigger asChild>
-                <Button className="h-12">
+                <Button className="h-12" onClick={() => { handleNewProduct(); }}>
                   <Plus />
                   Nuevo producto
                 </Button>
@@ -301,16 +391,13 @@ const Products = () => {
                     reset();
                     setProductType(value);
                     setValue("product_type", value)
-                    
+
                   }}
                 >
                   <TabsList>
-                    <TabsTrigger value="general">Producto general</TabsTrigger>
-                    <TabsTrigger value="alimenticio">Producto alimenticio</TabsTrigger>
-                    <TabsTrigger value="ropa" onClick={() => {
-                      console.log(watch())
-                    }}
-                    >
+                    <TabsTrigger value="general" disabled={disableTab("general")}>Producto general</TabsTrigger>
+                    <TabsTrigger value="alimenticio" disabled={disableTab("alimenticio")}>Producto alimenticio</TabsTrigger>
+                    <TabsTrigger value="ropa" disabled={disableTab("ropa")} >
                       Ropa
                     </TabsTrigger>
                   </TabsList>
@@ -340,42 +427,39 @@ const Products = () => {
                                 <CommandInput placeholder="Buscar subcategoría por nombre." />
                                 <CommandList>
                                   <CommandEmpty>No se encontraron resultados.</CommandEmpty>
-                                  {categories.map((category, index) => (
-                                    <CommandGroup heading={category.name} key={index}>
-                                      {category.subcategories.map((sub, index) => (
-                                        <CommandItem
-                                          key={index}
-                                          onSelect={() => {
-                                            const currentCategories = watch("subCategories")
+                                  {subcategories.map((sub, index) => (
+                                    <CommandItem
+                                      key={index}
+                                      onSelect={() => {
+                                        const currentCategories = watch("subCategories")
 
-                                            const exists = currentCategories.includes(sub);
+                                        const exists = currentCategories.includes(sub._id);
 
-                                            if (exists) {
-                                              setValue("subCategories",
-                                                currentCategories.filter(
-                                                  category => category !== sub
-                                                )
-                                              )
-                                            } else {
-                                              setValue("subCategories", [
-                                                ...currentCategories,
-                                                sub
-                                              ]);
-                                            }
+                                        if (exists) {
+                                          setValue("subCategories",
+                                            currentCategories.filter(
+                                              category => category !== sub._id
+                                            )
+                                          )
+                                        } else {
+                                          setValue("subCategories", [
+                                            ...currentCategories,
+                                            sub._id
+                                          ]);
+                                        }
 
-                                            console.log(watch())
-                                            setOpenCategories(false);
+                                        console.log(watch())
+                                        setOpenCategories(false);
 
-                                          }}
-                                        >
-                                          <Check
-                                            className={`mr-2 size-4 ${watch("subCategories").includes(sub) ? "opacity-100" : "opacity-0"
-                                              }`}
-                                          />
-                                          {sub}
-                                        </CommandItem>
-                                      ))}
-                                    </CommandGroup>
+                                      }}
+                                    >
+                                      <Check
+                                        className={`mr-2 size-4 ${watch("subCategories").includes(sub._id) ? "opacity-100" : "opacity-0"
+                                          }`}
+                                      />
+                                      {sub.name}
+                                      <CommandShortcut>{"> " + sub.category.name}</CommandShortcut>
+                                    </CommandItem>
                                   ))}
                                 </CommandList>
                               </Command>
@@ -386,40 +470,48 @@ const Products = () => {
                               selectedCategories.length === 0 ? (
                                 <p className='text-gray-500'>Sin subcategorías seleccionadas</p>
                               ) : (
-                                selectedCategories.map((sel, index) => (
-                                  <Item
-                                    variant='outline'
-                                    size='sm'
-                                    key={index}
-                                  >
-                                    <ItemMedia>
-                                      <Dot />
-                                    </ItemMedia>
+                                selectedCategories.map((sel, index) => {
+                                  const subcategory = subcategories.find(
+                                    sub => sub._id === sel
+                                  );
 
-                                    <ItemContent className="flex justify-center items-start">
-                                      <ItemTitle>{sel}</ItemTitle>
-                                    </ItemContent>
+                                  return (
+                                    <Item
+                                      variant="outline"
+                                      size="sm"
+                                      key={index}
+                                    >
+                                      <ItemMedia>
+                                        <Dot />
+                                      </ItemMedia>
 
-                                    <ItemActions>
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          const currentCategories =
-                                            getValues("subCategories");
+                                      <ItemContent className="flex justify-center items-start">
+                                        <ItemTitle>
+                                          {subcategory?.name}
+                                        </ItemTitle>
+                                      </ItemContent>
 
-                                          setValue(
-                                            "subCategories",
-                                            currentCategories.filter(
-                                              category => category !== sel
-                                            )
-                                          );
-                                        }}
-                                      >
-                                        <X className="size-4 cursor-pointer" />
-                                      </button>
-                                    </ItemActions>
-                                  </Item>
-                                ))
+                                      <ItemActions>
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            const currentCategories =
+                                              getValues("subCategories");
+
+                                            setValue(
+                                              "subCategories",
+                                              currentCategories.filter(
+                                                category => category !== sel
+                                              )
+                                            );
+                                          }}
+                                        >
+                                          <X className="size-4 cursor-pointer" />
+                                        </button>
+                                      </ItemActions>
+                                    </Item>
+                                  );
+                                })
                               )
                             }
                           </div>
@@ -464,71 +556,115 @@ const Products = () => {
                       </div>
 
                       <div className="flex flex-col gap-4 justify-center">
-                        <label
-                          htmlFor="dropzone-file"
-                          onDragOver={(e) => e.preventDefault()}
-                          onDrop={(e) => {
-                            e.preventDefault();
-                            handleFiles(e.dataTransfer.files);
-                          }}
-                          className="flex flex-col items-center justify-center w-full h-64 bg-neutral-secondary-medium border border-dashed border-default-strong rounded-base cursor-pointer hover:bg-neutral-tertiary-medium"
-                        >
-                          <div className="flex flex-col items-center justify-center text-body pt-5 pb-6">
-                            <svg
-                              className="w-8 h-8 mb-4"
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
+
+                        {isEditing && !replaceImages ? (
+                          <div className="flex flex-col gap-3 border rounded-md p-4">
+
+                            <p className="text-sm text-muted-foreground">
+                              Este producto ya tiene imágenes guardadas.
+                            </p>
+
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => {
+                                setValue("images", []);
+                                setReplaceImages(true);
+                                setCurrentImages([])
+                              }}
                             >
-                              <path
-                                stroke="currentColor"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M15 17h3a3 3 0 0 0 0-6h-.025a5.56 5.56 0 0 0 .025-.5A5.5 5.5 0 0 0 7.207 9.021C7.137 9.017 7.071 9 7 9a4 4 0 1 0 0 8h2.167M12 19v-9m0 0-2 2m2-2 2 2"
-                              />
-                            </svg>
+                              Reemplazar imágenes
+                            </Button>
 
-                            <p className="mb-2 text-sm">
-                              <span className="font-semibold">Click para subir</span> o arrastra imágenes
+                            <p className="text-sm text-muted-foreground">
+                              Imágenes actuales del producto
                             </p>
 
-                            <p className="text-xs">
-                              {images.length}/5 imágenes seleccionadas
-                            </p>
-                          </div>
-
-                          <input
-                            id="dropzone-file"
-                            type="file"
-                            accept="image/*"
-                            multiple
-                            className="hidden"
-                            onChange={(e) => handleFiles(e.target.files)}
-                          />
-                        </label>
-
-                        {images.length > 0 && (
-                          <div className="grid grid-cols-2 gap-2">
-                            {images.map((image, index) => (
-                              <div key={index} className="relative">
+                            <div className="grid grid-cols-2 gap-2">
+                              {currentImages.map((image, index) => (
                                 <img
-                                  src={image.preview}
-                                  alt={`preview-${index}`}
+                                  key={index}
+                                  src={image.path}
+                                  alt={`current-${index}`}
                                   className="w-full h-28 object-cover rounded-md border"
                                 />
+                              ))}
+                            </div>
 
-                                <button
-                                  type="button"
-                                  onClick={() => removeImage(index)}
-                                  className="absolute top-1 right-1 bg-black/70 text-white rounded-full w-6 h-6 flex items-center justify-center"
-                                >
-                                  <X size={14} />
-                                </button>
-                              </div>
-                            ))}
                           </div>
+                        ) : (
+                          <>
+                            <label
+                              htmlFor="dropzone-file"
+                              onDragOver={(e) => e.preventDefault()}
+                              onDrop={(e) => {
+                                e.preventDefault();
+                                handleFiles(e.dataTransfer.files);
+                              }}
+                              className="flex flex-col items-center justify-center w-full h-64 bg-neutral-secondary-medium border border-dashed border-default-strong rounded-base cursor-pointer hover:bg-neutral-tertiary-medium"
+                            >
+                              <div className="flex flex-col items-center justify-center text-body pt-5 pb-6">
+                                <svg
+                                  className="w-8 h-8 mb-4"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    stroke="currentColor"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M15 17h3a3 3 0 0 0 0-6h-.025a5.56 5.56 0 0 0 .025-.5A5.5 5.5 0 0 0 7.207 9.021C7.137 9.017 7.071 9 7 9a4 4 0 1 0 0 8h2.167M12 19v-9m0 0-2 2m2-2 2 2"
+                                  />
+                                </svg>
+
+                                <p className="mb-2 text-sm">
+                                  <span className="font-semibold">
+                                    Click para subir
+                                  </span>{" "}
+                                  o arrastra imágenes
+                                </p>
+
+                                <p className="text-xs">
+                                  {images.length}/5 imágenes seleccionadas
+                                </p>
+                              </div>
+
+                              <input
+                                id="dropzone-file"
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                className="hidden"
+                                onChange={(e) => handleFiles(e.target.files)}
+                              />
+                            </label>
+
+                            {images.length > 0 && (
+                              <div className="grid grid-cols-2 gap-2">
+                                {images.map((image, index) => (
+                                  <div key={index} className="relative">
+                                    <img
+                                      src={image.preview}
+                                      alt={`preview-${index}`}
+                                      className="w-full h-28 object-cover rounded-md border"
+                                    />
+
+                                    <button
+                                      type="button"
+                                      onClick={() => removeImage(index)}
+                                      className="absolute top-1 right-1 bg-black/70 text-white rounded-full w-6 h-6 flex items-center justify-center"
+                                    >
+                                      <X size={14} />
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </>
                         )}
+
                       </div>
                     </div>
                   </TabsContent>
@@ -557,42 +693,39 @@ const Products = () => {
                                 <CommandInput placeholder="Buscar subcategoría por nombre." />
                                 <CommandList>
                                   <CommandEmpty>No se encontraron resultados.</CommandEmpty>
-                                  {categories.map((category, index) => (
-                                    <CommandGroup heading={category.name} key={index}>
-                                      {category.subcategories.map((sub, index) => (
-                                        <CommandItem
-                                          key={index}
-                                          onSelect={() => {
-                                            const currentCategories = watch("subCategories")
+                                  {subcategories.map((sub, index) => (
+                                    <CommandItem
+                                      key={index}
+                                      onSelect={() => {
+                                        const currentCategories = watch("subCategories")
 
-                                            const exists = currentCategories.includes(sub);
+                                        const exists = currentCategories.includes(sub._id);
 
-                                            if (exists) {
-                                              setValue("subCategories",
-                                                currentCategories.filter(
-                                                  category => category !== sub
-                                                )
-                                              )
-                                            } else {
-                                              setValue("subCategories", [
-                                                ...currentCategories,
-                                                sub
-                                              ]);
-                                            }
+                                        if (exists) {
+                                          setValue("subCategories",
+                                            currentCategories.filter(
+                                              category => category !== sub._id
+                                            )
+                                          )
+                                        } else {
+                                          setValue("subCategories", [
+                                            ...currentCategories,
+                                            sub._id
+                                          ]);
+                                        }
 
-                                            console.log(watch())
-                                            setOpenCategories(false);
+                                        console.log(watch())
+                                        setOpenCategories(false);
 
-                                          }}
-                                        >
-                                          <Check
-                                            className={`mr-2 size-4 ${watch("subCategories").includes(sub) ? "opacity-100" : "opacity-0"
-                                              }`}
-                                          />
-                                          {sub}
-                                        </CommandItem>
-                                      ))}
-                                    </CommandGroup>
+                                      }}
+                                    >
+                                      <Check
+                                        className={`mr-2 size-4 ${watch("subCategories").includes(sub._id) ? "opacity-100" : "opacity-0"
+                                          }`}
+                                      />
+                                      {sub.name}
+                                      <CommandShortcut>{"> " + sub.category.name}</CommandShortcut>
+                                    </CommandItem>
                                   ))}
                                 </CommandList>
                               </Command>
@@ -603,40 +736,48 @@ const Products = () => {
                               selectedCategories.length === 0 ? (
                                 <p className='text-gray-500'>Sin subcategorías seleccionadas</p>
                               ) : (
-                                selectedCategories.map((sel, index) => (
-                                  <Item
-                                    variant='outline'
-                                    size='sm'
-                                    key={index}
-                                  >
-                                    <ItemMedia>
-                                      <Dot />
-                                    </ItemMedia>
+                                selectedCategories.map((sel, index) => {
+                                  const subcategory = subcategories.find(
+                                    sub => sub._id === sel
+                                  );
 
-                                    <ItemContent className="flex justify-center items-start">
-                                      <ItemTitle>{sel}</ItemTitle>
-                                    </ItemContent>
+                                  return (
+                                    <Item
+                                      variant="outline"
+                                      size="sm"
+                                      key={index}
+                                    >
+                                      <ItemMedia>
+                                        <Dot />
+                                      </ItemMedia>
 
-                                    <ItemActions>
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          const currentCategories =
-                                            getValues("subCategories");
+                                      <ItemContent className="flex justify-center items-start">
+                                        <ItemTitle>
+                                          {subcategory?.name}
+                                        </ItemTitle>
+                                      </ItemContent>
 
-                                          setValue(
-                                            "subCategories",
-                                            currentCategories.filter(
-                                              category => category !== sel
-                                            )
-                                          );
-                                        }}
-                                      >
-                                        <X className="size-4 cursor-pointer" />
-                                      </button>
-                                    </ItemActions>
-                                  </Item>
-                                ))
+                                      <ItemActions>
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            const currentCategories =
+                                              getValues("subCategories");
+
+                                            setValue(
+                                              "subCategories",
+                                              currentCategories.filter(
+                                                category => category !== sel
+                                              )
+                                            );
+                                          }}
+                                        >
+                                          <X className="size-4 cursor-pointer" />
+                                        </button>
+                                      </ItemActions>
+                                    </Item>
+                                  );
+                                })
                               )
                             }
                           </div>
@@ -830,7 +971,7 @@ const Products = () => {
                                         </ItemDescription>
                                       </ItemContent>
                                       <ItemActions>
-                                        <button onClick={() => {
+                                        {/*<button onClick={() => {
                                           setOpenVariantEdit(true)
                                           setVariantData({
                                             color: variant.color,
@@ -840,7 +981,7 @@ const Products = () => {
                                           })
                                         }}>
                                           <Pencil className="size-4 cursor-pointer" />
-                                        </button>
+                                        </button>*/}
                                         <button
                                           type='button'
                                           onClick={() => remove(index)}
@@ -860,71 +1001,115 @@ const Products = () => {
                       </div>
 
                       <div className="flex flex-col gap-4 justify-center">
-                        <label
-                          htmlFor="dropzone-file"
-                          onDragOver={(e) => e.preventDefault()}
-                          onDrop={(e) => {
-                            e.preventDefault();
-                            handleFiles(e.dataTransfer.files);
-                          }}
-                          className="flex flex-col items-center justify-center w-full h-64 bg-neutral-secondary-medium border border-dashed border-default-strong rounded-base cursor-pointer hover:bg-neutral-tertiary-medium"
-                        >
-                          <div className="flex flex-col items-center justify-center text-body pt-5 pb-6">
-                            <svg
-                              className="w-8 h-8 mb-4"
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
+
+                        {isEditing && !replaceImages ? (
+                          <div className="flex flex-col gap-3 border rounded-md p-4">
+
+                            <p className="text-sm text-muted-foreground">
+                              Este producto ya tiene imágenes guardadas.
+                            </p>
+
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => {
+                                setValue("images", []);
+                                setReplaceImages(true);
+                                setCurrentImages([])
+                              }}
                             >
-                              <path
-                                stroke="currentColor"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M15 17h3a3 3 0 0 0 0-6h-.025a5.56 5.56 0 0 0 .025-.5A5.5 5.5 0 0 0 7.207 9.021C7.137 9.017 7.071 9 7 9a4 4 0 1 0 0 8h2.167M12 19v-9m0 0-2 2m2-2 2 2"
-                              />
-                            </svg>
+                              Reemplazar imágenes
+                            </Button>
 
-                            <p className="mb-2 text-sm">
-                              <span className="font-semibold">Click para subir</span> o arrastra imágenes
+                            <p className="text-sm text-muted-foreground">
+                              Imágenes actuales del producto
                             </p>
 
-                            <p className="text-xs">
-                              {images.length}/5 imágenes seleccionadas
-                            </p>
-                          </div>
-
-                          <input
-                            id="dropzone-file"
-                            type="file"
-                            accept="image/*"
-                            multiple
-                            className="hidden"
-                            onChange={(e) => handleFiles(e.target.files)}
-                          />
-                        </label>
-
-                        {images.length > 0 && (
-                          <div className="grid grid-cols-2 gap-2">
-                            {images.map((image, index) => (
-                              <div key={index} className="relative">
+                            <div className="grid grid-cols-2 gap-2">
+                              {currentImages.map((image, index) => (
                                 <img
-                                  src={image.preview}
-                                  alt={`preview-${index}`}
+                                  key={index}
+                                  src={image.path}
+                                  alt={`current-${index}`}
                                   className="w-full h-28 object-cover rounded-md border"
                                 />
+                              ))}
+                            </div>
 
-                                <button
-                                  type="button"
-                                  onClick={() => removeImage(index)}
-                                  className="absolute top-1 right-1 bg-black/70 text-white rounded-full w-6 h-6 flex items-center justify-center"
-                                >
-                                  <X size={14} />
-                                </button>
-                              </div>
-                            ))}
                           </div>
+                        ) : (
+                          <>
+                            <label
+                              htmlFor="dropzone-file"
+                              onDragOver={(e) => e.preventDefault()}
+                              onDrop={(e) => {
+                                e.preventDefault();
+                                handleFiles(e.dataTransfer.files);
+                              }}
+                              className="flex flex-col items-center justify-center w-full h-64 bg-neutral-secondary-medium border border-dashed border-default-strong rounded-base cursor-pointer hover:bg-neutral-tertiary-medium"
+                            >
+                              <div className="flex flex-col items-center justify-center text-body pt-5 pb-6">
+                                <svg
+                                  className="w-8 h-8 mb-4"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    stroke="currentColor"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M15 17h3a3 3 0 0 0 0-6h-.025a5.56 5.56 0 0 0 .025-.5A5.5 5.5 0 0 0 7.207 9.021C7.137 9.017 7.071 9 7 9a4 4 0 1 0 0 8h2.167M12 19v-9m0 0-2 2m2-2 2 2"
+                                  />
+                                </svg>
+
+                                <p className="mb-2 text-sm">
+                                  <span className="font-semibold">
+                                    Click para subir
+                                  </span>{" "}
+                                  o arrastra imágenes
+                                </p>
+
+                                <p className="text-xs">
+                                  {images.length}/5 imágenes seleccionadas
+                                </p>
+                              </div>
+
+                              <input
+                                id="dropzone-file"
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                className="hidden"
+                                onChange={(e) => handleFiles(e.target.files)}
+                              />
+                            </label>
+
+                            {images.length > 0 && (
+                              <div className="grid grid-cols-2 gap-2">
+                                {images.map((image, index) => (
+                                  <div key={index} className="relative">
+                                    <img
+                                      src={image.preview}
+                                      alt={`preview-${index}`}
+                                      className="w-full h-28 object-cover rounded-md border"
+                                    />
+
+                                    <button
+                                      type="button"
+                                      onClick={() => removeImage(index)}
+                                      className="absolute top-1 right-1 bg-black/70 text-white rounded-full w-6 h-6 flex items-center justify-center"
+                                    >
+                                      <X size={14} />
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </>
                         )}
+
                       </div>
                     </div>
                   </TabsContent>
@@ -954,42 +1139,39 @@ const Products = () => {
                                 <CommandInput placeholder="Buscar subcategoría por nombre." />
                                 <CommandList>
                                   <CommandEmpty>No se encontraron resultados.</CommandEmpty>
-                                  {categories.map((category, index) => (
-                                    <CommandGroup heading={category.name} key={index}>
-                                      {category.subcategories.map((sub, index) => (
-                                        <CommandItem
-                                          key={index}
-                                          onSelect={() => {
-                                            const currentCategories = watch("subCategories")
+                                  {subcategories.map((sub, index) => (
+                                    <CommandItem
+                                      key={index}
+                                      onSelect={() => {
+                                        const currentCategories = watch("subCategories")
 
-                                            const exists = currentCategories.includes(sub);
+                                        const exists = currentCategories.includes(sub._id);
 
-                                            if (exists) {
-                                              setValue("subCategories",
-                                                currentCategories.filter(
-                                                  category => category !== sub
-                                                )
-                                              )
-                                            } else {
-                                              setValue("subCategories", [
-                                                ...currentCategories,
-                                                sub
-                                              ]);
-                                            }
+                                        if (exists) {
+                                          setValue("subCategories",
+                                            currentCategories.filter(
+                                              category => category !== sub._id
+                                            )
+                                          )
+                                        } else {
+                                          setValue("subCategories", [
+                                            ...currentCategories,
+                                            sub._id
+                                          ]);
+                                        }
 
-                                            console.log(watch())
-                                            setOpenCategories(false);
+                                        console.log(watch())
+                                        setOpenCategories(false);
 
-                                          }}
-                                        >
-                                          <Check
-                                            className={`mr-2 size-4 ${watch("subCategories").includes(sub) ? "opacity-100" : "opacity-0"
-                                              }`}
-                                          />
-                                          {sub}
-                                        </CommandItem>
-                                      ))}
-                                    </CommandGroup>
+                                      }}
+                                    >
+                                      <Check
+                                        className={`mr-2 size-4 ${watch("subCategories").includes(sub._id) ? "opacity-100" : "opacity-0"
+                                          }`}
+                                      />
+                                      {sub.name}
+                                      <CommandShortcut>{"> " + sub.category.name}</CommandShortcut>
+                                    </CommandItem>
                                   ))}
                                 </CommandList>
                               </Command>
@@ -1000,40 +1182,48 @@ const Products = () => {
                               selectedCategories.length === 0 ? (
                                 <p className='text-gray-500'>Sin subcategorías seleccionadas</p>
                               ) : (
-                                selectedCategories.map((sel, index) => (
-                                  <Item
-                                    variant='outline'
-                                    size='sm'
-                                    key={index}
-                                  >
-                                    <ItemMedia>
-                                      <Dot />
-                                    </ItemMedia>
+                                selectedCategories.map((sel, index) => {
+                                  const subcategory = subcategories.find(
+                                    sub => sub._id === sel
+                                  );
 
-                                    <ItemContent className="flex justify-center items-start">
-                                      <ItemTitle>{sel}</ItemTitle>
-                                    </ItemContent>
+                                  return (
+                                    <Item
+                                      variant="outline"
+                                      size="sm"
+                                      key={index}
+                                    >
+                                      <ItemMedia>
+                                        <Dot />
+                                      </ItemMedia>
 
-                                    <ItemActions>
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          const currentCategories =
-                                            getValues("subCategories");
+                                      <ItemContent className="flex justify-center items-start">
+                                        <ItemTitle>
+                                          {subcategory?.name}
+                                        </ItemTitle>
+                                      </ItemContent>
 
-                                          setValue(
-                                            "subCategories",
-                                            currentCategories.filter(
-                                              category => category !== sel
-                                            )
-                                          );
-                                        }}
-                                      >
-                                        <X className="size-4 cursor-pointer" />
-                                      </button>
-                                    </ItemActions>
-                                  </Item>
-                                ))
+                                      <ItemActions>
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            const currentCategories =
+                                              getValues("subCategories");
+
+                                            setValue(
+                                              "subCategories",
+                                              currentCategories.filter(
+                                                category => category !== sel
+                                              )
+                                            );
+                                          }}
+                                        >
+                                          <X className="size-4 cursor-pointer" />
+                                        </button>
+                                      </ItemActions>
+                                    </Item>
+                                  );
+                                })
                               )
                             }
                           </div>
@@ -1109,71 +1299,115 @@ const Products = () => {
                       </div>
 
                       <div className="flex flex-col gap-4 justify-center">
-                        <label
-                          htmlFor="dropzone-file"
-                          onDragOver={(e) => e.preventDefault()}
-                          onDrop={(e) => {
-                            e.preventDefault();
-                            handleFiles(e.dataTransfer.files);
-                          }}
-                          className="flex flex-col items-center justify-center w-full h-64 bg-neutral-secondary-medium border border-dashed border-default-strong rounded-base cursor-pointer hover:bg-neutral-tertiary-medium"
-                        >
-                          <div className="flex flex-col items-center justify-center text-body pt-5 pb-6">
-                            <svg
-                              className="w-8 h-8 mb-4"
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
+
+                        {isEditing && !replaceImages ? (
+                          <div className="flex flex-col gap-3 border rounded-md p-4">
+
+                            <p className="text-sm text-muted-foreground">
+                              Este producto ya tiene imágenes guardadas.
+                            </p>
+
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => {
+                                setValue("images", []);
+                                setReplaceImages(true);
+                                setCurrentImages([])
+                              }}
                             >
-                              <path
-                                stroke="currentColor"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M15 17h3a3 3 0 0 0 0-6h-.025a5.56 5.56 0 0 0 .025-.5A5.5 5.5 0 0 0 7.207 9.021C7.137 9.017 7.071 9 7 9a4 4 0 1 0 0 8h2.167M12 19v-9m0 0-2 2m2-2 2 2"
-                              />
-                            </svg>
+                              Reemplazar imágenes
+                            </Button>
 
-                            <p className="mb-2 text-sm">
-                              <span className="font-semibold">Click para subir</span> o arrastra imágenes
+                            <p className="text-sm text-muted-foreground">
+                              Imágenes actuales del producto
                             </p>
 
-                            <p className="text-xs">
-                              {images.length}/5 imágenes seleccionadas
-                            </p>
-                          </div>
-
-                          <input
-                            id="dropzone-file"
-                            type="file"
-                            accept="image/*"
-                            multiple
-                            className="hidden"
-                            onChange={(e) => handleFiles(e.target.files)}
-                          />
-                        </label>
-
-                        {images.length > 0 && (
-                          <div className="grid grid-cols-2 gap-2">
-                            {images.map((image, index) => (
-                              <div key={index} className="relative">
+                            <div className="grid grid-cols-2 gap-2">
+                              {currentImages.map((image, index) => (
                                 <img
-                                  src={image.preview}
-                                  alt={`preview-${index}`}
+                                  key={index}
+                                  src={image.path}
+                                  alt={`current-${index}`}
                                   className="w-full h-28 object-cover rounded-md border"
                                 />
+                              ))}
+                            </div>
 
-                                <button
-                                  type="button"
-                                  onClick={() => removeImage(index)}
-                                  className="absolute top-1 right-1 bg-black/70 text-white rounded-full w-6 h-6 flex items-center justify-center"
-                                >
-                                  <X size={14} />
-                                </button>
-                              </div>
-                            ))}
                           </div>
+                        ) : (
+                          <>
+                            <label
+                              htmlFor="dropzone-file"
+                              onDragOver={(e) => e.preventDefault()}
+                              onDrop={(e) => {
+                                e.preventDefault();
+                                handleFiles(e.dataTransfer.files);
+                              }}
+                              className="flex flex-col items-center justify-center w-full h-64 bg-neutral-secondary-medium border border-dashed border-default-strong rounded-base cursor-pointer hover:bg-neutral-tertiary-medium"
+                            >
+                              <div className="flex flex-col items-center justify-center text-body pt-5 pb-6">
+                                <svg
+                                  className="w-8 h-8 mb-4"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    stroke="currentColor"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M15 17h3a3 3 0 0 0 0-6h-.025a5.56 5.56 0 0 0 .025-.5A5.5 5.5 0 0 0 7.207 9.021C7.137 9.017 7.071 9 7 9a4 4 0 1 0 0 8h2.167M12 19v-9m0 0-2 2m2-2 2 2"
+                                  />
+                                </svg>
+
+                                <p className="mb-2 text-sm">
+                                  <span className="font-semibold">
+                                    Click para subir
+                                  </span>{" "}
+                                  o arrastra imágenes
+                                </p>
+
+                                <p className="text-xs">
+                                  {images.length}/5 imágenes seleccionadas
+                                </p>
+                              </div>
+
+                              <input
+                                id="dropzone-file"
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                className="hidden"
+                                onChange={(e) => handleFiles(e.target.files)}
+                              />
+                            </label>
+
+                            {images.length > 0 && (
+                              <div className="grid grid-cols-2 gap-2">
+                                {images.map((image, index) => (
+                                  <div key={index} className="relative">
+                                    <img
+                                      src={image.preview}
+                                      alt={`preview-${index}`}
+                                      className="w-full h-28 object-cover rounded-md border"
+                                    />
+
+                                    <button
+                                      type="button"
+                                      onClick={() => removeImage(index)}
+                                      className="absolute top-1 right-1 bg-black/70 text-white rounded-full w-6 h-6 flex items-center justify-center"
+                                    >
+                                      <X size={14} />
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </>
                         )}
+
                       </div>
                     </div>
                   </TabsContent>
@@ -1183,12 +1417,22 @@ const Products = () => {
 
                 <DialogFooter>
                   <DialogClose asChild>
-                    <Button variant='outline' onClick={() => { reset(); }}>Cancelar</Button>
+                    <Button
+                      variant='outline'
+                      onClick={() => {
+                        reset();
+                        setReplaceImages(false)
+                        setIsEditing(false);
+                        setCurrentImages([])
+                      }}
+                    >
+                      Cancelar
+                    </Button>
                   </DialogClose>
                   <Button type="submit" onClick={() => {
                     console.log("CLICK");
                     handleSubmit(onSubmit, onError)();
-                  }}>Guardar</Button>
+                  }}>{isEditing ? "Actualizar" : "Guardar"}</Button>
                 </DialogFooter>
 
               </DialogContent>
@@ -1206,11 +1450,17 @@ const Products = () => {
         <Card>
           <CardContent>
             <div className='grid grid-cols-1 sm:grid-cols-4 gap-3 items-end'>
-              <Field>
+              <Field className="sm:col-span-4">
                 <FieldLabel htmlFor="searchBar" className="font-bold">BUSCAR PRODUCTO</FieldLabel>
-                <Input id="searchBar" type="text" placeholder="Buscar..." />
+                <Input 
+                  id="searchBar" 
+                  type="text" 
+                  placeholder="Buscar..." 
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
               </Field>
-              <Field>
+              {/*<Field>
                 <FieldLabel htmlFor="categorySelect" className="font-bold">CATEGORÍA</FieldLabel>
                 <Select>
                   <SelectTrigger id="categorySelect" defaultValue="">
@@ -1243,7 +1493,7 @@ const Products = () => {
               <Button className="h-12 font-bold">
                 <Search />
                 FILTRAR
-              </Button>
+              </Button>*/}
             </div>
           </CardContent>
         </Card>
@@ -1264,7 +1514,7 @@ const Products = () => {
             </TableHeader>
 
             <TableBody>
-              {products.map((product, index) => {
+              {filteredProducts.map((product, index) => {
                 const status = getStatus(product.stock ? product.stock : product.variants[0].stock);
 
                 return (
@@ -1284,7 +1534,7 @@ const Products = () => {
 
                     </TableCell>
 
-                    <TableCell>{product.subCategories[0].name}</TableCell>
+                    <TableCell>{product.subCategories[0].category.name}</TableCell>
 
                     <TableCell>${product.price.toFixed(2)}</TableCell>
 
@@ -1297,12 +1547,31 @@ const Products = () => {
                     </TableCell>
 
                     <TableCell className="text-right space-x-2">
-                      <Button size="icon" variant="ghost">
+                      <Button size="icon" variant="ghost" onClick={() => { onEdit(product) }}>
                         <Pencil className="w-4 h-4" />
                       </Button>
-                      <Button size="icon" variant="ghost">
-                        <Trash2 className="w-4 h-4 text-red-500" />
-                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button size="icon" variant="ghost">
+                            <Trash2 className="w-4 h-4 text-red-500" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>¿Eliminar producto?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Esta acción no se puede deshacer, eliminará el producto para siempre.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => { onDelete(product._id) }}>
+                              Eliminar
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+
                     </TableCell>
                   </TableRow>
                 );
