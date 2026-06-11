@@ -121,14 +121,14 @@ export const SingleProductView = () => {
             >
               {colors.map((color) => (
                 <ToggleGroupItem
-                  key={color}
-                  value={color}
-                  aria-label={color}
+                  key={color.name}
+                  value={color.name}
+                  aria-label={color.name}
                   className="h-9 w-9 p-1"
                 >
                   <span
                     className="block h-6 w-6 rounded-full border border-black/20"
-                    style={{ backgroundColor: normalizeColorValue(color) }}
+                    style={{ backgroundColor: normalizeColorValue(color.hexColor || color.name) }}
                   />
                 </ToggleGroupItem>
               ))}

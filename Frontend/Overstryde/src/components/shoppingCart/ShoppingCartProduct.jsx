@@ -24,7 +24,17 @@ export const ShoppingCartProduct = ({ item, isShoppingCart, onQuantityChange, on
           </div>
           <div className='flex flex-wrap gap-2 font-extralight text-sm'>
             {item.option && <p>Opcion: {item.option}</p>}
-            {item.color && <p>Color: #{item.color.replace("#", "")}</p>}
+            {item.color && (
+              <p className='flex items-center gap-1.5'>
+                Color: {item.color}
+                {item.hexColor && (
+                  <span
+                    className='inline-block h-3 w-3 rounded-full border border-black/20'
+                    style={{ backgroundColor: item.hexColor }}
+                  />
+                )}
+              </p>
+            )}
           </div>
           <div className='flex mt-auto items-center gap-2'>
             <div className='flex justify-center bg-gray-100 rounded-sm gap-3 px-3 py-1'>

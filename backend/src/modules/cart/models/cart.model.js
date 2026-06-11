@@ -18,6 +18,10 @@ const cartProductSchema = new Schema(
       type: String,
       trim: true,
     },
+    hexColor: {
+      type: String,
+      trim: true,
+    },
     quantity: {
       type: Number,
       required: true,

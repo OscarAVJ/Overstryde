@@ -65,6 +65,7 @@ const buildCartProducts = async (products = []) => {
       variantId: variantFound?._id,
       option: variantFound?.size,
       color: variantFound?.color,
+      hexColor: variantFound?.hexColor,
       quantity,
       subTotal,
     });
