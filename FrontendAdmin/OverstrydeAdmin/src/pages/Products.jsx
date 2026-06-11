@@ -55,6 +55,7 @@ const Products = () => {
 
   const [openDialog, setOpenDialog] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [editingProductId, setEditingProductId] = useState(null)
 
   //Constante para saber el valor de images
   const images = watch("images");
@@ -64,6 +65,14 @@ const Products = () => {
 
   //HOOK PERSONALIZADO DE PRODUCTOS
   const { products, loading, error, formData, setFormData, addProduct, editProduct, removeProduct, getProduct } = useProducts();
+
+  const disableTab = (value) =>{
+    if(isEditing === true && value !== productType){
+      return true;
+    }{
+      return false;
+    }
+  }
 
   const onSubmit = (data) => {
 
@@ -144,23 +153,38 @@ const Products = () => {
 
   const onEdit = (data) =>{
     setIsEditing(true);
+    setEditingProductId(data._id)
+    setValue("name", data.name)
+    setValue("subCategories", data.subCategories.map(sub => sub._id))
+    setValue("description", data.description)
+    setValue("product_type", data.product_type)
+    setValue("price", data.price)
+
     switch (data.product_type) {
       case "general":
-        setValue("name", data.name)
-        setValue("subCategories", data.subCategories)
-        setValue("")
+        setValue("stock", data.stock)
         break;
       
       case "alimenticio":
+        setValue("stock", data.stock)
+        setValue("expiration_date", new Date(data.expiration_date))
         break;
 
       case "ropa":
-
+        setValue("variants", data.variants)
+        setValue("fit", data.fit)
+        setValue("gender", data.gender)
         break;  
-    
-      default:
-        break;
     }
+
+    setProductType(data.product_type)
+    setOpenDialog(true);
+  }
+
+  const handleNewProduct = () =>{
+    setIsEditing(false)
+    reset();
+    setProductType("general")
   }
 
   //DIALOG PARA ESCOGER SUBCATEGORIAS
@@ -282,7 +306,7 @@ const Products = () => {
           <Dialog open={openDialog} onOpenChange={setOpenDialog}>
             <form>
               <DialogTrigger asChild>
-                <Button className="h-12">
+                <Button className="h-12" onClick={() => {handleNewProduct();}}>
                   <Plus />
                   Nuevo producto
                 </Button>
@@ -305,12 +329,9 @@ const Products = () => {
                   }}
                 >
                   <TabsList>
-                    <TabsTrigger value="general">Producto general</TabsTrigger>
-                    <TabsTrigger value="alimenticio">Producto alimenticio</TabsTrigger>
-                    <TabsTrigger value="ropa" onClick={() => {
-                      console.log(watch())
-                    }}
-                    >
+                    <TabsTrigger value="general" disabled={disableTab("general")}>Producto general</TabsTrigger>
+                    <TabsTrigger value="alimenticio" disabled={disableTab("alimenticio")}>Producto alimenticio</TabsTrigger>
+                    <TabsTrigger value="ropa" disabled={disableTab("ropa")} >
                       Ropa
                     </TabsTrigger>
                   </TabsList>
@@ -1297,7 +1318,7 @@ const Products = () => {
                     </TableCell>
 
                     <TableCell className="text-right space-x-2">
-                      <Button size="icon" variant="ghost">
+                      <Button size="icon" variant="ghost" onClick={() => {onEdit(product)}}>
                         <Pencil className="w-4 h-4" />
                       </Button>
                       <Button size="icon" variant="ghost">
