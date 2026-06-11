@@ -100,10 +100,10 @@ export const updateProduct = async (id, product) => {
     if (product.product_type !== undefined)
         formData.append("product_type", product.product_type);
 
-    if (product.gender !== undefined){
-        if(product.product_type !== "ropa"){
+    if (product.gender !== undefined) {
+        if (product.product_type !== "ropa") {
             formData.append("gender", "accesory")
-        } else{
+        } else {
             formData.append("gender", product.gender);
         }
     }
@@ -127,11 +127,16 @@ export const updateProduct = async (id, product) => {
             "expiration_date",
             product.expiration_date.toISOString()
         );
-    if (product.stock !== undefined){
+    if (product.stock !== undefined) {
         formData.append(
             "stock",
             product.stock
         )
+    }
+    if (product.images.length !== 0) {
+        product.images.forEach((image) => {
+            formData.append("images", image.file);
+        });
     }
 
     const response = await fetch(`${API_URL}/${id}`, {
