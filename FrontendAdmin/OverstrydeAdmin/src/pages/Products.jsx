@@ -23,6 +23,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { es } from 'date-fns/locale'
 import { useForm, Controller, useFieldArray } from "react-hook-form"
 import { toast } from "sonner"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 
 
 const Products = () => {
@@ -66,10 +67,10 @@ const Products = () => {
   //HOOK PERSONALIZADO DE PRODUCTOS
   const { products, loading, error, formData, setFormData, addProduct, editProduct, removeProduct, getProduct } = useProducts();
 
-  const disableTab = (value) =>{
-    if(isEditing === true && value !== productType){
+  const disableTab = (value) => {
+    if (isEditing === true && value !== productType) {
       return true;
-    }{
+    } {
       return false;
     }
   }
@@ -126,7 +127,7 @@ const Products = () => {
       return
     }
 
-    if(data.product_type === "alimenticio" && !data.expiration_date){
+    if (data.product_type === "alimenticio" && !data.expiration_date) {
       toast.error("Formulario incompleto.", {
         description: "Ingrese la fecha de vencimiento del producto.",
         position: "top-right",
@@ -135,12 +136,31 @@ const Products = () => {
       return;
     }
 
-    addProduct(data);
-    toast.success("Producto creado.", {
-      position: "top-right"
-    })
-    reset();
-    setOpenDialog(false);
+    try {
+
+      if (isEditing) {
+        editProduct(editingProductId, data);
+        toast.success("Producto actualizado.", {
+          position: "top-right"
+        })
+      } else {
+        addProduct(data);
+        toast.success("Producto creado.", {
+          position: "top-right"
+        })
+      }
+
+      setIsEditing(false);
+      setEditingProductId(null);
+      reset();
+      setOpenDialog(false);
+
+    } catch (error) {
+      toast.error("Ocurrió un error", {
+        description: error.message
+      });
+    }
+
   }
 
   const onError = (errors) => {
@@ -151,7 +171,7 @@ const Products = () => {
     })
   }
 
-  const onEdit = (data) =>{
+  const onEdit = (data) => {
     setIsEditing(true);
     setEditingProductId(data._id)
     setValue("name", data.name)
@@ -164,7 +184,7 @@ const Products = () => {
       case "general":
         setValue("stock", data.stock)
         break;
-      
+
       case "alimenticio":
         setValue("stock", data.stock)
         setValue("expiration_date", new Date(data.expiration_date))
@@ -174,14 +194,27 @@ const Products = () => {
         setValue("variants", data.variants)
         setValue("fit", data.fit)
         setValue("gender", data.gender)
-        break;  
+        break;
     }
 
     setProductType(data.product_type)
     setOpenDialog(true);
   }
 
-  const handleNewProduct = () =>{
+  const onDelete = (productId) => {
+    try {
+      removeProduct(productId)
+      toast.success("Producto eliminado.", {
+        position: "top-right"
+      })
+    } catch (error) {
+      toast.error("Ocurrió un error", {
+        description: error.message
+      });
+    }
+  }
+
+  const handleNewProduct = () => {
     setIsEditing(false)
     reset();
     setProductType("general")
@@ -306,7 +339,7 @@ const Products = () => {
           <Dialog open={openDialog} onOpenChange={setOpenDialog}>
             <form>
               <DialogTrigger asChild>
-                <Button className="h-12" onClick={() => {handleNewProduct();}}>
+                <Button className="h-12" onClick={() => { handleNewProduct(); }}>
                   <Plus />
                   Nuevo producto
                 </Button>
@@ -325,7 +358,7 @@ const Products = () => {
                     reset();
                     setProductType(value);
                     setValue("product_type", value)
-                    
+
                   }}
                 >
                   <TabsList>
@@ -1209,7 +1242,7 @@ const Products = () => {
                   <Button type="submit" onClick={() => {
                     console.log("CLICK");
                     handleSubmit(onSubmit, onError)();
-                  }}>Guardar</Button>
+                  }}>{isEditing ? "Actualizar" : "Guardar"}</Button>
                 </DialogFooter>
 
               </DialogContent>
@@ -1318,12 +1351,31 @@ const Products = () => {
                     </TableCell>
 
                     <TableCell className="text-right space-x-2">
-                      <Button size="icon" variant="ghost" onClick={() => {onEdit(product)}}>
+                      <Button size="icon" variant="ghost" onClick={() => { onEdit(product) }}>
                         <Pencil className="w-4 h-4" />
                       </Button>
-                      <Button size="icon" variant="ghost">
-                        <Trash2 className="w-4 h-4 text-red-500" />
-                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button size="icon" variant="ghost">
+                            <Trash2 className="w-4 h-4 text-red-500" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>¿Eliminar producto?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Esta acción no se puede deshacer, eliminará el producto para siempre.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => {onDelete(product._id)}}>
+                              Eliminar
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+
                     </TableCell>
                   </TableRow>
                 );
