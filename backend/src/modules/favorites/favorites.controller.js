@@ -1,6 +1,36 @@
+import { isValidObjectId } from "mongoose";
 import favoritesModel from "./model/favorites.model.js"
+import productModel from "../products/models/products.model.js";
+import jsonwebtoken from "jsonwebtoken";
+import { config } from "../../utils/config.js";
 
 const controller = {};
+
+const getAuthenticatedCustomerId = (req) => {
+    const token = req.cookies?.authCookie;
+
+    if (!token) {
+        return null;
+    }
+
+    const decoded = jsonwebtoken.verify(token, config.JWT.secret);
+    if (decoded.userType !== "customer") {
+        return null;
+    }
+
+    return decoded.id;
+};
+
+const getFavoriteListByCustomer = async (customerId) => {
+    let favoriteList = await favoritesModel.findOne({ customerId }).populate("products.productId");
+
+    if (!favoriteList) {
+        favoriteList = await favoritesModel.create({ customerId, products: [] });
+        favoriteList = await favoriteList.populate("products.productId");
+    }
+
+    return favoriteList;
+};
 
 //GET
 controller.getFavorites = async (req, res) => {
@@ -10,6 +40,87 @@ controller.getFavorites = async (req, res) => {
     } catch (error) {
         console.log(error.message)
         return res.status(500).json({ info: error.message })
+    }
+}
+
+controller.getMyFavorites = async (req, res) => {
+    try {
+        const customerId = getAuthenticatedCustomerId(req);
+        if (!customerId) {
+            return res.status(401).json({ message: "Not authenticated" });
+        }
+
+        const favoriteList = await getFavoriteListByCustomer(customerId);
+        return res.status(200).json(favoriteList);
+    } catch (error) {
+        return res.status(401).json({ message: "Invalid session" });
+    }
+}
+
+controller.addMyFavorite = async (req, res) => {
+    try {
+        const customerId = getAuthenticatedCustomerId(req);
+        const { productId } = req.params;
+
+        if (!customerId) {
+            return res.status(401).json({ message: "Not authenticated" });
+        }
+
+        if (!isValidObjectId(productId)) {
+            return res.status(400).json({ message: "Invalid product id" });
+        }
+
+        const productFound = await productModel.findById(productId);
+        if (!productFound) {
+            return res.status(404).json({ message: "Product not found" });
+        }
+
+        const favoriteList = await getFavoriteListByCustomer(customerId);
+        const exists = favoriteList.products.some((item) => (
+            item.productId?._id?.toString() === productId || item.productId?.toString() === productId
+        ));
+
+        if (!exists) {
+            favoriteList.products.push({ productId });
+            await favoriteList.save();
+        }
+
+        const populatedList = await favoriteList.populate("products.productId");
+        return res.status(200).json({
+            message: "Favorite saved",
+            favorites: populatedList,
+        });
+    } catch (error) {
+        return res.status(401).json({ message: "Invalid session" });
+    }
+}
+
+controller.removeMyFavorite = async (req, res) => {
+    try {
+        const customerId = getAuthenticatedCustomerId(req);
+        const { productId } = req.params;
+
+        if (!customerId) {
+            return res.status(401).json({ message: "Not authenticated" });
+        }
+
+        if (!isValidObjectId(productId)) {
+            return res.status(400).json({ message: "Invalid product id" });
+        }
+
+        const favoriteList = await getFavoriteListByCustomer(customerId);
+        favoriteList.products = favoriteList.products.filter((item) => (
+            item.productId?._id?.toString() !== productId && item.productId?.toString() !== productId
+        ));
+        await favoriteList.save();
+
+        const populatedList = await favoriteList.populate("products.productId");
+        return res.status(200).json({
+            message: "Favorite removed",
+            favorites: populatedList,
+        });
+    } catch (error) {
+        return res.status(401).json({ message: "Invalid session" });
     }
 }
 

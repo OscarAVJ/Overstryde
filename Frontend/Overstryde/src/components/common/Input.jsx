@@ -1,4 +1,3 @@
-import React from 'react'
 import { Search } from "lucide-react"
 
 import {
@@ -7,13 +6,22 @@ import {
     InputGroupInput,
 } from "@/components/ui/input-group"
 
-export const Input = () => {
+export const Input = ({ value = "", onChange, onSubmit }) => {
     return (
-        <InputGroup className="max-w-xs">
-            <InputGroupInput placeholder="Buscar..." />
-            <InputGroupAddon>
-                <Search />
-            </InputGroupAddon>
-        </InputGroup>
+        <form onSubmit={onSubmit} className="w-full max-w-xs">
+            <InputGroup>
+                <InputGroupInput
+                    value={value}
+                    onChange={onChange}
+                    placeholder="Buscar..."
+                    aria-label="Buscar productos"
+                />
+                <InputGroupAddon>
+                    <button type="submit" aria-label="Buscar productos">
+                        <Search />
+                    </button>
+                </InputGroupAddon>
+            </InputGroup>
+        </form>
     )
 }

@@ -30,6 +30,9 @@ const normalizeHexColor = (value = "") => {
 const isValidHexColor = (value = "") =>
   /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(value);
 
+const escapeRegex = (value = "") =>
+  value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 const validateData = (payload, { isUpdate = false, currentProduct = null } = {}) => {
   let {
     name,
@@ -200,9 +203,19 @@ const ensureProductRelations = async (product, currentProduct = {}) => {
 
 const buildProductsFilter = async (query) => {
   const filter = {};
-  const { category, subcategory, gender, product_type } = query;
+  const { category, subcategory, gender, product_type, search, q } = query;
+  const searchTerm = (search || q || "").trim();
   const categoryType = gender === "accesories" ? "accesory" : gender;
   let categoryId = null;
+
+  if (searchTerm) {
+    const searchRegex = new RegExp(escapeRegex(searchTerm), "i");
+    filter.$or = [
+      { name: searchRegex },
+      { description: searchRegex },
+      { fit: searchRegex },
+    ];
+  }
 
   if (gender) {
     filter.gender = categoryType;

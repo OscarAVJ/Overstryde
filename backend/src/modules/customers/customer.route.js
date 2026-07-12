@@ -6,6 +6,17 @@ const router = express.Router();
 router.route("/")
 .get(customerController.getCustomers);
 
+router.route("/me")
+.get(customerController.getCurrentCustomer)
+.put(customerController.updateCurrentCustomer);
+
+router.route("/me/addresses")
+.post(customerController.addAddress);
+
+router.route("/me/addresses/:addressId")
+.put(customerController.updateAddress)
+.delete(customerController.deleteAddress);
+
 router.route("/:id")
 .get(customerController.getCustomerById)
 .put(customerController.updateCustomers)

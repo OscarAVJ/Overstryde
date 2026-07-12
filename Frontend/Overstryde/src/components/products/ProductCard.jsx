@@ -1,12 +1,11 @@
-import React, { useState } from 'react'
 import { IconRounded } from '../common/IconRounded'
 import { Heart } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 
-export const ProductCard = ({ product }) => {
-    const [isFav, setFav] = useState(false)
+export const ProductCard = ({ product, isFavorite = false, onToggleFavorite }) => {
     const firstSubCategory = product.subCategories?.[0]
     const categoryName = firstSubCategory?.category?.name || firstSubCategory?.name
+    const image = product.images?.[0]?.path
 
     return (
         <div className=' w-full max-w-75 flex flex-col gap-3'>
@@ -15,18 +14,20 @@ export const ProductCard = ({ product }) => {
             <div className="relative w-full aspect-3/4 overflow-hidden rounded-xl bg-gray-100">
                 <NavLink to={`/singleProduct/${product._id}`}>
                     <img
-                        src={product.images[0].path}
+                        src={image}
                         alt={product.name}
                         className="absolute inset-0 w-full h-full object-cover hover:scale-105 duration-300"
                     />
                 </NavLink>
-                <div
+                <button
+                    type="button"
                     className='absolute right-3 top-3 hover:-translate-y-0.5 duration-150 z-10'
-                    onClick={() => setFav(!isFav)}
+                    onClick={() => onToggleFavorite?.(product._id)}
+                    aria-label={isFavorite ? "Quitar de favoritos" : "Agregar a favoritos"}
                 >
                     <IconRounded
                         icon={
-                            isFav ? (
+                            isFavorite ? (
                                 <svg
                                     fill="#DC143C"
                                     width="22"
@@ -44,7 +45,7 @@ export const ProductCard = ({ product }) => {
                         background={"bg-white"}
                         iconColor={"text-black"}
                     />
-                </div>
+                </button>
             </div>
             <div className='flex flex-col gap-2 px-1'>
                 

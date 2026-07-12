@@ -10,8 +10,8 @@ export const ContactPage = () => {
     e.preventDefault()
   }
   return (
-    <div className='py-14 max-w-6xl'>
-      <form className='p-4 bg-gray-50 shadow-md flex flex-col items-center justify-center'>
+    <div className='w-full '>
+      <form className='p-4 bg-gray-50 shadow-md flex flex-col justify-center'>
         <h1 className='text-2xl font-semibold'>Contacto</h1>
         <FieldGroup>
           <FieldSet>
@@ -56,7 +56,7 @@ export const ContactPage = () => {
             </FieldGroup>
           </FieldSet>
         </FieldGroup>
-        <Button className={"w-[50%] mt-1"} type={"submit"} onClick={handleClick}>Enviar</Button>
+        <Button className={"mt-1"} type={"submit"} onClick={handleClick}>Enviar</Button>
       </form>
     </div>
   )

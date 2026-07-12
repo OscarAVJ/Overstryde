@@ -3,7 +3,7 @@ import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { loginCustomer } from "../services/Authservice";
 import { useAuth } from "../hooks/useAuth";
 
@@ -23,9 +23,9 @@ export const LogInPage = () => {
     setLoading(true);
 
     try {
-      await loginCustomer({ email, password });
+      const data = await loginCustomer({ email, password });
 
-      setUser({ email });
+      setUser(data.customer);
 
       navigate("/"); 
     } catch (err) {
@@ -36,7 +36,14 @@ export const LogInPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
+    <div className="relative min-h-screen flex items-center justify-center px-4">
+      <NavLink
+        to="/"
+        className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-zinc-700 shadow-sm ring-1 ring-zinc-200 transition hover:text-black hover:ring-zinc-300"
+      >
+        <ArrowLeft size={16} />
+        Volver
+      </NavLink>
       <div className="w-full max-w-xl">
         <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-10">
 
