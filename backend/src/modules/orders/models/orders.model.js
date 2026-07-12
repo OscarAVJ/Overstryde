@@ -7,10 +7,56 @@ const orderSchema = new Schema(
       ref: "cart",
       required: true,
     },
+    customerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "customers",
+      required: true,
+    },
     delivered_address: {
       type: String,
       required: true,
       trim: true,
+    },
+    delivery_address: {
+      country: {
+        type: String,
+        trim: true,
+      },
+      address: {
+        type: String,
+        trim: true,
+      },
+      department: {
+        type: String,
+        trim: true,
+      },
+      city: {
+        type: String,
+        trim: true,
+      },
+      references: {
+        type: String,
+        trim: true,
+      },
+      phone: {
+        type: String,
+        trim: true,
+      },
+      firstName: {
+        type: String,
+        trim: true,
+      },
+      lastName: {
+        type: String,
+        trim: true,
+      },
+      email: {
+        type: String,
+        trim: true,
+      },
+      address_id: {
+        type: mongoose.Schema.Types.ObjectId,
+      },
     },
     payment_method: {
       type: String,

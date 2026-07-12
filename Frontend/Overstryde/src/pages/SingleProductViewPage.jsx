@@ -6,10 +6,13 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { useParams } from 'react-router-dom'
 import useProduct from '@/hooks/useProduct'
 import useProductSelection, { normalizeColorValue } from '@/hooks/useProductSelection'
+import useFavorites from '@/hooks/useFavorites'
+import { Heart } from 'lucide-react'
 
 export const SingleProductView = () => {
   const { id } = useParams()
   const { product, isLoading, error } = useProduct(id)
+  const { isFavorite, toggleFavorite } = useFavorites()
   const {
     images,
     selectedImage,
@@ -85,7 +88,18 @@ export const SingleProductView = () => {
       </div>
 
       <div className='flex flex-col gap-2 w-auto md:w-140'>
-        <h1 className='uppercase font-bold'>{product.name}</h1>
+        <div className='flex items-start justify-between gap-3'>
+          <h1 className='uppercase font-bold'>{product.name}</h1>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            onClick={() => toggleFavorite(product._id)}
+            aria-label={isFavorite(product._id) ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+          >
+            <Heart className={isFavorite(product._id) ? 'size-4 fill-red-600 text-red-600' : 'size-4'} />
+          </Button>
+        </div>
         <p className='font-bold text-xl'>${product.price}</p>
       
         <Separator />

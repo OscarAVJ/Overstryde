@@ -96,6 +96,12 @@ const useCart = () => {
         updateCartItemQuantity(itemKey, 0)
     ), [updateCartItemQuantity])
 
+    const clearCart = useCallback(() => {
+        cartService.clearStoredCartId()
+        setCart(null)
+        window.dispatchEvent(new Event("overstryde-cart-updated"))
+    }, [])
+
     useEffect(() => {
         loadCart()
 
@@ -118,6 +124,7 @@ const useCart = () => {
         addCartItem,
         updateCartItemQuantity,
         removeCartItem,
+        clearCart,
     }
 }
 

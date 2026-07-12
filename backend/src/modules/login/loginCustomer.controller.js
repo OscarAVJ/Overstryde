@@ -62,7 +62,15 @@ loginCustomerController.login = async (req, res) => {
         res.cookie("authCookie",token);
 
         // y yap
-        return res.status(200).json({message:"Login exitoso"})
+        return res.status(200).json({
+            message:"Login exitoso",
+            customer: {
+                _id: userFound._id,
+                name: userFound.name,
+                last_name: userFound.last_name,
+                email: userFound.email,
+            }
+        })
 
     } catch (error) {
         console.log("error" + error)

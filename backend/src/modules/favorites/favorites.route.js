@@ -7,6 +7,13 @@ router.route("/")
 .get(favoritesController.getFavorites)
 .post(favoritesController.postFavorite)
 
+router.route("/me")
+.get(favoritesController.getMyFavorites)
+
+router.route("/me/products/:productId")
+.post(favoritesController.addMyFavorite)
+.delete(favoritesController.removeMyFavorite)
+
 router.route("/:id")
 .put(favoritesController.updateFavorites)
 .delete(favoritesController.deleteFavorites)

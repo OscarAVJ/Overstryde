@@ -12,6 +12,7 @@ import { CheckoutPaymentPage } from './pages/CheckoutPaymentPage'
 import { LogInPage } from './pages/LogInPage'
 import { RecoverAccountPage } from './pages/RecoverAccountPage'
 import { ProfilePage } from './pages/ProfilePage'
+import { FavoritesPage } from './pages/FavoritesPage'
 import { TermsOfServicePage } from './pages/TermsOfServicePage'
 import { AboutPage } from './pages/AboutPage'
 import { ContactPage } from './pages/ContactPage'
@@ -38,6 +39,7 @@ function App() {
             <Route path={"/singleProduct/:id"} element={<SingleProductView />} />
             <Route path={"/checkoutPayment"} element={<CheckoutPaymentPage />} />
             <Route path={"/profile"} element={<ProfilePage />} />
+            <Route path={"/favorites"} element={<FavoritesPage />} />
             <Route path={"/termsOfService"} element={<TermsOfServicePage />} />
             <Route path={"/aboutUs"} element={<AboutPage />} />
             <Route path={"/contact"} element={<ContactPage />} />

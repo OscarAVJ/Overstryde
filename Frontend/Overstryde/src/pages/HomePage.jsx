@@ -9,10 +9,12 @@ import {
 import { Button } from "@/components/ui/button"
 import { GenderSeparator } from "@/components/home/GenderSeparator"
 import { ProductCard } from "@/components/products/ProductCard"
+import { ProductCardSkeleton } from "@/components/products/ProductCardSkeleton"
 import { NavLink } from "react-router-dom"
 import { Skeleton } from "@/components/ui/skeleton"
 import useBanners from "@/hooks/useBanners"
 import useProducts from "@/hooks/useProducts"
+import useFavorites from "@/hooks/useFavorites"
 
 const genders = {
   women: "https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=1600&q=80",
@@ -20,11 +22,27 @@ const genders = {
 }
 
 export const HomePage = () => {
-  const { products } = useProducts()
+  const { products, isLoading: isLoadingProducts } = useProducts()
   const { banners, isLoading: isLoadingBanners } = useBanners()
+  const { isFavorite, toggleFavorite } = useFavorites()
   const menData = products.filter((item) => item.gender === "male")
   const womenData = products.filter((item) => item.gender === "female")
   const accesoriesData = products.filter((item) => item.gender === "accesory")
+
+  const renderProductCard = (item) => (
+    <ProductCard
+      key={item._id}
+      product={item}
+      isFavorite={isFavorite(item._id)}
+      onToggleFavorite={toggleFavorite}
+    />
+  )
+
+  const renderProductSectionContent = (items) => (
+    isLoadingProducts
+      ? Array.from({ length: 5 }).map((_, index) => <ProductCardSkeleton key={index} />)
+      : items.map(renderProductCard)
+  )
 
   return (
     <section className="bg-gray-100 w-full px-4 py-2">
@@ -78,7 +96,7 @@ export const HomePage = () => {
         <h2 className="uppercase text-yellow-500 font-extrabold">Hombres</h2>
         <p className="font-semibold">Ultimos ingresos</p>
         <div className="grid grid-cols-2 gap-2 md:grid-cols-5 mt-2">
-          {menData.map((item) => <ProductCard key={item._id} product={item} />)}
+          {renderProductSectionContent(menData)}
         </div>
         <div className="flex justify-center items-center mt-2">
           <NavLink to={`/products?gender=${encodeURIComponent("male")}`}>
@@ -91,7 +109,7 @@ export const HomePage = () => {
         <h2 className="uppercase text-yellow-500 font-extrabold">Mujeres</h2>
         <p className="font-semibold">Ultimos ingresos</p>
         <div className="grid grid-cols-2 gap-2 md:gap-2 md:grid-cols-5 mt-2">
-          {womenData.map((item) => <ProductCard key={item._id} product={item} />)}
+          {renderProductSectionContent(womenData)}
         </div>
         <div className="flex justify-center items-center mt-2">
           <NavLink to={`/products?gender=${encodeURIComponent("female")}`}>
@@ -104,7 +122,7 @@ export const HomePage = () => {
         <h2 className="uppercase text-yellow-500 font-extrabold">Accesorios</h2>
         <p className="font-semibold">Ultimos ingresos</p>
         <div className="grid grid-cols-2 gap-2 md:gap-2 md:grid-cols-5 mt-2">
-          {accesoriesData.map((item) => <ProductCard key={item._id} product={item} />)}
+          {renderProductSectionContent(accesoriesData)}
         </div>
         <div className="flex justify-center items-center mt-2">
           <NavLink to={`/products?gender=${encodeURIComponent("accesories")}`}>
