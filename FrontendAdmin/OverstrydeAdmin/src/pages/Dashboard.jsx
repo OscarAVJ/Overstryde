@@ -1,183 +1,169 @@
-import React from "react";
 import { useNavigate } from "react-router-dom";
-
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-
+import { RefreshCw } from "lucide-react";
 import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from "@/components/ui/table";
-
-import {
-  LineChart,
+  Cell,
   Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
 } from "recharts";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import useDashboard from "@/hooks/useDashboard";
+
+const COLORS = ["#f97316", "#f59e0b", "#fbbf24", "#fdba74", "#fed7aa", "#ffedd5"];
+
+const currencyFormatter = new Intl.NumberFormat("es-SV", {
+  style: "currency",
+  currency: "USD",
+});
+
+const statusClasses = {
+  delivered: "bg-green-100 text-green-700",
+  pending: "bg-yellow-100 text-yellow-700",
+  returned: "bg-red-100 text-red-700",
+};
+
+const statusLabels = {
+  delivered: "Entregado",
+  pending: "Pendiente",
+  returned: "Devuelto",
+};
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { dashboard, loading, error, refresh } = useDashboard();
+  const metrics = dashboard?.metrics;
   const stats = [
-    { title: "Total Productos", value: "1,247", extra: "+12%" },
-    { title: "Órdenes", value: "3,891", extra: "+8%" },
-    { title: "Categorías", value: "24", extra: "+2 nuevas" },
-    { title: "Ingresos", value: "$89,247", extra: "+15%" },
+    { title: "Total productos", data: metrics?.products, format: (value) => value.toLocaleString("es-SV") },
+    { title: "Órdenes", data: metrics?.orders, format: (value) => value.toLocaleString("es-SV") },
+    { title: "Categorías", data: metrics?.categories, format: (value) => value.toLocaleString("es-SV") },
+    { title: "Ingresos", data: metrics?.revenue, format: currencyFormatter.format },
   ];
 
-  const salesData = [
-    { name: "Ene", value: 65000 },
-    { name: "Feb", value: 72000 },
-    { name: "Mar", value: 68000 },
-    { name: "Abr", value: 90000 },
-    { name: "May", value: 95000 },
-    { name: "Jun", value: 90000 },
-  ];
+  if (loading && !dashboard) {
+    return <div className="p-6 text-sm text-muted-foreground">Cargando dashboard…</div>;
+  }
 
-  const pieData = [
-    { name: "Suplementos", value: 45 },
-    { name: "Equipos", value: 25 },
-    { name: "Ropa", value: 20 },
-    { name: "Accesorios", value: 10 },
-  ];
-
-  const COLORS = ["#f59e0b", "#fde68a", "#fcd34d", "#fff7ed"];
-
-  const orders = [
-    {
-      id: "#ORD-001",
-      cliente: "María González",
-      producto: "Proteína Whey 2kg",
-      estado: "Completado",
-      total: "$89.99",
-    },
-    {
-      id: "#ORD-002",
-      cliente: "Carlos Ruiz",
-      producto: "Mancuernas 20kg",
-      estado: "Pendiente",
-      total: "$159.99",
-    },
-    {
-      id: "#ORD-003",
-      cliente: "Ana López",
-      producto: "Colchoneta Yoga",
-      estado: "Enviado",
-      total: "$29.99",
-    },
-  ];
+  if (error && !dashboard) {
+    return (
+      <div className="p-6 space-y-4">
+        <p className="text-destructive">{error}</p>
+        <Button onClick={refresh}>Reintentar</Button>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6 space-y-6">
-
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
-
-        <button
-          onClick={() => navigate("/products")}
-          className="bg-orange-500 text-white px-4 py-2 rounded-lg"
-        >
-          Ir a productos
-        </button>
+    <div className="space-y-6 p-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Dashboard</h1>
+          <p className="text-sm text-muted-foreground">Resumen de la actividad de tu tienda.</p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={refresh} disabled={loading}>
+            <RefreshCw className={loading ? "animate-spin" : ""} />
+            Actualizar
+          </Button>
+          <Button onClick={() => navigate("/products")}>Ir a productos</Button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {stats.map((item, i) => (
-          <Card key={i}>
+      {error && <p className="text-sm text-destructive">{error}</p>}
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {stats.map(({ title, data, format }) => (
+          <Card key={title}>
             <CardContent className="p-4">
-              <p className="text-sm text-gray-500">{item.title}</p>
-              <h2 className="text-xl font-bold">{item.value}</h2>
-              <span className="text-green-500 text-sm">{item.extra}</span>
+              <p className="text-sm text-muted-foreground">{title}</p>
+              <h2 className="mt-1 text-2xl font-bold">{format(data?.value || 0)}</h2>
+              {data?.change !== undefined && (
+                <span className={data.change >= 0 ? "text-sm text-green-600" : "text-sm text-red-600"}>
+                  {data.change >= 0 ? "+" : ""}{data.change}% vs. mes anterior
+                </span>
+              )}
             </CardContent>
           </Card>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card>
           <CardContent className="p-4">
-            <h2 className="mb-4 font-semibold">Ventas Mensuales</h2>
+            <h2 className="mb-4 font-semibold">Ventas mensuales</h2>
             <ResponsiveContainer width="100%" height={250}>
-              <LineChart data={salesData}>
+              <LineChart data={dashboard?.monthlySales || []}>
                 <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Line type="monotone" dataKey="value" />
+                <YAxis tickFormatter={(value) => `$${value}`} />
+                <Tooltip formatter={(value) => currencyFormatter.format(value)} />
+                <Line type="monotone" dataKey="value" stroke="#f97316" strokeWidth={2} />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
-        {/* Para gráficos */}
+
         <Card>
           <CardContent className="p-4">
-            <h2 className="mb-4 font-semibold">Productos por Categoría</h2>
-            <ResponsiveContainer width="100%" height={250}>
-              <PieChart>
-                <Pie data={pieData} dataKey="value" label>
-                  {pieData.map((entry, index) => (
-                    <Cell key={index} fill={COLORS[index]} />
-                  ))}
-                </Pie>
-              </PieChart>
-            </ResponsiveContainer>
+            <h2 className="mb-4 font-semibold">Productos por categoría</h2>
+            {dashboard?.productsByCategory?.length ? (
+              <ResponsiveContainer width="100%" height={250}>
+                <PieChart>
+                  <Pie data={dashboard.productsByCategory} dataKey="value" nameKey="name" label>
+                    {dashboard.productsByCategory.map((item, index) => (
+                      <Cell key={item.name} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : <p className="flex h-[250px] items-center justify-center text-sm text-muted-foreground">Aún no hay productos para mostrar.</p>}
           </CardContent>
         </Card>
-
       </div>
 
       <Card>
         <CardContent className="p-4">
-          <h2 className="mb-4 font-semibold">Órdenes Recientes</h2>
-
+          <h2 className="mb-4 font-semibold">Órdenes recientes</h2>
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Orden</TableHead>
                 <TableHead>Cliente</TableHead>
-                <TableHead>Producto</TableHead>
+                <TableHead>Producto(s)</TableHead>
                 <TableHead>Estado</TableHead>
-                <TableHead>Total</TableHead>
+                <TableHead className="text-right">Total</TableHead>
               </TableRow>
             </TableHeader>
-
             <TableBody>
-              {orders.map((order, i) => (
-                <TableRow key={i}>
-                  <TableCell>{order.id}</TableCell>
-                  <TableCell>{order.cliente}</TableCell>
-                  <TableCell>{order.producto}</TableCell>
-                  <TableCell>
-                    <Badge
-                      className={
-                        order.estado === "Completado"
-                          ? "bg-green-200 text-green-700"
-                          : order.estado === "Pendiente"
-                            ? "bg-yellow-200 text-yellow-700"
-                            : "bg-blue-200 text-blue-700"
-                      }
-                    >
-                      {order.estado}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{order.total}</TableCell>
+              {dashboard?.recentOrders?.length ? dashboard.recentOrders.map((order) => (
+                <TableRow key={order.id}>
+                  <TableCell className="font-medium">#{order.id.slice(-6).toUpperCase()}</TableCell>
+                  <TableCell>{order.customer}</TableCell>
+                  <TableCell>{order.product}</TableCell>
+                  <TableCell><Badge className={statusClasses[order.status] || "bg-slate-100 text-slate-700"}>{statusLabels[order.status] || order.status}</Badge></TableCell>
+                  <TableCell className="text-right">{currencyFormatter.format(order.total)}</TableCell>
                 </TableRow>
-              ))}
+              )) : (
+                <TableRow><TableCell colSpan={5} className="h-24 text-center text-muted-foreground">Aún no hay órdenes.</TableCell></TableRow>
+              )}
             </TableBody>
           </Table>
-
         </CardContent>
       </Card>
-
     </div>
   );
 };
