@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
+import { API_URL } from "./apiConfig";
 
 export async function loginCustomer({ email, password }) {
   const res = await fetch(`${API_URL}/loginCustomer`, {

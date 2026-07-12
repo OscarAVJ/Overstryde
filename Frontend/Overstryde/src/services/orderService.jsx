@@ -1,4 +1,6 @@
-const URL = "http://localhost:4000/api/orders"
+import { API_URL } from "./apiConfig"
+
+const URL = `${API_URL}/orders`
 
 const orderService = {}
 

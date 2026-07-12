@@ -1,4 +1,6 @@
-const URL = "http://localhost:4000/api/cart"
+import { API_URL } from "./apiConfig"
+
+const URL = `${API_URL}/cart`
 const CART_ID_KEY = "overstryde-cart-id"
 const cartService = {}
 
