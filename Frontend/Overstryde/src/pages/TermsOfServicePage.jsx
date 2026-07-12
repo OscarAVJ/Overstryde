@@ -2,7 +2,7 @@ import React from 'react'
 
 export const TermsOfServicePage = () => {
   return (
-    <div className='py-14 mx-4'>
+    <div className='mx-4'>
        <section class="bg-white text-gray-800 py-12 px-6 md:px-12">
   <div class="max-w-5xl mx-auto">
 
