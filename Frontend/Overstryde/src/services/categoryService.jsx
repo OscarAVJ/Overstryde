@@ -1,4 +1,6 @@
-const URL = "http://localhost:4000/api/categories"
+import { API_URL } from "./apiConfig"
+
+const URL = `${API_URL}/categories`
 const categoryService = {}
 
 categoryService.getCategories = async () => {

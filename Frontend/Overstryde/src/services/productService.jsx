@@ -1,4 +1,6 @@
-const URL = "http://localhost:4000/api/products"
+import { API_URL } from "./apiConfig"
+
+const URL = `${API_URL}/products`
 const productService = {}
 
 productService.getProducts = async (filters = {}) => {
