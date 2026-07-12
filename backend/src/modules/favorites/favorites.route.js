@@ -1,5 +1,6 @@
 import favoritesController from "./favorites.controller.js"
 import express from "express"
+import { validateAuthCookie } from "../../middlewares/validateAuthCookie.js"
 
 const router = express.Router();
 
@@ -8,11 +9,11 @@ router.route("/")
 .post(favoritesController.postFavorite)
 
 router.route("/me")
-.get(favoritesController.getMyFavorites)
+.get(validateAuthCookie(["customer"]), favoritesController.getMyFavorites)
 
 router.route("/me/products/:productId")
-.post(favoritesController.addMyFavorite)
-.delete(favoritesController.removeMyFavorite)
+.post(validateAuthCookie(["customer"]), favoritesController.addMyFavorite)
+.delete(validateAuthCookie(["customer"]), favoritesController.removeMyFavorite)
 
 router.route("/:id")
 .put(favoritesController.updateFavorites)

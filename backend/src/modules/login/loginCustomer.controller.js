@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs"; // Encriptacion
 import jsonwebtoken from "jsonwebtoken"; // Token
 import customerModel from "../customers/customer.model.js";
 import { config } from "../../utils/config.js";
+import { getCookieOptions } from "../../utils/cookieOptions.js";
 
 // Array de funciones
 const loginCustomerController = {};
@@ -59,7 +60,9 @@ loginCustomerController.login = async (req, res) => {
         );
 
         // Guardamos el tokene en una cookie
-        res.cookie("authCookie",token);
+        res.cookie("authCookie", token, getCookieOptions(req, {
+            maxAge: 30 * 24 * 60 * 60 * 1000,
+        }));
 
         // y yap
         return res.status(200).json({

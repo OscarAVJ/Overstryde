@@ -4,6 +4,7 @@ import jsonwebtoken from "jsonwebtoken";
 import bcryptjs from "bcryptjs";
 
 import { config } from "../../utils/config.js";
+import { getCookieOptions } from "../../utils/cookieOptions.js";
 
 import adminsModel from "./admins.model.js";
 
@@ -87,10 +88,9 @@ registerAdminController.register = async (req, res) => {
         res.cookie(
             "verificationTokenCookie",
             tokenCode,
-            {
+            getCookieOptions(req, {
                 maxAge: 15 * 60 * 1000,
-                httpOnly: true
-            }
+            })
         );
 
         const transporter =
@@ -192,7 +192,8 @@ registerAdminController.verifyCode = async (req, res) => {
         );
 
         res.clearCookie(
-            "verificationTokenCookie"
+            "verificationTokenCookie",
+            getCookieOptions(req)
         );
 
         res.status(200).json({

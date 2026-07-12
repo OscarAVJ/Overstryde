@@ -1,24 +1,7 @@
 import customerModel from "./customer.model.js";
 import { v2 as cloudinary } from "cloudinary";
-import jsonwebtoken from "jsonwebtoken";
-import { config } from "../../utils/config.js";
 
 const customerController = {};
-
-const getAuthenticatedCustomerId = (req) => {
-    const token = req.cookies?.authCookie;
-
-    if (!token) {
-        return null;
-    }
-
-    const decoded = jsonwebtoken.verify(token, config.JWT.secret);
-    if (decoded.userType !== "customer") {
-        return null;
-    }
-
-    return decoded.id;
-};
 
 const normalizeAddress = (payload = {}) => ({
     country: payload.country?.trim(),
@@ -43,10 +26,7 @@ const validateAddress = (payload = {}) => {
 
 customerController.getCurrentCustomer = async (req, res) => {
     try {
-        const customerId = getAuthenticatedCustomerId(req);
-        if (!customerId) {
-            return res.status(401).json({ message: "Not authenticated" });
-        }
+        const customerId = req.authUser.id;
 
         const customer = await customerModel
             .findById(customerId)
@@ -74,10 +54,7 @@ customerController.getCurrentCustomer = async (req, res) => {
 
 customerController.updateCurrentCustomer = async (req, res) => {
     try {
-        const customerId = getAuthenticatedCustomerId(req);
-        if (!customerId) {
-            return res.status(401).json({ message: "Not authenticated" });
-        }
+        const customerId = req.authUser.id;
 
         const updateData = {
             name: req.body.name?.trim(),
@@ -120,10 +97,7 @@ customerController.updateCurrentCustomer = async (req, res) => {
 
 customerController.addAddress = async (req, res) => {
     try {
-        const customerId = getAuthenticatedCustomerId(req);
-        if (!customerId) {
-            return res.status(401).json({ message: "Not authenticated" });
-        }
+        const customerId = req.authUser.id;
 
         const validateAddressResult = validateAddress(req.body);
         if (validateAddressResult.error) {
@@ -150,10 +124,7 @@ customerController.addAddress = async (req, res) => {
 
 customerController.updateAddress = async (req, res) => {
     try {
-        const customerId = getAuthenticatedCustomerId(req);
-        if (!customerId) {
-            return res.status(401).json({ message: "Not authenticated" });
-        }
+        const customerId = req.authUser.id;
 
         const validateAddressResult = validateAddress(req.body);
         if (validateAddressResult.error) {
@@ -185,10 +156,7 @@ customerController.updateAddress = async (req, res) => {
 
 customerController.deleteAddress = async (req, res) => {
     try {
-        const customerId = getAuthenticatedCustomerId(req);
-        if (!customerId) {
-            return res.status(401).json({ message: "Not authenticated" });
-        }
+        const customerId = req.authUser.id;
 
         const customer = await customerModel.findById(customerId);
         if (!customer) {

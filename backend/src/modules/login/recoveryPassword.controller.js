@@ -4,6 +4,7 @@ import jsonwebtoken from "jsonwebtoken";
 import nodemailer from "nodemailer";
 import customerModel from "../customers/customer.model.js";
 import { config } from "../../utils/config.js";
+import { getCookieOptions } from "../../utils/cookieOptions.js";
 
 const recoverPasswordController = {};
 
@@ -31,10 +32,9 @@ recoverPasswordController.requestRecovery = async (req, res) => {
       { expiresIn: "15m" }
     );
 
-    res.cookie("recoverTokenCookie", tokenCode, {
+    res.cookie("recoverTokenCookie", tokenCode, getCookieOptions(req, {
       maxAge: 15 * 60 * 1000,
-      httpOnly: true,
-    });
+    }));
 
     const transporter = nodemailer.createTransport({
       service: "gmail",
@@ -115,7 +115,7 @@ recoverPasswordController.resetPassword = async (req, res) => {
       return res.status(404).json({ message: "Cliente no encontrado" });
     }
 
-    res.clearCookie("recoverTokenCookie");
+    res.clearCookie("recoverTokenCookie", getCookieOptions(req));
 
     return res.status(200).json({ message: "Contraseña actualizada correctamente" });
   } catch (error) {

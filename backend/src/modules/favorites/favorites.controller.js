@@ -1,25 +1,8 @@
 import { isValidObjectId } from "mongoose";
 import favoritesModel from "./model/favorites.model.js"
 import productModel from "../products/models/products.model.js";
-import jsonwebtoken from "jsonwebtoken";
-import { config } from "../../utils/config.js";
 
 const controller = {};
-
-const getAuthenticatedCustomerId = (req) => {
-    const token = req.cookies?.authCookie;
-
-    if (!token) {
-        return null;
-    }
-
-    const decoded = jsonwebtoken.verify(token, config.JWT.secret);
-    if (decoded.userType !== "customer") {
-        return null;
-    }
-
-    return decoded.id;
-};
 
 const getFavoriteListByCustomer = async (customerId) => {
     let favoriteList = await favoritesModel.findOne({ customerId }).populate("products.productId");
@@ -45,10 +28,7 @@ controller.getFavorites = async (req, res) => {
 
 controller.getMyFavorites = async (req, res) => {
     try {
-        const customerId = getAuthenticatedCustomerId(req);
-        if (!customerId) {
-            return res.status(401).json({ message: "Not authenticated" });
-        }
+        const customerId = req.authUser.id;
 
         const favoriteList = await getFavoriteListByCustomer(customerId);
         return res.status(200).json(favoriteList);
@@ -59,12 +39,8 @@ controller.getMyFavorites = async (req, res) => {
 
 controller.addMyFavorite = async (req, res) => {
     try {
-        const customerId = getAuthenticatedCustomerId(req);
+        const customerId = req.authUser.id;
         const { productId } = req.params;
-
-        if (!customerId) {
-            return res.status(401).json({ message: "Not authenticated" });
-        }
 
         if (!isValidObjectId(productId)) {
             return res.status(400).json({ message: "Invalid product id" });
@@ -97,12 +73,8 @@ controller.addMyFavorite = async (req, res) => {
 
 controller.removeMyFavorite = async (req, res) => {
     try {
-        const customerId = getAuthenticatedCustomerId(req);
+        const customerId = req.authUser.id;
         const { productId } = req.params;
-
-        if (!customerId) {
-            return res.status(401).json({ message: "Not authenticated" });
-        }
 
         if (!isValidObjectId(productId)) {
             return res.status(400).json({ message: "Invalid product id" });
