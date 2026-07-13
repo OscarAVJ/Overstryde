@@ -10,6 +10,8 @@ import CategoryModal from "@/components/ui/modal";
 import { createCategory, deleteCategory, getCategories, updateCategory } from "@/services/categories.service";
 import { getProducts } from "@/services/products.service";
 import { createSubCategory, deleteSubCategory, getSubCategories, updateSubCategory } from "@/services/subCategories.service";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
+
 
 const typeLabels = { male: "Hombres", female: "Mujeres", accesory: "Accesorios" };
 const sameId = (value, id) => String(value?._id || value) === String(id);
@@ -119,7 +121,6 @@ const Categories = () => {
 
   const handleDelete = async (item, itemType) => {
     const label = itemType === "category" ? "categoría" : "subcategoría";
-    if (!window.confirm(`¿Eliminar ${label} “${item.name}”?`)) return;
 
     try {
       if (itemType === "category") await deleteCategory(item._id);
@@ -127,7 +128,7 @@ const Categories = () => {
       toast.success(`${label.charAt(0).toUpperCase() + label.slice(1)} eliminada.`);
       await loadData();
     } catch (error) {
-      toast.error(`No se pudo eliminar la ${label}.`, { description: error.message });
+      toast.error(`No se pudo eliminar la ${label}.`, { description: error.message, descriptionClassName:"!text-black" });
     }
   };
 
@@ -151,24 +152,179 @@ const Categories = () => {
       </div>
 
       <div className="grid md:grid-cols-3 gap-4">
-        <Card><CardContent className="p-4 flex items-center gap-3"><div className="bg-blue-100 p-2 rounded-lg"><Folder className="text-blue-600" size={16} /></div><div><p className="text-sm text-gray-500">Categorías Principales</p><h2 className="text-xl font-bold">{categories.length}</h2></div></CardContent></Card>
-        <Card><CardContent className="p-4 flex items-center gap-3"><div className="bg-green-100 p-2 rounded-lg"><Layers className="text-green-600" size={16} /></div><div><p className="text-sm text-gray-500">Subcategorías</p><h2 className="text-xl font-bold">{totalSubcategories}</h2></div></CardContent></Card>
-        <Card><CardContent className="p-4 flex items-center gap-3"><div className="bg-purple-100 p-2 rounded-lg"><Box className="text-purple-600" size={16} /></div><div><p className="text-sm text-gray-500">Productos Totales</p><h2 className="text-xl font-bold">{totalProducts}</h2></div></CardContent></Card>
+        <Card>
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="bg-blue-100 p-2 rounded-lg">
+              <Folder className="text-blue-600" size={16} />
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Categorías Principales</p>
+              <h2 className="text-xl font-bold">{categories.length}</h2>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="bg-green-100 p-2 rounded-lg">
+              <Layers className="text-green-600" size={16} />
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Subcategorías</p>
+              <h2 className="text-xl font-bold">{totalSubcategories}</h2>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="bg-purple-100 p-2 rounded-lg">
+              <Box className="text-purple-600" size={16} />
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Productos Totales</p>
+              <h2 className="text-xl font-bold">{totalProducts}</h2>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      <Card><CardContent className="p-0">
-        <div className="p-4 border-b"><div className="relative"><Search className="absolute left-3 top-2.5 text-gray-400" size={14} /><Input placeholder="Buscar categorías o subcategorías..." value={search} onChange={(event) => setSearch(event.target.value)} className="pl-8" /></div></div>
-        <Table><TableHeader><TableRow><TableHead>Categoría</TableHead><TableHead>Tipo</TableHead><TableHead>Productos</TableHead><TableHead>Estado</TableHead><TableHead>Acciones</TableHead></TableRow></TableHeader>
-          <TableBody>
-            {loading ? <TableRow><TableCell colSpan={5} className="text-center text-gray-500">Cargando...</TableCell></TableRow> : filteredData.length === 0 ? <TableRow><TableCell colSpan={5} className="text-center text-gray-500">No se encontraron categorías.</TableCell></TableRow> : filteredData.map((category) => <React.Fragment key={category._id}>
-              <TableRow><TableCell className="flex gap-2 items-center"><Folder size={14} className="text-blue-500" />{category.name}</TableCell><TableCell>{getTypeBadge(category.type)}</TableCell><TableCell>{category.products}</TableCell><TableCell><Badge className="bg-green-100 text-green-600 text-xs">Activo</Badge></TableCell><TableCell className="flex gap-2"><Button size="icon" variant="ghost" onClick={() => openItem(category, "category", "edit")}><Pencil size={14} className="text-blue-500" /></Button><Button size="icon" variant="ghost" onClick={() => handleDelete(category, "category")}><Trash2 size={14} className="text-red-500" /></Button><Button size="icon" variant="ghost" onClick={() => openItem(category, "category", "view")}><Eye size={14} className="text-gray-500" /></Button></TableCell></TableRow>
-              {category.children.map((subcategory) => <TableRow key={subcategory._id}><TableCell className="pl-10 text-gray-600">{subcategory.name}</TableCell><TableCell>{getTypeBadge(null, true)}</TableCell><TableCell>{subcategory.products}</TableCell><TableCell><Badge className="bg-green-100 text-green-600 text-xs">Activo</Badge></TableCell><TableCell className="flex gap-2"><Button size="icon" variant="ghost" onClick={() => openItem(subcategory, "subcategory", "edit")}><Pencil size={14} className="text-blue-500" /></Button><Button size="icon" variant="ghost" onClick={() => handleDelete(subcategory, "subcategory")}><Trash2 size={14} className="text-red-500" /></Button><Button size="icon" variant="ghost" onClick={() => openItem(subcategory, "subcategory", "view")}><Eye size={14} className="text-gray-500" /></Button></TableCell></TableRow>)}
-            </React.Fragment>)}
-          </TableBody>
-        </Table>
-      </CardContent></Card>
+      <Card>
+        <CardContent className="p-0">
+          <div className="p-4 border-b">
+            <div className="relative">
+              <Search className="absolute left-3 top-2.5 text-gray-400" size={14} />
+              <Input placeholder="Buscar categorías o subcategorías..." value={search} onChange={(event) => setSearch(event.target.value)} className="pl-8" />
+            </div>
+          </div>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Categoría</TableHead>
+                <TableHead>Tipo</TableHead>
+                <TableHead>Productos</TableHead>
+                <TableHead>Estado</TableHead>
+                <TableHead>Acciones</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading ?
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center text-gray-500">
+                    Cargando...
+                  </TableCell>
+                </TableRow> : filteredData.length === 0 ?
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center text-gray-500">
+                      No se encontraron categorías.
+                    </TableCell>
+                  </TableRow> : filteredData.map((category) =>
+                    <React.Fragment key={category._id}>
+                      <TableRow>
+                        <TableCell className="flex gap-2 items-center">
+                          <Folder size={14} className="text-blue-500" />{category.name}
+                        </TableCell>
+                        <TableCell>
+                          {getTypeBadge(category.type)}
+                        </TableCell>
+                        <TableCell>
+                          {category.products}
+                        </TableCell>
+                        <TableCell>
+                          <Badge className="bg-green-100 text-green-600 text-xs">Activo</Badge>
+                        </TableCell>
+                        <TableCell className="flex gap-2">
+                          <Button size="icon" variant="ghost" onClick={() => openItem(category, "category", "edit")}>
+                            <Pencil size={14} className="text-blue-500" />
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button size="icon" variant="ghost" >
+                                <Trash2 size={14} className="text-red-500" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>¿Eliminar categoría?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Esta acción no se puede deshacer, eliminará la categoría para siempre.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDelete(category, "category")}>
+                                  Eliminar
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
 
-      <CategoryModal key={openModal ? `${entityType}-${mode}-${selected?._id || "new"}` : "closed"} open={openModal} onOpenChange={setOpenModal} onSave={handleSave} initialData={selected} mode={mode} entityType={entityType} categories={categories} saving={saving} />
+                          <Button size="icon" variant="ghost" onClick={() => openItem(category, "category", "view")}>
+                            <Eye size={14} className="text-gray-500" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                      {category.children.map((subcategory) =>
+                        <TableRow key={subcategory._id}>
+                          <TableCell className="pl-10 text-gray-600">
+                            {subcategory.name}
+                          </TableCell>
+                          <TableCell>
+                            {getTypeBadge(null, true)}
+                          </TableCell>
+                          <TableCell>
+                            {subcategory.products}
+                          </TableCell>
+                          <TableCell>
+                            <Badge className="bg-green-100 text-green-600 text-xs">Activo</Badge>
+                          </TableCell>
+                          <TableCell className="flex gap-2">
+                            <Button size="icon" variant="ghost" onClick={() => openItem(subcategory, "subcategory", "edit")}>
+                              <Pencil size={14} className="text-blue-500" />
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button size="icon" variant="ghost" >
+                                  <Trash2 size={14} className="text-red-500" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>¿Eliminar subcategoría?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Esta acción no se puede deshacer, eliminará la subcategoría para siempre.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => handleDelete(subcategory, "subcategory")}>
+                                    Eliminar
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+
+                            <Button size="icon" variant="ghost" onClick={() => openItem(subcategory, "subcategory", "view")}>
+                              <Eye size={14} className="text-gray-500" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>)}
+                    </React.Fragment>)}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      <CategoryModal
+        key={openModal ? `${entityType}-${mode}-${selected?._id || "new"}` : "closed"}
+        open={openModal}
+        onOpenChange={setOpenModal}
+        onSave={handleSave}
+        initialData={selected}
+        mode={mode}
+        entityType={entityType}
+        categories={categories}
+        saving={saving}
+      />
+
     </div>
   );
 };

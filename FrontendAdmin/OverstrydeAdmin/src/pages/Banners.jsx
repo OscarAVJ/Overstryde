@@ -55,7 +55,7 @@ const Banners = () => {
   };
 
   const handleDelete = async (banner) => {
-    if (!window.confirm(`¿Eliminar el banner “${banner.title}”?`)) return;
+
     try {
       await deleteBanner(banner._id);
       toast.success("Banner eliminado.");

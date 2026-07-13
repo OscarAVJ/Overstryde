@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Pencil, Trash2 } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 
 export function BannerCard({ banner, onEdit, onDelete, onToggle }) {
   return (
@@ -25,7 +26,25 @@ export function BannerCard({ banner, onEdit, onDelete, onToggle }) {
         <Separator orientation="vertical" className="hidden md:block h-12" />
         <div className="flex flex-row md:flex-col gap-2 md:gap-3">
           <Button size="icon" variant="ghost" onClick={() => onEdit(banner)}><Pencil className="size-4" /></Button>
-          <Button size="icon" variant="ghost" onClick={() => onDelete(banner)}><Trash2 className="size-4 text-red-500" /></Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button size="icon" variant="ghost" ><Trash2 className="size-4 text-red-500" /></Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>¿Eliminar banner?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Esta acción no se puede deshacer, eliminará el banner para siempre.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={() => onDelete(banner)}>
+                  Eliminar
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
     </Card>
