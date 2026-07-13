@@ -1,14 +1,35 @@
-const API_URL = "http://localhost:4000/api/subcategories"
+const API_URL = "http://localhost:4000/api/subcategories";
 
-export const getSubCategories = async () => {
-    try {
-        const response = await fetch(API_URL);
-        if (!response.ok) {
-            throw new Error("Error obteniendo las subcategorías.")
+const request = async (url = API_URL, options) => {
+  try {
+    const response = await fetch(url, options);
+    const data = await response.json();
 
-        }
-        return await response.json();
-    } catch (error) {
-        throw new Error("Error con el servidor: " + error.message)
+    if (!response.ok) {
+      throw new Error(data.message || "Error al procesar las subcategorías.");
     }
-}
+
+    return data;
+  } catch (error) {
+    throw new Error("Error con el servidor: " + error.message);
+  }
+};
+
+export const getSubCategories = () => request();
+
+export const createSubCategory = (subcategory) =>
+  request(API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(subcategory),
+  });
+
+export const updateSubCategory = (id, subcategory) =>
+  request(`${API_URL}/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(subcategory),
+  });
+
+export const deleteSubCategory = (id) =>
+  request(`${API_URL}/${id}`, { method: "DELETE" });

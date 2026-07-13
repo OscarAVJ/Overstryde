@@ -26,6 +26,7 @@ import { useForm, Controller, useFieldArray } from "react-hook-form"
 import { toast } from "sonner"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 
+const PRODUCTS_PER_PAGE = 10;
 
 const Products = () => {
 
@@ -38,7 +39,6 @@ const Products = () => {
     handleSubmit,
     setValue,
     reset,
-    formState: { errors }
   } = useForm({
     defaultValues: {
       name: "",
@@ -61,6 +61,7 @@ const Products = () => {
   const [replaceImages, setReplaceImages] = useState(false)
   const [currentImages, setCurrentImages] = useState([])
   const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
   //Constante para saber el valor de images
   const images = watch("images");
@@ -69,7 +70,7 @@ const Products = () => {
   const [productType, setProductType] = useState("general");
 
   //HOOK PERSONALIZADO DE PRODUCTOS
-  const { products, loading, error, formData, setFormData, addProduct, editProduct, removeProduct, getProduct } = useProducts();
+  const { products, addProduct, editProduct, removeProduct } = useProducts();
 
   const filteredProducts = products.filter((product) =>{
     const searchTerm = search.toLowerCase();
@@ -77,11 +78,19 @@ const Products = () => {
     return (
       product.name.toLowerCase().includes(searchTerm) ||
       product.product_type.toLowerCase().includes(searchTerm) ||
-      product.subCategories.some((sub) =>{
+      product.subCategories.some((sub) =>
         sub.name.toLowerCase().includes(searchTerm)
-      })
+      )
     )
   })
+
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE));
+  const activePage = Math.min(currentPage, totalPages);
+  const firstProductIndex = (activePage - 1) * PRODUCTS_PER_PAGE;
+  const paginatedProducts = filteredProducts.slice(
+    firstProductIndex,
+    firstProductIndex + PRODUCTS_PER_PAGE
+  );
 
   //HOOK DE SUBCATEGORIES
   const { subcategories } = useSubcategories();
@@ -94,7 +103,7 @@ const Products = () => {
     }
   }
 
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
 
     console.log("DATA COMPLETA:", data)
 
@@ -172,12 +181,12 @@ const Products = () => {
     try {
 
       if (isEditing) {
-        editProduct(editingProductId, data);
+        await editProduct(editingProductId, data);
         toast.success("Producto actualizado.", {
           position: "top-right"
         })
       } else {
-        addProduct(data);
+        await addProduct(data);
         toast.success("Producto creado.", {
           position: "top-right"
         })
@@ -1457,7 +1466,10 @@ const Products = () => {
                   type="text" 
                   placeholder="Buscar..." 
                   value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setCurrentPage(1);
+                  }}
                 />
               </Field>
               {/*<Field>
@@ -1514,7 +1526,7 @@ const Products = () => {
             </TableHeader>
 
             <TableBody>
-              {filteredProducts.map((product, index) => {
+              {paginatedProducts.map((product, index) => {
                 const status = getStatus(product.stock ? product.stock : product.variants[0].stock);
 
                 return (
@@ -1580,14 +1592,39 @@ const Products = () => {
             <TableFooter className="h-14">
               <TableRow>
                 <TableCell colSpan={3} className="text-gray-500">
-                  Mostrando 1 - 3 productos de 24
+                  {filteredProducts.length === 0
+                    ? "No hay productos para mostrar"
+                    : `Mostrando ${firstProductIndex + 1} - ${Math.min(firstProductIndex + PRODUCTS_PER_PAGE, filteredProducts.length)} productos de ${filteredProducts.length}`}
                 </TableCell>
                 <TableCell colSpan={3}>
                   <div className='flex justify-end gap-1'>
-                    <Button className="bg-white shadow">Anterior</Button>
-                    <Button className="bg-white shadow">1</Button>
-                    <Button className="bg-white shadow">2</Button>
-                    <Button className="bg-white shadow">Siguiente</Button>
+                    <Button
+                      type="button"
+                      className="bg-white shadow"
+                      disabled={activePage === 1}
+                      onClick={() => setCurrentPage(Math.max(1, activePage - 1))}
+                    >
+                      Anterior
+                    </Button>
+                    {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                      <Button
+                        key={page}
+                        type="button"
+                        variant={page === activePage ? "default" : "outline"}
+                        className={page === activePage ? "shadow" : "bg-white shadow"}
+                        onClick={() => setCurrentPage(page)}
+                      >
+                        {page}
+                      </Button>
+                    ))}
+                    <Button
+                      type="button"
+                      className="bg-white shadow"
+                      disabled={activePage === totalPages || filteredProducts.length === 0}
+                      onClick={() => setCurrentPage(Math.min(totalPages, activePage + 1))}
+                    >
+                      Siguiente
+                    </Button>
                   </div>
                 </TableCell>
               </TableRow>

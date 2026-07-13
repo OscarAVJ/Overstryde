@@ -1,144 +1,157 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { categories as initialData } from "@/data/categoriesData";
-
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from "@/components/ui/table";
-
-import {
-  Plus,
-  Folder,
-  Layers,
-  Box,
-  Pencil,
-  Trash2,
-  Eye,
-  Search,
-} from "lucide-react";
-
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import { Plus, Folder, Layers, Box, Pencil, Trash2, Eye, Search } from "lucide-react";
+import { toast } from "sonner";
 import CategoryModal from "@/components/ui/modal";
+import { createCategory, deleteCategory, getCategories, updateCategory } from "@/services/categories.service";
+import { getProducts } from "@/services/products.service";
+import { createSubCategory, deleteSubCategory, getSubCategories, updateSubCategory } from "@/services/subCategories.service";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
+
+
+const typeLabels = { male: "Hombres", female: "Mujeres", accesory: "Accesorios" };
+const sameId = (value, id) => String(value?._id || value) === String(id);
 
 const Categories = () => {
-  const navigate = useNavigate();
-
-  const [data, setData] = useState(initialData);
+  const [categories, setCategories] = useState([]);
+  const [subcategories, setSubcategories] = useState([]);
+  const [products, setProducts] = useState([]);
   const [search, setSearch] = useState("");
-
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [mode, setMode] = useState("create");
+  const [entityType, setEntityType] = useState("category");
   const [selected, setSelected] = useState(null);
 
-  const totalPrincipales = data.length;
-
-  const totalSubcategorias = data.reduce(
-    (acc, cat) => acc + (cat.children?.length || 0),
-    0
-  );
-
-  const totalProductos = data.reduce(
-    (acc, cat) =>
-      acc +
-      cat.products +
-      (cat.children?.reduce((a, c) => a + c.products, 0) || 0),
-    0
-  );
-
-  const filteredData = data.filter((cat) =>
-    cat.name.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const handleDelete = (id) => {
-    if (!confirm("¿Eliminar categoría?")) return;
-
-    setData((prev) =>
-      prev
-        .map((cat) => ({
-          ...cat,
-          children: cat.children?.filter((sub) => sub.id !== id),
-        }))
-        .filter((cat) => cat.id !== id)
-    );
-  };
-
-  const handleSave = (newData) => {
-    if (newData.id) {
-      setData((prev) =>
-        prev.map((c) => (c.id === newData.id ? newData : c))
-      );
-    } else {
-      setData((prev) => [
-        ...prev,
-        {
-          ...newData,
-          id: Date.now(),
-          products: 0,
-          status: "Activo",
-        },
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [categoryData, subcategoryData, productData] = await Promise.all([
+        getCategories(), getSubCategories(), getProducts(),
       ]);
+      setCategories(categoryData);
+      setSubcategories(subcategoryData);
+      setProducts(productData);
+    } catch (error) {
+      toast.error("No se pudieron cargar las categorías.", { description: error.message });
+    } finally {
+      setLoading(false);
     }
-    setOpenModal(false);
-  };
+  }, []);
 
-  const handleEdit = (item) => {
-    setSelected(item);
-    setMode("edit");
+  useEffect(() => { loadData(); }, [loadData]);
+
+  const productCount = useCallback((subcategoryIds) => products.filter((product) =>
+    product.subCategories?.some((subcategory) => subcategoryIds.some((id) => sameId(subcategory, id))),
+  ).length, [products]);
+
+  const data = useMemo(() => categories.map((category) => {
+    const children = subcategories
+      .filter((subcategory) => sameId(subcategory.category, category._id))
+      .map((subcategory) => ({ ...subcategory, products: productCount([subcategory._id]) }));
+
+    return { ...category, children, products: productCount(children.map((child) => child._id)) };
+  }), [categories, subcategories, productCount]);
+
+  const filteredData = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    if (!term) return data;
+    return data.filter((category) =>
+      category.name.toLowerCase().includes(term) ||
+      typeLabels[category.type].toLowerCase().includes(term) ||
+      category.children.some((subcategory) => subcategory.name.toLowerCase().includes(term)),
+    );
+  }, [data, search]);
+
+  const openCreate = () => {
+    setMode("create");
+    setEntityType("category");
+    setSelected(null);
     setOpenModal(true);
   };
 
-  const handleView = (item) => {
+  const openItem = (item, itemType, nextMode) => {
     setSelected(item);
-    setMode("view");
+    setEntityType(itemType);
+    setMode(nextMode);
     setOpenModal(true);
   };
 
-  const getTypeBadge = (type) => {
-    if (type === "Principal")
-      return <Badge className="bg-blue-100 text-blue-600 text-xs">{type}</Badge>;
+  const handleSave = async (form) => {
+    setSaving(true);
+    try {
+      if (entityType === "subcategory") {
+        const payload = { name: form.name, category: form.category };
+        if (form._id) await updateSubCategory(form._id, payload);
+        else await createSubCategory(payload);
+      } else {
+        const payload = { name: form.name, type: form.type };
+        const result = form._id
+          ? await updateCategory(form._id, payload)
+          : await createCategory(payload);
+        const categoryId = form._id || result.category._id;
+        const existingChildren = selected?.children || [];
+        const currentChildIds = new Set(form.children.filter((child) => child._id).map((child) => child._id));
 
-    if (type === "Subcategoría")
-      return <Badge className="bg-gray-100 text-gray-600 text-xs">{type}</Badge>;
+        for (const child of form.children) {
+          if (child._id) await updateSubCategory(child._id, { name: child.name });
+          else await createSubCategory({ name: child.name, category: categoryId });
+        }
 
-    if (type === "Variante")
-      return <Badge className="bg-yellow-100 text-yellow-700 text-xs">{type}</Badge>;
+        for (const child of existingChildren) {
+          if (!currentChildIds.has(child._id)) await deleteSubCategory(child._id);
+        }
+      }
+
+      toast.success(entityType === "category" ? "Categoría guardada." : "Subcategoría guardada.");
+      setOpenModal(false);
+      await loadData();
+    } catch (error) {
+      toast.error("No se pudo guardar.", { description: error.message });
+      await loadData();
+    } finally {
+      setSaving(false);
+    }
   };
+
+  const handleDelete = async (item, itemType) => {
+    const label = itemType === "category" ? "categoría" : "subcategoría";
+
+    try {
+      if (itemType === "category") await deleteCategory(item._id);
+      else await deleteSubCategory(item._id);
+      toast.success(`${label.charAt(0).toUpperCase() + label.slice(1)} eliminada.`);
+      await loadData();
+    } catch (error) {
+      toast.error(`No se pudo eliminar la ${label}.`, { description: error.message, descriptionClassName:"!text-black" });
+    }
+  };
+
+  const getTypeBadge = (type, isSubcategory = false) => (
+    <Badge className={isSubcategory ? "bg-gray-100 text-gray-600 text-xs" : "bg-blue-100 text-blue-600 text-xs"}>
+      {isSubcategory ? "Subcategoría" : typeLabels[type]}
+    </Badge>
+  );
+
+  const totalSubcategories = subcategories.length;
+  const totalProducts = products.length;
 
   return (
     <div className="p-6 space-y-6 min-h-screen">
-
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold">Gestión de Categorías</h1>
-          <p className="text-sm text-gray-500">
-            Administra las categorías y subcategorías
-          </p>
+          <p className="text-sm text-gray-500">Administra las categorías y subcategorías</p>
         </div>
-
-        <Button
-          onClick={() => {
-            setMode("create");
-            setSelected(null);
-            setOpenModal(true);
-          }}
-          className="bg-yellow-400 text-white flex gap-2"
-        >
-          <Plus size={14} />
-          Nueva Categoría
-        </Button>
+        <Button onClick={openCreate} className="bg-yellow-400 text-white flex gap-2"><Plus size={14} />Nueva Categoría</Button>
       </div>
 
       <div className="grid md:grid-cols-3 gap-4">
-
         <Card>
           <CardContent className="p-4 flex items-center gap-3">
             <div className="bg-blue-100 p-2 rounded-lg">
@@ -146,11 +159,10 @@ const Categories = () => {
             </div>
             <div>
               <p className="text-sm text-gray-500">Categorías Principales</p>
-              <h2 className="text-xl font-bold">{totalPrincipales}</h2>
+              <h2 className="text-xl font-bold">{categories.length}</h2>
             </div>
           </CardContent>
         </Card>
-
         <Card>
           <CardContent className="p-4 flex items-center gap-3">
             <div className="bg-green-100 p-2 rounded-lg">
@@ -158,11 +170,10 @@ const Categories = () => {
             </div>
             <div>
               <p className="text-sm text-gray-500">Subcategorías</p>
-              <h2 className="text-xl font-bold">{totalSubcategorias}</h2>
+              <h2 className="text-xl font-bold">{totalSubcategories}</h2>
             </div>
           </CardContent>
         </Card>
-
         <Card>
           <CardContent className="p-4 flex items-center gap-3">
             <div className="bg-purple-100 p-2 rounded-lg">
@@ -170,27 +181,20 @@ const Categories = () => {
             </div>
             <div>
               <p className="text-sm text-gray-500">Productos Totales</p>
-              <h2 className="text-xl font-bold">{totalProductos}</h2>
+              <h2 className="text-xl font-bold">{totalProducts}</h2>
             </div>
           </CardContent>
         </Card>
-
       </div>
+
       <Card>
         <CardContent className="p-0">
-
           <div className="p-4 border-b">
             <div className="relative">
               <Search className="absolute left-3 top-2.5 text-gray-400" size={14} />
-              <Input
-                placeholder="Buscar categorías..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-8"
-              />
+              <Input placeholder="Buscar categorías o subcategorías..." value={search} onChange={(event) => setSearch(event.target.value)} className="pl-8" />
             </div>
           </div>
-
           <Table>
             <TableHeader>
               <TableRow>
@@ -201,98 +205,124 @@ const Categories = () => {
                 <TableHead>Acciones</TableHead>
               </TableRow>
             </TableHeader>
-
             <TableBody>
-              {filteredData.map((cat) => (
-                <React.Fragment key={cat.id}>
-
+              {loading ?
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center text-gray-500">
+                    Cargando...
+                  </TableCell>
+                </TableRow> : filteredData.length === 0 ?
                   <TableRow>
-                    <TableCell className="flex gap-2 items-center">
-                      <Folder size={14} className="text-blue-500" />
-                      {cat.name}
+                    <TableCell colSpan={5} className="text-center text-gray-500">
+                      No se encontraron categorías.
                     </TableCell>
+                  </TableRow> : filteredData.map((category) =>
+                    <React.Fragment key={category._id}>
+                      <TableRow>
+                        <TableCell className="flex gap-2 items-center">
+                          <Folder size={14} className="text-blue-500" />{category.name}
+                        </TableCell>
+                        <TableCell>
+                          {getTypeBadge(category.type)}
+                        </TableCell>
+                        <TableCell>
+                          {category.products}
+                        </TableCell>
+                        <TableCell>
+                          <Badge className="bg-green-100 text-green-600 text-xs">Activo</Badge>
+                        </TableCell>
+                        <TableCell className="flex gap-2">
+                          <Button size="icon" variant="ghost" onClick={() => openItem(category, "category", "edit")}>
+                            <Pencil size={14} className="text-blue-500" />
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button size="icon" variant="ghost" >
+                                <Trash2 size={14} className="text-red-500" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>¿Eliminar categoría?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Esta acción no se puede deshacer, eliminará la categoría para siempre.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDelete(category, "category")}>
+                                  Eliminar
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
 
-                    <TableCell>{getTypeBadge(cat.type)}</TableCell>
-                    <TableCell>{cat.products}</TableCell>
+                          <Button size="icon" variant="ghost" onClick={() => openItem(category, "category", "view")}>
+                            <Eye size={14} className="text-gray-500" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                      {category.children.map((subcategory) =>
+                        <TableRow key={subcategory._id}>
+                          <TableCell className="pl-10 text-gray-600">
+                            {subcategory.name}
+                          </TableCell>
+                          <TableCell>
+                            {getTypeBadge(null, true)}
+                          </TableCell>
+                          <TableCell>
+                            {subcategory.products}
+                          </TableCell>
+                          <TableCell>
+                            <Badge className="bg-green-100 text-green-600 text-xs">Activo</Badge>
+                          </TableCell>
+                          <TableCell className="flex gap-2">
+                            <Button size="icon" variant="ghost" onClick={() => openItem(subcategory, "subcategory", "edit")}>
+                              <Pencil size={14} className="text-blue-500" />
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button size="icon" variant="ghost" >
+                                  <Trash2 size={14} className="text-red-500" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>¿Eliminar subcategoría?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Esta acción no se puede deshacer, eliminará la subcategoría para siempre.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => handleDelete(subcategory, "subcategory")}>
+                                    Eliminar
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
 
-                    <TableCell>
-                      <Badge className="bg-green-100 text-green-600 text-xs">
-                        {cat.status}
-                      </Badge>
-                    </TableCell>
-
-                    <TableCell className="flex gap-2">
-                      <Pencil
-                        size={14}
-                        className="text-blue-500 cursor-pointer"
-                        onClick={() => handleEdit(cat)}
-                      />
-
-                      <Trash2
-                        size={14}
-                        className="text-red-500 cursor-pointer"
-                        onClick={() => handleDelete(cat.id)}
-                      />
-
-                      <Eye
-                        size={14}
-                        className="text-gray-500 cursor-pointer"
-                        onClick={() => handleView(cat)}
-                      />
-                    </TableCell>
-                  </TableRow>
-
-                  {cat.children?.map((sub) => (
-                    <TableRow key={sub.id}>
-                      <TableCell className="pl-10 text-gray-600">
-                         {sub.name}
-                      </TableCell>
-
-                      <TableCell>{getTypeBadge(sub.type)}</TableCell>
-                      <TableCell>{sub.products}</TableCell>
-
-                      <TableCell>
-                        <Badge className="bg-green-100 text-green-600 text-xs">
-                          {sub.status}
-                        </Badge>
-                      </TableCell>
-
-                      <TableCell className="flex gap-2">
-                        <Pencil
-                          size={14}
-                          className="text-blue-500 cursor-pointer"
-                          onClick={() => handleEdit(sub)}
-                        />
-
-                        <Trash2
-                          size={14}
-                          className="text-red-500 cursor-pointer"
-                          onClick={() => handleDelete(sub.id)}
-                        />
-
-                        <Eye
-                          size={14}
-                          className="text-gray-500 cursor-pointer"
-                          onClick={() => handleView(sub)}
-                        />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-
-                </React.Fragment>
-              ))}
+                            <Button size="icon" variant="ghost" onClick={() => openItem(subcategory, "subcategory", "view")}>
+                              <Eye size={14} className="text-gray-500" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>)}
+                    </React.Fragment>)}
             </TableBody>
           </Table>
-
         </CardContent>
       </Card>
 
       <CategoryModal
+        key={openModal ? `${entityType}-${mode}-${selected?._id || "new"}` : "closed"}
         open={openModal}
         onOpenChange={setOpenModal}
         onSave={handleSave}
         initialData={selected}
         mode={mode}
+        entityType={entityType}
+        categories={categories}
+        saving={saving}
       />
 
     </div>
