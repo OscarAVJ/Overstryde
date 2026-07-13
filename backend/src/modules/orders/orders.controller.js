@@ -131,7 +131,7 @@ ordersController.getOrders = async (req, res) => {
         path: "products.productId",
         select: "name price images",
       },
-    }).populate("customerId", "name last_name email");
+    }).populate("customerId", "name last_name email photo");
     return res.status(200).json(orders);
   } catch (error) {
     return res.status(500).json({ message: "Internal server error" });

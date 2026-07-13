@@ -20,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { toast } from 'sonner'
+import { UserAvatar } from '@/components/ui/UserAvatar2'
 
 const Orders = () => {
 
@@ -207,11 +208,11 @@ const Orders = () => {
               <Card className="shadow flex flex-col h-full" key={index}>
                 <CardContent className="flex flex-1 flex-col h-fulls">
                   <div>
-
+                    
                     <div className='header mb-6'>
                       <div className='grid grid-cols-2'>
                         <div className='flex flex-row items-center gap-4'>
-                          <img src="https://media.istockphoto.com/id/1142192548/es/vector/perfil-de-avatar-hombre-silueta-de-cara-masculina-o-icono-aislado-sobre-fondo-blanco.jpg?s=612x612&w=0&k=20&c=O6KtgzjlrIvoGi2Cb1ZyppWKlqGL_5IXVHLUdLN33Ag=" alt="" className='h-9 w-9' />
+                          <UserAvatar user={order.customerId}/>
                           <div className='flex flex-col'>
                             <p className='font-semibold'>{order.customerId.name} {order.customerId.last_name}</p>
                             <p>Órden #{index}</p>

@@ -38,7 +38,7 @@ export function AppSidebar() {
     const { authUser, logout } = useAuth()
     const location = useLocation();
 
-    const shortEmail = authUser.email.slice(1, 21);
+    const shortEmail = authUser.email.slice(0, 20);
 
     return (
         <Sidebar collapsible="icon" className="border-r data-[collapsible=icon]:flex data-[collapsible=icon]:justify-center">
