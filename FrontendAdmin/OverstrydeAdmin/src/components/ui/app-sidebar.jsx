@@ -12,7 +12,7 @@ import {
     SidebarFooter,
     SidebarRail
 } from "@/components/ui/sidebar";
-import { LayoutDashboard, ClipboardList, PackageSearch, FolderOpen, Image, EllipsisVertical, LogOut, Users } from "lucide-react";
+import { LayoutDashboard, ClipboardList, PackageSearch, FolderOpen, Image, EllipsisVertical, LogOut, Users, MessageSquare } from "lucide-react";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -25,17 +25,17 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/context/AuthContext";
 import {
-  Popover,
-  PopoverContent,
-  PopoverDescription,
-  PopoverHeader,
-  PopoverTitle,
-  PopoverTrigger,
+    Popover,
+    PopoverContent,
+    PopoverDescription,
+    PopoverHeader,
+    PopoverTitle,
+    PopoverTrigger,
 } from "@/components/ui/popover"
 import { Button } from "./button";
 
 export function AppSidebar() {
-    const {authUser, logout } = useAuth()
+    const { authUser, logout } = useAuth()
     const location = useLocation();
 
     const shortEmail = authUser.email.slice(1, 21);
@@ -52,6 +52,7 @@ export function AppSidebar() {
                 <SidebarGroup>
                     <SidebarGroupContent>
                         <SidebarMenu className="gap-2 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center ">
+
 
                             <SidebarMenuItem>
                                 <SidebarMenuButton
@@ -97,7 +98,18 @@ export function AppSidebar() {
                                     </Link>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
-
+                            <SidebarMenuItem>
+                                <SidebarMenuButton
+                                    asChild
+                                    isActive={location.pathname === "/testimonials"}
+                                    className="h-12 data-[active=true]:text-yellow-400 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center"
+                                >
+                                    <Link to="/testimonials">
+                                        <MessageSquare className="!w-6 !h-6" />
+                                        <span className="group-data-[collapsible=icon]:hidden font-inter">Testimonios</span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
                             <SidebarMenuItem>
                                 <SidebarMenuButton
                                     asChild

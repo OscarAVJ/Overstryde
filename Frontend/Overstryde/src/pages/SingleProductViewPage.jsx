@@ -8,6 +8,7 @@ import useProduct from '@/hooks/useProduct'
 import useProductSelection, { normalizeColorValue } from '@/hooks/useProductSelection'
 import useFavorites from '@/hooks/useFavorites'
 import { Heart } from 'lucide-react'
+import ProductReviews from '@/components/products/ProductReviews'
 
 export const SingleProductView = () => {
   const { id } = useParams()
@@ -54,7 +55,8 @@ export const SingleProductView = () => {
   }
 
   return (
-    <div className='flex flex-col justify-center px-4 mx-auto pt-15 md:flex-row md:max-w-6xl w-full gap-3'>
+    <div className='px-4 mx-auto pt-15 md:max-w-6xl w-full'>
+      <div className='flex flex-col justify-center md:flex-row gap-3'>
       <div className='flex-col items-center gap-2 hidden sm:flex'>
         <img
           src={selectedImage?.path || images[0]?.path}
@@ -183,6 +185,8 @@ export const SingleProductView = () => {
         <p className='font-semibold'>Descripcion</p>
         <p>{product.description}</p>
       </div>
+      </div>
+      <ProductReviews productId={product._id} />
     </div>
   )
 }

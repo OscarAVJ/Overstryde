@@ -5,7 +5,11 @@ const controller = {};
 //GET
 controller.getReviews = async (req, res) => {
     try {
-        const reviews = await productReviewModel.find();
+        const filter = req.query.productId ? { productId: req.query.productId } : {};
+        const reviews = await productReviewModel.find(filter)
+            .populate("customerId", "name last_name photo")
+            .populate("productId", "name")
+            .sort({ createdAt: -1 });
         return res.status(200).json(reviews)
     } catch (error) {
         console.log(error.message);
@@ -45,7 +49,9 @@ controller.postReview = async (req, res) => {
         })
 
         const savedReview = await newReview.save();
-        return res.status(201).json({ message: "The product review was succesfully added." })
+        await savedReview.populate("customerId", "name last_name photo");
+        await savedReview.populate("productId", "name");
+        return res.status(201).json({ message: "The product review was succesfully added.", data: savedReview })
     } catch (error) {
         console.log(error.message);
         return res.status(500).json({ info: error.message })
@@ -67,7 +73,7 @@ controller.updateReview = async (req, res) => {
         } = req.body
 
         //Verificamos existencia
-        const reviewExists = productReviewModel.findById(req.params.id)
+        const reviewExists = await productReviewModel.findById(req.params.id)
         if (!reviewExists) {
             return res.status(404).json({ info: "The review you wanted to update wasn't found." })
         }
@@ -91,6 +97,8 @@ controller.updateReview = async (req, res) => {
             {new: true, runValidators: true}
         )
 
+        await updatedReview.populate("customerId", "name last_name photo");
+        await updatedReview.populate("productId", "name");
         return res.status(200).json({message: "Review updated", data: updatedReview})
 
     } catch (error) {

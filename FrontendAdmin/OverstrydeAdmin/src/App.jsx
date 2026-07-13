@@ -12,6 +12,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import { Toaster } from "./components/ui/sonner";
 import ProtectedRoute from "./ProtectedRoute";
 import Users from "./pages/Users";
+import Testimonials from "./pages/Testimonials";
 
 function App() {
   return (
@@ -34,6 +35,7 @@ function App() {
               <Route path="categories" element={<Categories />} />
               <Route path="banners" element={<Banners />} />
               <Route path="users" element={<Users />} />
+              <Route path="testimonials" element={<Testimonials />} />
             </Route>
           </Route>
 
