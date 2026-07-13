@@ -1,106 +1,128 @@
 import React from 'react'
+import { useState, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
-import { Plus, FolderOpen, Search, Pencil, Trash2, Eye } from 'lucide-react'
-import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card2"
-import { Field, FieldDescription, FieldLabel, FieldGroup } from "@/components/ui/field"
+import { Search, Eye, ArrowLeftRight } from 'lucide-react'
+import { Card, CardContent, CardFooter, } from "@/components/ui/card2"
+import { Field, FieldLabel, } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from "@/components/ui/table2";
 import { Separator } from "@/components/ui/separator"
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { Textarea } from '@/components/ui/textarea'
+import useOrders from '@/hooks/useOrders'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuPortal,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { toast } from 'sonner'
 
 const Orders = () => {
 
-  const orders = [
-    {
-      name: "Ana Martínez",
-      orderId: "#ORD-001",
-      products: [
-        {
-          productName: "Camiseta deportiva",
-          price: 23,
-          quantity: 2
-        },
-        {
-          productName: "Creatina 500g",
-          price: 30,
-          quantity: 1
-        },
-        {
-          productName: "Mancuerna 10kg",
-          price: 30,
-          quantity: 1
-        }
-      ],
-      date: "12/04/23"
-    },
-    {
-      name: "Rodrigo Salguero",
-      orderId: "#ORD-002",
-      products: [
-        {
-          productName: "Camiseta deportiva",
-          price: 23,
-          quantity: 2
-        },
-        {
-          productName: "Creatina 500g",
-          price: 30,
-          quantity: 1
-        }
-      ],
-      date: "12/04/23"
-    },
-    {
-      name: "Fernando Velásquez",
-      orderId: "#ORD-003",
-      products: [
-        {
-          productName: "Camiseta deportiva",
-          price: 23,
-          quantity: 2
-        },
-        {
-          productName: "Creatina 500g",
-          price: 30,
-          quantity: 1
-        }
-      ],
-      date: "12/04/23"
-    },
-    {
-      name: "Jennifer Alfaro",
-      orderId: "#ORD-004",
-      products: [
-        {
-          productName: "Camiseta deportiva",
-          price: 23,
-          quantity: 2
-        }
-      ],
-      date: "12/04/23"
-    },
-    {
-      name: "Max Jiménez",
-      orderId: "#ORD-005",
-      products: [
-        {
-          productName: "Camiseta deportiva",
-          price: 23,
-          quantity: 2
-        },
-        {
-          productName: "Creatina 500g",
-          price: 30,
-          quantity: 1
-        }
-      ],
-      date: "12/04/23"
+  //HOOK de ORDERS
+  const { loading, orders, editOrder } = useOrders();
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [dateFilter, setDateFilter] = useState("all");
+
+  //Obtener estado de la orden
+  const getOrderStatus = (status) => {
+    if (status === "pending") {
+      return {
+        color: "text-yellow-800",
+        text: "Pendiente"
+      }
+    } else if (status === "delivered") {
+      return {
+        color: "text-green-700",
+        text: "Entregada"
+      }
+    } else if (status === "returned") {
+      return {
+        color: "text-red-700",
+        text: "Devuelta"
+      }
+    } else {
+      s
+      return {
+        color: "text-gray-800",
+        text: status
+      }
     }
-  ]
+  }
+
+  //Cambiar estado de la orden
+  const onEdit = async (newStatus, order, id) => {
+    try {
+
+      const updatedOrder = {
+        ...order,
+        status: newStatus,
+        customerId: order.customerId._id,
+        shopping_cart_id: order.shopping_cart_id._id
+      };
+      await editOrder(id, updatedOrder);
+      toast.success("El estado de la orden fue actualizado", {
+        position: "top-right"
+      })
+
+    } catch (error) {
+      toast.error("Error actualizando la orden", {
+        position: "top-right"
+      })
+    }
+  }
+
+  const filteredOrders = useMemo(() => {
+
+    return orders.filter((order) => {
+
+      // ========= BUSCADOR =========
+      const customer =
+        `${order.customerId.name} ${order.customerId.last_name}`.toLowerCase();
+
+      const orderId = order._id.toLowerCase();
+
+      const matchesSearch =
+        customer.includes(search.toLowerCase()) ||
+        orderId.includes(search.toLowerCase());
+
+      // ========= ESTADO =========
+      const matchesStatus =
+        statusFilter === "all" ||
+        order.status === statusFilter;
+
+      // ========= FECHA =========
+      let matchesDate = true;
+
+      const created = new Date(order.createdAt);
+      const today = new Date();
+
+      if (dateFilter === "week") {
+
+        const weekAgo = new Date();
+        weekAgo.setDate(today.getDate() - 7);
+
+        matchesDate = created >= weekAgo;
+
+      } else if (dateFilter === "month") {
+
+        const monthAgo = new Date();
+        monthAgo.setMonth(today.getMonth() - 1);
+
+        matchesDate = created >= monthAgo;
+      }
+
+      return matchesSearch && matchesStatus && matchesDate;
+
+    });
+
+  }, [orders, search, statusFilter, dateFilter]);
+
 
   return (
     <>
@@ -118,34 +140,49 @@ const Orders = () => {
               <div className='grid grid-cols-1 sm:grid-cols-4 gap-3 items-end'>
                 <Field>
                   <FieldLabel htmlFor="searchBar" className="font-bold">BUSCAR ÓRDEN</FieldLabel>
-                  <Input id="searchBar" type="text" placeholder="Buscar por usuario o ID..." />
+                  <Input
+                    id="searchBar"
+                    type="text"
+                    placeholder="Buscar por usuario o ID..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
                 </Field>
                 <Field>
                   <FieldLabel htmlFor="statusSelect" className="font-bold">ESTADO</FieldLabel>
-                  <Select>
-                    <SelectTrigger id="statusSelect" defaultValue="">
+                  <Select
+                    value={statusFilter}
+                    onValueChange={setStatusFilter}
+                  >
+                    <SelectTrigger id="statusSelect">
                       <SelectValue placeholder="Elegir estado" />
                     </SelectTrigger>
+
                     <SelectContent>
                       <SelectGroup>
-                        <SelectItem value="1">Todos los estados</SelectItem>
-                        <SelectItem value="2">Entregado</SelectItem>
-                        <SelectItem value="3">Enviado</SelectItem>
+                        <SelectItem value="all">Todos los estados</SelectItem>
+                        <SelectItem value="pending">Pendiente</SelectItem>
+                        <SelectItem value="delivered">Entregada</SelectItem>
+                        <SelectItem value="returned">Devuelta</SelectItem>
                       </SelectGroup>
                     </SelectContent>
                   </Select>
                 </Field>
                 <Field>
                   <FieldLabel htmlFor="dateFilter" className="font-bold">FECHA</FieldLabel>
-                  <Select>
-                    <SelectTrigger id="dateFilter" defaultValue="">
+                  <Select
+                    value={dateFilter}
+                    onValueChange={setDateFilter}
+                  >
+                    <SelectTrigger id="dateFilter">
                       <SelectValue placeholder="Elegir período de tiempo" />
                     </SelectTrigger>
+
                     <SelectContent>
                       <SelectGroup>
-                        <SelectItem value="1">Todos los tiempos</SelectItem>
-                        <SelectItem value="2">Última semana</SelectItem>
-                        <SelectItem value="3">Último mes</SelectItem>
+                        <SelectItem value="all">Todos los tiempos</SelectItem>
+                        <SelectItem value="week">Última semana</SelectItem>
+                        <SelectItem value="month">Último mes</SelectItem>
                       </SelectGroup>
                     </SelectContent>
                   </Select>
@@ -159,9 +196,12 @@ const Orders = () => {
           </Card>
         </div>
 
-        <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8'>
+        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
 
-          {orders.map((order, index) => {
+          {filteredOrders.map((order, index) => {
+
+            const statusInfo = getOrderStatus(order.status);
+            const orderDate = order.createdAt.slice(0, 10)
 
             return (
               <Card className="shadow flex flex-col h-full" key={index}>
@@ -173,12 +213,12 @@ const Orders = () => {
                         <div className='flex flex-row items-center gap-4'>
                           <img src="https://media.istockphoto.com/id/1142192548/es/vector/perfil-de-avatar-hombre-silueta-de-cara-masculina-o-icono-aislado-sobre-fondo-blanco.jpg?s=612x612&w=0&k=20&c=O6KtgzjlrIvoGi2Cb1ZyppWKlqGL_5IXVHLUdLN33Ag=" alt="" className='h-9 w-9' />
                           <div className='flex flex-col'>
-                            <p>{order.name}</p>
-                            <p>{order.orderId}</p>
+                            <p className='font-semibold'>{order.customerId.name} {order.customerId.last_name}</p>
+                            <p>Órden #{index}</p>
                           </div>
                         </div>
                         <div className="flex items-center justify-end">
-                          <p className='text-end text-green-700 font-bold'>Entregada</p>
+                          <p className={`text-end ${statusInfo.color} font-bold`}>{statusInfo.text}</p>
                         </div>
                       </div>
                     </div>
@@ -186,16 +226,16 @@ const Orders = () => {
                     <div className='body mb-3'>
                       <div className='flex flex-col gap-2'>
 
-                        {order.products.map((product, index) => {
+                        {order.shopping_cart_id.products.map((product, index) => {
 
                           return (
                             <div className='grid grid-cols-2' key={index}>
                               <div className='flex flex-row items-center gap-2'>
-                                <img src="https://cicadex.com/wp-content/uploads/2020/01/350-33-Camiseta-Hom-Azul-ped-27-3-4-RH-copia.jpg" alt="" className='w-5 h-5' />
-                                <p>{product.productName}</p>
+                                <img src={product.productId.images[0].path} alt="" className='w-5 h-5' />
+                                <p>{product.productId.name}</p>
                               </div>
                               <div className='flex items-center justify-end'>
-                                <p className='font-bold'> {product.quantity} x ${product.price}</p>
+                                <p className='font-bold'> {product.quantity} x ${product.productId.price.toFixed(2)}</p>
                               </div>
                             </div>
                           )
@@ -211,21 +251,62 @@ const Orders = () => {
                     <Separator className="mb-3" />
                     <div className='grid grid-cols-2'>
                       <div className='flex flex-row items-center gap-2'>
-                        <p className='text-lg font-bold'>Total: $139.48</p>
+                        <p className='text-lg font-bold'>
+                          Total: ${order.shopping_cart_id.total.toFixed(2)}
+                        </p>
                       </div>
                       <div className='flex items-center justify-end'>
-                        <p className='text-gray-400'>{order.date}</p>
+                        <p className='text-gray-400'>{orderDate}</p>
                       </div>
                     </div>
                   </div>
                 </CardContent>
                 <CardFooter>
-                  {/*
-                  <Button className="w-full font-bold">
-                    <Eye />
-                    Ver
-                  </Button>
-                  */}
+
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild className="w-full">
+                      <Button className="w-full font-bold">
+                        <Eye />
+                        Ver opciones
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent side="right" className="w-auto">
+                      <DropdownMenuSub>
+                        <DropdownMenuSubTrigger>
+                          <ArrowLeftRight />
+                          Cambiar estado
+                        </DropdownMenuSubTrigger>
+                        <DropdownMenuPortal>
+                          <DropdownMenuSubContent>
+                            <DropdownMenuItem
+                              onClick={() => {
+                                onEdit("returned", order, order._id)
+                              }}
+                            >
+                              Cancelada
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => {
+                                onEdit("pending", order, order._id)
+                              }}
+                            >
+                              Pendiente
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => {
+                                onEdit("delivered", order, order._id)
+                              }}
+                            >
+                              Entregada
+                            </DropdownMenuItem>
+                          </DropdownMenuSubContent>
+                        </DropdownMenuPortal>
+                      </DropdownMenuSub>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
+
+
                 </CardFooter>
               </Card>
             )
