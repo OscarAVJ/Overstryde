@@ -53,7 +53,7 @@ export function AppSidebar() {
                     <SidebarGroupContent>
                         <SidebarMenu className="gap-2 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center ">
 
-
+                        
                             <SidebarMenuItem>
                                 <SidebarMenuButton
                                     asChild
@@ -72,13 +72,13 @@ export function AppSidebar() {
                             <SidebarMenuItem>
                                 <SidebarMenuButton
                                     asChild
-                                    isActive={location.pathname === "/orders"}
+                                    isActive={location.pathname === "/users"}
                                     className="h-12 data-[active=true]:text-yellow-400 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center"
                                 >
-                                    <Link to={"/orders"} >
-                                        <ClipboardList className=" !w-6 !h-6" />
+                                    <Link to={"/users"}>
+                                        <Users className="\ !w-6 !h-6 group-data-[collapsible=icon]:mr-0" />
                                         <span className="group-data-[collapsible=icon]:hidden font-inter">
-                                            Órdenes
+                                            Usuarios
                                         </span>
                                     </Link>
                                 </SidebarMenuButton>
@@ -98,18 +98,7 @@ export function AppSidebar() {
                                     </Link>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
-                            <SidebarMenuItem>
-                                <SidebarMenuButton
-                                    asChild
-                                    isActive={location.pathname === "/testimonials"}
-                                    className="h-12 data-[active=true]:text-yellow-400 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center"
-                                >
-                                    <Link to="/testimonials">
-                                        <MessageSquare className="!w-6 !h-6" />
-                                        <span className="group-data-[collapsible=icon]:hidden font-inter">Testimonios</span>
-                                    </Link>
-                                </SidebarMenuButton>
-                            </SidebarMenuItem>
+
                             <SidebarMenuItem>
                                 <SidebarMenuButton
                                     asChild
@@ -125,6 +114,40 @@ export function AppSidebar() {
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
 
+                            
+
+                            <SidebarMenuItem>
+                                <SidebarMenuButton
+                                    asChild
+                                    isActive={location.pathname === "/orders"}
+                                    className="h-12 data-[active=true]:text-yellow-400 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center"
+                                >
+                                    <Link to={"/orders"} >
+                                        <ClipboardList className=" !w-6 !h-6" />
+                                        <span className="group-data-[collapsible=icon]:hidden font-inter">
+                                            Órdenes
+                                        </span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+
+                            
+
+                            <SidebarMenuItem>
+                                <SidebarMenuButton
+                                    asChild
+                                    isActive={location.pathname === "/testimonials"}
+                                    className="h-12 data-[active=true]:text-yellow-400 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center"
+                                >
+                                    <Link to="/testimonials">
+                                        <MessageSquare className="!w-6 !h-6" />
+                                        <span className="group-data-[collapsible=icon]:hidden font-inter">Testimonios</span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+
+                            
+
                             <SidebarMenuItem>
                                 <SidebarMenuButton
                                     asChild
@@ -139,20 +162,9 @@ export function AppSidebar() {
                                     </Link>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
-                            <SidebarMenuItem>
-                                <SidebarMenuButton
-                                    asChild
-                                    isActive={location.pathname === "/users"}
-                                    className="h-12 data-[active=true]:text-yellow-400 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center"
-                                >
-                                    <Link to={"/users"}>
-                                        <Users className="\ !w-6 !h-6 group-data-[collapsible=icon]:mr-0" />
-                                        <span className="group-data-[collapsible=icon]:hidden font-inter">
-                                            Usuarios
-                                        </span>
-                                    </Link>
-                                </SidebarMenuButton>
-                            </SidebarMenuItem>
+
+                            
+
                         </SidebarMenu>
                     </SidebarGroupContent>
                 </SidebarGroup>

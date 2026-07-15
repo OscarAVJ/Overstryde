@@ -25,10 +25,13 @@ import { es } from 'date-fns/locale'
 import { useForm, Controller, useFieldArray } from "react-hook-form"
 import { toast } from "sonner"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
+import { useNavigate } from 'react-router-dom'
 
 const PRODUCTS_PER_PAGE = 10;
 
 const Products = () => {
+
+  const navigate = useNavigate();
 
   //Usando react-hook-form para los datos del dialog
   const {
@@ -1448,7 +1451,9 @@ const Products = () => {
             </form>
           </Dialog>
 
-          <Button className="h-12 bg-mist-800 text-white !categoriesBtn">
+          <Button className="h-12 bg-mist-800 text-white !categoriesBtn" onClick={() =>{
+            navigate("/categories")
+          }}>
             <FolderOpen />
             Ver categorías
           </Button>
