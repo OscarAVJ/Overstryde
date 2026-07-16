@@ -13,6 +13,7 @@ import { Toaster } from "./components/ui/sonner";
 import ProtectedRoute from "./ProtectedRoute";
 import Users from "./pages/Users";
 import Testimonials from "./pages/Testimonials";
+import NewPassword from "./pages/NewPassword";
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
           <Route path="/auth" element={<AuthLayout />}>
             <Route path="login" element={<Login />} />
             <Route path="forgotPassword" element={<ForgotPassword />} />
+            <Route path="newPass" element={<NewPassword />} />
           </Route>
 
           {/*Layout principal*/}

@@ -20,6 +20,7 @@ import logoutRoutes from "./src/modules/login/logout.route.js"
 import loginCustomerRoutes from "./src/modules/login/loginCustomer.route.js"
 import loginAdminsRoutes from "./src/modules/login/loginAdmins.route.js"
 import recoverPasswordRoutes from "./src/modules/login/recoveryPassword.route.js"
+import recoverPasswordAdminsRoutes from "./src/modules/login/recoveryPasswordAdmins.route.js"
 import dashboardRouter from "./src/modules/dashboard/dashboard.route.js"
 const app = express()
 app.use(limiter)
@@ -47,6 +48,7 @@ app.use("/api/banners", bannerRouter)
 app.use("/api/categories", categoriesRouter)
 app.use("/api/subcategories", subcategoriesRouter)
 app.use("/api/recoverPassword", recoverPasswordRoutes)
+app.use("/api/recoverPasswordAdmins", recoverPasswordAdminsRoutes)
 app.use("/api/dashboard", dashboardRouter)
 
 export default app
